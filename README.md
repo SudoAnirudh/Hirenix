@@ -7,15 +7,16 @@
 > **Next-Gen AI Career Acceleration Platform**  
 > _Optimize your resume, master interviews, and land your dream job with AI-powered insights._
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active-success.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![Stack](https://img.shields.io/badge/stack-Next.js_|_FastAPI_|_Supabase-purple.svg)]()
 
 ---
 
 ## 📖 Overview
 
-**Hirenix** is a comprehensive SaaS platform designed to bridge the gap between job seekers and their dream roles. By leveraging advanced NLP, vector embeddings, and Large Language Models (LLMs), Hirenix provides deep, actionable feedback on resumes, GitHub profiles, and interview performance.
+**Hirenix** is a comprehensive open-source SaaS platform designed to bridge the gap between job seekers and their dream roles. By leveraging advanced NLP, vector embeddings, and Large Language Models (LLMs), Hirenix provides deep, actionable feedback on resumes, GitHub profiles, and interview performance.
 
 Unlike generic keyword mashers, Hirenix understands _context_—matching your actual skills and potential to the nuanced requirements of modern job descriptions.
 
@@ -125,10 +126,16 @@ Execute the SQL commands in `supabase/schema.sql` via the Supabase SQL Editor to
 
 ---
 
-## 🤝 Contributing
+## 🌍 Community & Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
+Please review our community guidelines before making your first contribution:
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Security Policy](SECURITY.md)
+
+### General Contribution Steps:
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
@@ -137,10 +144,11 @@ Contributions are what make the open source community such an amazing place to l
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
 <p align="center">
-  Built with ❤️ by <a href="https://github.com/SudoAnirudh">SudoAnirudh</a>
+  Built with ❤️ by <a href="https://github.com/SudoAnirudh">SudoAnirudh</a> and open source contributors.
 </p>
+
