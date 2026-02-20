@@ -1,0 +1,38 @@
+{
+  "Software Engineer": {
+    "mandatory": ["Data Structures", "Algorithms", "Git", "OOP", "Problem Solving"],
+    "competitive": ["System Design", "Cloud (AWS/GCP/Azure)", "Docker", "CI/CD", "Microservices", "Kafka"]
+  },
+  "Frontend Engineer": {
+    "mandatory": ["React", "JavaScript", "TypeScript", "HTML", "CSS", "REST APIs"],
+    "competitive": ["Next.js", "GraphQL", "Testing (Jest/Cypress)", "Performance Optimization", "Accessibility"]
+  },
+  "Backend Engineer": {
+    "mandatory": ["Python", "Node.js", "SQL", "REST API", "Git", "Linux"],
+    "competitive": ["FastAPI", "Django", "PostgreSQL", "Redis", "Docker", "Kubernetes", "gRPC"]
+  },
+  "Full Stack Engineer": {
+    "mandatory": ["React", "Node.js", "JavaScript", "SQL", "REST API", "Git"],
+    "competitive": ["TypeScript", "Next.js", "PostgreSQL", "Docker", "CI/CD", "AWS"]
+  },
+  "Data Scientist": {
+    "mandatory": ["Python", "SQL", "Machine Learning", "Statistics", "Data Analysis"],
+    "competitive": ["Deep Learning", "TensorFlow", "PyTorch", "MLOps", "Spark", "Feature Engineering"]
+  },
+  "Data Engineer": {
+    "mandatory": ["Python", "SQL", "ETL", "Data Pipelines", "Cloud Storage"],
+    "competitive": ["Spark", "Kafka", "Airflow", "dbt", "Snowflake", "BigQuery", "AWS Glue"]
+  },
+  "ML Engineer": {
+    "mandatory": ["Python", "Machine Learning", "TensorFlow", "PyTorch", "SQL", "Git"],
+    "competitive": ["MLOps", "Kubeflow", "Docker", "Kubernetes", "Feature Stores", "Model Serving"]
+  },
+  "DevOps Engineer": {
+    "mandatory": ["Linux", "Docker", "Kubernetes", "CI/CD", "Git", "Shell Scripting"],
+    "competitive": ["Terraform", "Ansible", "AWS/GCP/Azure", "Monitoring (Prometheus/Grafana)", "Helm"]
+  },
+  "Product Manager": {
+    "mandatory": ["Roadmapping", "User Stories", "Agile/Scrum", "Data Analysis", "Stakeholder Communication"],
+    "competitive": ["A/B Testing", "SQL", "OKRs", "Figma", "Go-to-Market Strategy"]
+  }
+}
