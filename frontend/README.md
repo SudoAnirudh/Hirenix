@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Hirenix Frontend
 
-## Getting Started
+> **Next-Gen AI Career Acceleration Platform - Client Application**
+> _Built with Next.js 14, Tailwind CSS, and Supabase._
 
-First, run the development server:
+The frontend of Hirenix is a modern, responsive single-page application built on top of the Next.js App Router. It provides an intuitive interface for users to upload resumes, analyze GitHub portfolios, and practice mock interviews.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠️ Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Components**: shadcn/ui (Radix UI + Tailwind)
+- **Icons**: Lucide Icons
+- **Charts**: Recharts
+- **Authentication**: Supabase Auth
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
 
-## Learn More
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+- Supabase project for authentication
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. Set up environment variables:
+   Copy `.env.local.example` to `.env.local` and add your Supabase credentials:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+   *Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are properly configured.*
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## 📁 Project Structure
+
+- `app/`: Next.js App Router pages and layouts.
+- `components/`: Reusable UI components.
+- `lib/`: Utility functions and validation schemas.
+- `public/`: Static assets like images and fonts.
+- `styles/`: Global CSS and Tailwind configuration.
+
+## 🤝 Contributing
+
+Contributions to the frontend are welcome! Please follow the main repository's contribution guidelines.
