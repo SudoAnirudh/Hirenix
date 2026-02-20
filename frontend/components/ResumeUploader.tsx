@@ -2,7 +2,7 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { uploadResume } from "@/lib/api";
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
 
 interface Props {
   onResult: (result: any) => void;
@@ -38,72 +38,58 @@ export default function ResumeUploader({ onResult }: Props) {
     onDrop, accept: { "application/pdf": [".pdf"] }, maxFiles: 1,
   });
 
+  const borderColor = isDragActive ? "var(--indigo)" : status === "success" ? "var(--emerald)" : status === "error" ? "#ef4444" : "var(--border)";
+  const bg = isDragActive ? "rgba(99,102,241,0.08)" : "var(--bg-glass)";
+
   return (
     <div
       {...getRootProps()}
       id="resume-dropzone"
-      className={`glass-card relative overflow-hidden p-10 flex flex-col items-center justify-center gap-5 cursor-pointer transition-all duration-300 group
-        ${isDragActive ? "border-indigo-500 bg-indigo-500/10 scale-[1.02]" : "hover:border-indigo-500/30 hover:bg-white/5"}
-        ${status === "error" ? "border-red-500/50 bg-red-500/5" : ""}
-        ${status === "success" ? "border-emerald-500/50 bg-emerald-500/5" : ""}
-      `}
-      style={{ minHeight: "240px", borderStyle: "dashed", borderWidth: "2px" }}
+      className="glass-card p-10 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all"
+      style={{ border: `2px dashed ${borderColor}`, background: bg, minHeight: "200px" }}
     >
       <input {...getInputProps()} id="resume-file-input" />
 
-      {/* Background glow for drag active */}
-      {isDragActive && (
-        <div className="absolute inset-0 bg-indigo-500/10 blur-xl z-0" />
-      )}
-
       {status === "idle" && (
         <>
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-300 z-10 ${isDragActive ? "scale-110 rotate-3" : "group-hover:scale-110"}`} style={{ background: "rgba(99,102,241,0.12)" }}>
-            <Upload size={32} className="text-indigo-400" />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "rgba(99,102,241,0.12)" }}>
+            <Upload size={26} style={{ color: "var(--indigo)" }} />
           </div>
-          <div className="text-center z-10">
-            <p className="font-semibold text-lg mb-1">{isDragActive ? "Drop it like it's hot!" : "Upload your Resume"}</p>
-            <p className="text-sm text-gray-400">PDF up to 10MB</p>
+          <div className="text-center">
+            <p className="font-semibold">{isDragActive ? "Drop your resume here" : "Drag & drop your resume"}</p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>or <span style={{ color: "var(--indigo)" }}>browse files</span> · PDF only · Max 10MB</p>
           </div>
-          <button className="btn-primary text-sm px-6 py-2 mt-2 z-10 pointer-events-none">Select File</button>
         </>
       )}
 
       {status === "uploading" && (
         <>
-          <div className="relative z-10">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "rgba(99,102,241,0.12)" }}>
-              <FileText size={32} className="text-indigo-400 opacity-50 absolute" />
-              <Loader2 size={32} className="text-indigo-400 animate-spin absolute" />
-            </div>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: "rgba(99,102,241,0.12)" }}>
+            <FileText size={26} style={{ color: "var(--indigo)" }} />
           </div>
-          <div className="text-center z-10">
-            <p className="font-semibold text-lg animate-pulse">Analysing Resume...</p>
-            <p className="text-sm text-gray-400 mt-1">{fileName}</p>
+          <div className="text-center">
+            <p className="font-semibold">Analysing <span style={{ color: "var(--indigo)" }}>{fileName}</span></p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Extracting text · Computing ATS score…</p>
           </div>
         </>
       )}
 
       {status === "success" && (
         <>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-emerald-500/20 z-10 animate-fade-up">
-            <CheckCircle size={32} className="text-emerald-400" />
-          </div>
-          <div className="text-center z-10 animate-fade-up">
-            <p className="font-semibold text-lg text-emerald-400">Analysis Complete!</p>
-            <p className="text-sm text-gray-400 mt-1">{fileName}</p>
+          <CheckCircle size={40} style={{ color: "var(--emerald)" }} />
+          <div className="text-center">
+            <p className="font-semibold" style={{ color: "var(--emerald)" }}>Analysis complete!</p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{fileName} · Results shown below</p>
           </div>
         </>
       )}
 
       {status === "error" && (
         <>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-red-500/20 z-10">
-            <AlertCircle size={32} className="text-red-400" />
-          </div>
-          <div className="text-center z-10">
-            <p className="font-semibold text-lg text-red-400">Upload Failed</p>
-            <p className="text-sm text-red-300/70 mt-1 max-w-xs">{errorMsg}</p>
+          <AlertCircle size={40} style={{ color: "#ef4444" }} />
+          <div className="text-center">
+            <p className="font-semibold" style={{ color: "#ef4444" }}>Upload failed</p>
+            <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{errorMsg}</p>
           </div>
         </>
       )}

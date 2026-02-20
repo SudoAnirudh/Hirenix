@@ -1,34 +1,29 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
-  "private": true,
+  "name": "hirenix",
+  "version": "1.0.0",
+  "description": "<p align=\"center\">   <img src=\"assets/images/hirenix_hero.png\" alt=\"Hirenix Hero Banner\" width=\"100%\"> </p>",
+  "main": "index.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
-  "dependencies": {
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.97.0",
-    "axios": "^1.13.5",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.575.0",
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-dropzone": "^15.0.0",
-    "recharts": "^3.7.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SudoAnirudh/Hirenix.git"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SudoAnirudh/Hirenix/issues"
+  },
+  "homepage": "https://github.com/SudoAnirudh/Hirenix#readme",
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "eslint": "^10.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1"
   }
 }
