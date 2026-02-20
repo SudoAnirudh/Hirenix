@@ -2,11 +2,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { signUp } from "@/lib/auth";
-import { useRouter } from "next/navigation";
 import { Brain } from "lucide-react";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -124,7 +122,7 @@ export default function RegisterPage() {
                 type={type}
                 className="input-base"
                 placeholder={placeholder}
-                value={(form as any)[key]}
+                value={form[key as keyof typeof form]}
                 onChange={update(key)}
                 required
               />

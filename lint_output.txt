@@ -1,0 +1,52 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/auth/register/page.tsx
+    9:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  127:33  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/github-analysis/page.tsx
+  10:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  19:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/job-match/page.tsx
+  14:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/mock-interview/page.tsx
+  13:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/page.tsx
+  4:8  warning  'ScoreCard' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/progress-tracker/page.tsx
+   7:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/resume-analysis/page.tsx
+   5:8   warning  'SkillGapList' is defined but never used  @typescript-eslint/no-unused-vars
+   8:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:33  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  43:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/page.tsx
+  11:3  warning  'BarChart3' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/upload/page.tsx
+  9:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/InterviewPanel.tsx
+  27:44  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  29:10  warning  'allFeedback' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  29:50  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/ResumeUploader.tsx
+   8:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 23 problems (18 errors, 5 warnings)
+

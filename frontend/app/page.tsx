@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Zap,
   Shield,
-  BarChart3,
 } from "lucide-react";
 
 const features = [
