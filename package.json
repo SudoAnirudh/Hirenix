@@ -8,7 +8,9 @@
     "prepare": "husky",
     "lint": "npm run lint --workspaces",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "vercel-build": "npm run build --workspace=frontend"
+    "vercel-build": "npm run build --workspace=frontend",
+    "contributors:add": "all-contributors add",
+    "contributors:generate": "all-contributors generate"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,7 @@
   },
   "homepage": "https://github.com/SudoAnirudh/Hirenix#readme",
   "devDependencies": {
+    "all-contributors-cli": "^6.26.1",
     "eslint": "^10.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",

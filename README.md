@@ -142,6 +142,28 @@ Please review our community guidelines before making your first contribution:
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## ✨ Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://portfolio-blue-five-10.vercel.app/"><img src="https://avatars.githubusercontent.com/u/78668573?v=4?s=100" width="100px;" alt="Anirudh S"/><br /><sub><b>Anirudh S</b></sub></a><br /><a href="https://github.com/SudoAnirudh/Hirenix/commits?author=SudoAnirudh" title="Code">💻</a> <a href="https://github.com/SudoAnirudh/Hirenix/commits?author=SudoAnirudh" title="Documentation">📖</a> <a href="#design-SudoAnirudh" title="Design">🎨</a> <a href="#infra-SudoAnirudh" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
 ## 📄 License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
@@ -151,4 +173,3 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 <p align="center">
   Built with ❤️ by <a href="https://github.com/SudoAnirudh">SudoAnirudh</a> and open source contributors.
 </p>
-

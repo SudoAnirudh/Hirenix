@@ -1,0 +1,26 @@
+{
+  "projectName": "Hirenix",
+  "projectOwner": "SudoAnirudh",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "SudoAnirudh",
+      "name": "Anirudh S",
+      "avatar_url": "https://avatars.githubusercontent.com/u/78668573?v=4",
+      "profile": "https://portfolio-blue-five-10.vercel.app/",
+      "contributions": [
+        "code",
+        "doc",
+        "design",
+        "infra"
+      ]
+    }
+  ]
+}
