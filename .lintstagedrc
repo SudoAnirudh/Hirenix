@@ -1,1 +1,8 @@
-{"frontend/**/*.{ts,tsx,js,jsx}": ["npm run lint --workspace=frontend", "prettier --write"], "backend/**/*.py": ["black"]}
+{
+  "frontend/**/*.{ts,tsx,js,jsx}": [
+    "prettier --write"
+  ],
+  "backend/**/*.py": [
+    "bash -c 'source backend/venv/bin/activate && black \"$@\"' --"
+  ]
+}

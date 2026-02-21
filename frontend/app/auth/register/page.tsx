@@ -17,13 +17,21 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error: err } = await signUp(form.email, form.password, form.name);
-    if (err) {
-      setError(err.message);
+    try {
+      const { error: err } = await signUp(form.email, form.password, form.name);
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
+      setSuccess(true);
+    } catch (err: any) {
+      setError(
+        err?.message ||
+          "An unexpected error occurred. Please check Vercel environment variables.",
+      );
       setLoading(false);
-      return;
     }
-    setSuccess(true);
   }
 
   if (success)
