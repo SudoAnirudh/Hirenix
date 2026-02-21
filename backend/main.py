@@ -34,3 +34,6 @@ app.include_router(payments.router, prefix="/payments", tags=["Payments"])
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "version": "1.0.0"}
+
+
+# End of main.py

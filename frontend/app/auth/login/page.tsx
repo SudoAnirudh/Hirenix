@@ -17,13 +17,18 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error: err } = await signIn(email, password);
-    if (err) {
-      setError(err.message);
+    try {
+      const { error: err } = await signIn(email, password);
+      if (err) {
+        setError(err.message);
+        setLoading(false);
+        return;
+      }
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "An unexpected error occurred during login.");
       setLoading(false);
-      return;
     }
-    router.push("/dashboard");
   }
 
   return (
