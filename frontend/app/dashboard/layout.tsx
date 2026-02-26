@@ -18,6 +18,11 @@ import { useRouter } from "next/navigation";
 const nav = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
   {
+    href: "/dashboard/resume-templates",
+    icon: FileText,
+    label: "Resume Templates",
+  },
+  {
     href: "/dashboard/resume-analysis",
     icon: FileText,
     label: "Resume Analysis",
