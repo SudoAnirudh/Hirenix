@@ -2,5 +2,21 @@
   "buildCommand": "npm run build --workspace=frontend",
   "outputDirectory": "frontend/.next",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://eayzdjhtmxsgtxfyrguv.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "your_supabase_anon_key",
+    "NEXT_PUBLIC_API_URL": "http://localhost:8000",
+    "SUPABASE_URL": "https://eayzdjhtmxsgtxfyrguv.supabase.co",
+    "SUPABASE_KEY": "your_supabase_key",
+    "SUPABASE_SERVICE_KEY": "your_supabase_service_key",
+    "JWT_SECRET": "your_jwt_secret",
+    "JWT_ALGORITHM": "HS256",
+    "GITHUB_TOKEN": "your_github_token",
+    "OPENAI_API_KEY": "your_openai_api_key",
+    "STRIPE_SECRET_KEY": "your_stripe_secret_key",
+    "STRIPE_WEBHOOK_SECRET": "your_stripe_webhook_secret",
+    "APP_ENV": "development",
+    "ALLOWED_ORIGINS": "http://localhost:3000"
+  }
 }
