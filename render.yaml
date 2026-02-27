@@ -27,28 +27,6 @@ services:
         sync: false
       - key: APP_ENV
         value: production
-      # We will set ALLOWED_ORIGINS to the frontend URL dynamically
+      # We will set ALLOWED_ORIGINS to the frontend URL manually
       - key: ALLOWED_ORIGINS
-        fromService:
-          type: web
-          name: hirenix-frontend
-          envVarKey: RENDER_EXTERNAL_URL
-
-  # Frontend Next.js Service
-  - type: web
-    name: hirenix-frontend
-    env: node
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NEXT_PUBLIC_SUPABASE_URL
         sync: false
-      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
-        sync: false
-      # Automatically points to the backend URL on Render
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: hirenix-backend
-          envVarKey: RENDER_EXTERNAL_URL
