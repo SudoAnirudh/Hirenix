@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev -w frontend\" \"cd backend && . venv/bin/activate && uvicorn main:app --reload\"",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "lint": "npm run lint --workspaces",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "vercel-build": "npm run build --workspace=frontend",
