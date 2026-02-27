@@ -25,8 +25,12 @@ export default function LoginPage() {
         return;
       }
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred during login.");
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during login.";
+      setError(errorMessage);
       setLoading(false);
     }
   }

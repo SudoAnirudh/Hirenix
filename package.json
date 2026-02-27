@@ -4,7 +4,7 @@
   "description": "<p align=\"center\">   <img src=\"assets/images/hirenix_hero.png\" alt=\"Hirenix Hero Banner\" width=\"100%\"> </p>",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev -w frontend\" \"cd backend && source venv/bin/activate && uvicorn main:app --reload\"",
+    "dev": "concurrently \"npm run dev -w frontend\" \"cd backend && . venv/bin/activate && uvicorn main:app --reload\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky",
     "lint": "npm run lint --workspaces",

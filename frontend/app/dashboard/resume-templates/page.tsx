@@ -3,13 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { ResumeEditor } from "@/components/ResumeEditor";
-import {
-  Download,
-  FileText,
-  Loader2,
-  Sparkles,
-  LayoutTemplate,
-} from "lucide-react";
+import { Download, Loader2, Sparkles, LayoutTemplate } from "lucide-react";
 
 const ATS_TEMPLATES = [
   {
@@ -110,7 +104,8 @@ export default function ResumeTemplatesPage() {
 
   // Avoid hydration mismatch by rendering editor only on client
   useEffect(() => {
-    setIsClient(true);
+    const timer = setTimeout(() => setIsClient(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handlePrint = useReactToPrint({
@@ -162,7 +157,6 @@ export default function ResumeTemplatesPage() {
         <div className="flex-1 overflow-hidden p-6 print:p-0">
           <div className="h-full" ref={editorRef}>
             {isClient ? (
-              // @ts-ignore - The useReactToPrint ref assignment requires this component to forward ref, handled loosely here by wrapping in div
               <ResumeEditor content={content} onChange={setContent} />
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-neutral-900 rounded-lg animate-pulse">
