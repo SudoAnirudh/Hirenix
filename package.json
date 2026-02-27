@@ -4,6 +4,7 @@
   "description": "<p align=\"center\">   <img src=\"assets/images/hirenix_hero.png\" alt=\"Hirenix Hero Banner\" width=\"100%\"> </p>",
   "main": "index.js",
   "scripts": {
+    "dev": "concurrently \"npm run dev -w frontend\" \"cd backend && source venv/bin/activate && uvicorn main:app --reload\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky",
     "lint": "npm run lint --workspaces",
@@ -25,6 +26,7 @@
   "homepage": "https://github.com/SudoAnirudh/Hirenix#readme",
   "devDependencies": {
     "all-contributors-cli": "^6.26.1",
+    "concurrently": "^9.2.1",
     "eslint": "^10.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
