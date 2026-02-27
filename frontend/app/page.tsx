@@ -67,11 +67,11 @@ export default function LandingPage() {
             Hirenix
           </span>
           <div className="flex items-center gap-3">
-            <Link href="/auth/login">
-              <button className="btn-ghost">Sign In</button>
+            <Link href="/auth/login" className="btn-ghost">
+              Sign In
             </Link>
-            <Link href="/auth/register">
-              <button className="btn-primary">Get Started</button>
+            <Link href="/auth/register" className="btn-primary">
+              Get Started
             </Link>
           </div>
         </div>
@@ -117,15 +117,14 @@ export default function LandingPage() {
             interviews — everything you need in one platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/upload">
-              <button className="btn-primary animate-pulse-glow flex items-center gap-2 px-8 py-3 text-base">
-                Analyse My Resume <ArrowRight size={16} />
-              </button>
+            <Link
+              href="/upload"
+              className="btn-primary animate-pulse-glow flex items-center gap-2 px-8 py-3 text-base"
+            >
+              Analyse My Resume <ArrowRight size={16} />
             </Link>
-            <Link href="/pricing">
-              <button className="btn-ghost px-8 py-3 text-base">
-                View Pricing
-              </button>
+            <Link href="/pricing" className="btn-ghost px-8 py-3 text-base">
+              View Pricing
             </Link>
           </div>
         </div>
@@ -205,10 +204,11 @@ export default function LandingPage() {
             <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
               No credit card required. Analyse your first 3 resumes for free.
             </p>
-            <Link href="/auth/register">
-              <button className="btn-primary px-10 py-3 text-base">
-                Create Free Account
-              </button>
+            <Link
+              href="/auth/register"
+              className="btn-primary px-10 py-3 text-base inline-block"
+            >
+              Create Free Account
             </Link>
           </div>
         </div>

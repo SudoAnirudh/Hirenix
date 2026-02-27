@@ -25,11 +25,12 @@ export default function RegisterPage() {
         return;
       }
       setSuccess(true);
-    } catch (err: any) {
-      setError(
-        err?.message ||
-          "An unexpected error occurred. Please check Vercel environment variables.",
-      );
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please check Vercel environment variables.";
+      setError(errorMessage);
       setLoading(false);
     }
   }

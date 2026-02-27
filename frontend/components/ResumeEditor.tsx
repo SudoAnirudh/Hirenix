@@ -21,15 +21,18 @@ import {
   Redo,
   Link as LinkIcon,
 } from "lucide-react";
-import { useCallback } from "react";
 
 // Custom Toolbar Component
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({
+  editor,
+}: {
+  editor: import("@tiptap/react").Editor | null;
+}) => {
   if (!editor) {
     return null;
   }
 
-  const setLink = useCallback(() => {
+  const setLink = () => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
 
@@ -43,7 +46,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
     }
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 dark:border-gray-800 p-2 bg-gray-50 dark:bg-gray-900 rounded-t-lg sticky top-0 z-10">
