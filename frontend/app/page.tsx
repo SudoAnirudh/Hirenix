@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Brain,
@@ -8,7 +11,16 @@ import {
   TrendingUp,
   Zap,
   Shield,
+  CheckCircle2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 const features = [
   {
@@ -43,184 +55,207 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "94%", label: "ATS Pass Rate Improvement" },
-  { value: "3×", label: "Faster Interview Prep" },
-  { value: "10K+", label: "Resumes Analyzed" },
-  { value: "500+", label: "Roles Covered" },
-];
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const fadeUpItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 300, damping: 24 },
+  },
+};
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen" style={{ background: "var(--bg-base)" }}>
+    <main className="min-h-screen relative bg-[#0a0a0f] text-slate-200 overflow-hidden">
+      {/* ── Background Effects ── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] mix-blend-screen animate-float" />
+        <div
+          className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[120px] mix-blend-screen animate-float"
+          style={{ animationDelay: "2s" }}
+        />
+      </div>
+
       {/* ── Navbar ── */}
-      <nav
-        className="fixed top-0 w-full z-50 border-b"
-        style={{
-          borderColor: "var(--border)",
-          background: "rgba(10,10,15,0.85)",
-          backdropFilter: "blur(16px)",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="font-display font-bold text-xl gradient-text">
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <motion.span
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-display font-bold text-2xl bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
+          >
             Hirenix
-          </span>
-          <div className="flex items-center gap-3">
-            <Link href="/auth/login" className="btn-ghost">
-              Sign In
+          </motion.span>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-4"
+          >
+            <Link href="/auth/login">
+              <Button variant="ghost" className="hidden sm:inline-flex">
+                Sign In
+              </Button>
             </Link>
-            <Link href="/auth/register" className="btn-primary">
-              Get Started
+            <Link href="/auth/register">
+              <Button variant="shine">Get Started</Button>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </nav>
 
       {/* ── Hero ── */}
-      <section className="pt-36 pb-24 px-6 text-center relative overflow-hidden">
-        {/* Background glow orbs */}
-        <div
-          className="absolute top-24 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-15"
-          style={{ background: "var(--indigo)" }}
-        />
-        <div
-          className="absolute top-32 right-1/4 w-72 h-72 rounded-full blur-3xl opacity-12"
-          style={{ background: "var(--violet)" }}
-        />
-
-        <div className="relative z-10 max-w-4xl mx-auto animate-fade-up">
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 text-xs font-medium"
-            style={{
-              background: "rgba(99,102,241,0.12)",
-              border: "1px solid rgba(99,102,241,0.25)",
-              color: "var(--indigo)",
-            }}
+      <section className="relative z-10 pt-40 pb-20 px-6 text-center">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="max-w-4xl mx-auto"
+        >
+          <motion.div
+            variants={fadeUpItem}
+            className="flex justify-center mb-8"
           >
-            <Zap size={12} /> AI-Powered Career Analytics Platform
-          </div>
-          <h1 className="font-display font-bold text-5xl md:text-7xl mb-6 leading-tight">
-            Land Your Dream Job
-            <br />
-            <span className="gradient-text">With AI Precision</span>
-          </h1>
-          <p
-            className="text-xl mb-10"
-            style={{
-              color: "var(--text-secondary)",
-              maxWidth: "600px",
-              margin: "0 auto 2.5rem",
-            }}
-          >
-            ATS scoring, GitHub intelligence, job matching, and AI mock
-            interviews — everything you need in one platform.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/upload"
-              className="btn-primary animate-pulse-glow flex items-center gap-2 px-8 py-3 text-base"
-            >
-              Analyse My Resume <ArrowRight size={16} />
-            </Link>
-            <Link href="/pricing" className="btn-ghost px-8 py-3 text-base">
-              View Pricing
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Stats ── */}
-      <section className="py-12 px-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((s) => (
-            <div key={s.label} className="glass-card p-6 text-center">
-              <div className="font-display font-bold text-3xl gradient-text">
-                {s.value}
-              </div>
-              <div
-                className="text-sm mt-1"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {s.label}
-              </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium backdrop-blur-md">
+              <Zap
+                size={14}
+                className="text-indigo-400 fill-indigo-400 animate-pulse"
+              />
+              Next-Gen AI Career Analytics
             </div>
-          ))}
-        </div>
+          </motion.div>
+
+          <motion.h1
+            variants={fadeUpItem}
+            className="font-display font-bold text-5xl md:text-7xl lg:text-8xl mb-8 tracking-tight leading-[1.1]"
+          >
+            Land Your Dream Job <br />
+            <span className="bg-gradient-to-br from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">
+              With AI Precision
+            </span>
+          </motion.h1>
+
+          <motion.p
+            variants={fadeUpItem}
+            className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed"
+          >
+            Resume ATS scoring, massive GitHub intelligence, and AI mock
+            interviews — perfectly tailored to any job description.
+          </motion.p>
+
+          <motion.div
+            variants={fadeUpItem}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <Link href="/auth/register">
+              <Button
+                size="lg"
+                variant="primary"
+                className="w-full sm:w-auto text-lg group"
+              >
+                Start Analyzing
+                <ArrowRight
+                  size={18}
+                  className="ml-2 group-hover:translate-x-1 transition-transform"
+                />
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-slate-400 ml-4">
+              <CheckCircle2 size={16} className="text-emerald-500" /> Free
+              Forever Tier
+            </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* ── Features ── */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="font-display font-bold text-4xl mb-4">
+      <section className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20 max-w-3xl mx-auto"
+          >
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6">
               Everything You Need to{" "}
-              <span className="gradient-text">Succeed</span>
+              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                Succeed
+              </span>
             </h2>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Five powerful modules working together to accelerate your career.
+            <p className="text-lg text-slate-400">
+              Powerful modules working together to accelerate your career growth
+              and land the offers you deserve.
             </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="glass-card p-6 flex flex-col gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: "rgba(99,102,241,0.15)" }}
-                >
-                  <Icon size={20} style={{ color: "var(--indigo)" }} />
-                </div>
-                <h3 className="font-semibold text-base">{title}</h3>
-                <p
-                  className="text-sm"
-                  style={{ color: "var(--text-secondary)", lineHeight: 1.6 }}
-                >
-                  {desc}
-                </p>
-              </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map(({ icon: Icon, title, desc }, i) => (
+              <Card key={title}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-4">
+                    <Icon size={24} className="text-indigo-400" />
+                  </div>
+                  <CardTitle className="text-xl">{title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base leading-relaxed">
+                    {desc}
+                  </CardDescription>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-2xl mx-auto glass-card p-12 text-center relative overflow-hidden">
-          <div
-            className="absolute inset-0 rounded-2xl"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(99,102,241,0.05), rgba(139,92,246,0.05))",
-            }}
-          />
-          <div className="relative z-10">
-            <Shield
-              size={40}
-              style={{ color: "var(--indigo)", margin: "0 auto 1.5rem" }}
-            />
-            <h2 className="font-display font-bold text-3xl mb-4">
+      <section className="relative z-10 py-32 px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto rounded-3xl overflow-hidden relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-violet-600/20 mix-blend-screen" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+
+          <div className="relative p-12 md:p-20 text-center border border-white/10 rounded-3xl bg-black/40 backdrop-blur-md">
+            <Shield size={48} className="text-indigo-400 mx-auto mb-6" />
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 text-white">
               Start Free, Scale as You Grow
             </h2>
-            <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-              No credit card required. Analyse your first 3 resumes for free.
+            <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
+              No credit card required. Experience the power of AI career
+              acceleration today.
             </p>
-            <Link
-              href="/auth/register"
-              className="btn-primary px-10 py-3 text-base inline-block"
-            >
-              Create Free Account
+            <Link href="/auth/register">
+              <Button
+                size="lg"
+                variant="shine"
+                className="px-12 py-6 text-lg rounded-xl"
+              >
+                Create Free Account
+              </Button>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── Footer ── */}
-      <footer
-        className="py-8 px-6 border-t text-center"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          © 2026 Hirenix. Built with Next.js, FastAPI & Supabase.
+      <footer className="relative z-10 py-8 px-6 border-t border-white/5 text-center">
+        <p className="text-sm text-slate-500">
+          © {new Date().getFullYear()} Hirenix. Built with Next.js, FastAPI &
+          Supabase.
         </p>
       </footer>
     </main>
