@@ -25,7 +25,9 @@ class Settings(BaseSettings):
 
     # App
     app_env: str = "development"
-    allowed_origins: str = "http://localhost:3000"
+    allowed_origins: str = (
+        "https://hirenix-h9ij1n4wf-anirudhs-projects-e6a6ef2f.vercel.app,https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
+    )
 
     class Config:
         env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
