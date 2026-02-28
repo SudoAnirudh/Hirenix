@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a question / Get help
+    url: https://github.com/SudoAnirudh/Hirenix/discussions
+    about: Please ask questions in our GitHub Discussions space.
+  - name: 🔒 Report a Security Vulnerability
+    url: https://github.com/SudoAnirudh/Hirenix/security/advisories/new
+    about: Please report security vulnerabilities responsibly via GitHub Security Advisories.

@@ -1,0 +1,32 @@
+name: Feature Request
+description: Suggest an idea for a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your idea to improve Hirenix! Please check existing issues to ensure this hasn't already been suggested.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Feature
+      description: What is the feature you are requesting?
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use Case / Problem
+      description: Why do we need this feature? What problem does it solve for users?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution or Alternatives
+      description: How do you envision this working? Did you consider any alternative solutions?
+    validations:
+      required: false
