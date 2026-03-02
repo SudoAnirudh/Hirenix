@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { signIn } from "@/lib/auth";
+import { useEffect, useState } from "react";
+import { getSession, onAuthStateChange, signIn } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Brain } from "lucide-react";
 
@@ -11,28 +11,72 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function hydrateSession() {
+      const session = await getSession();
+      if (!mounted) return;
+
+      if (session) {
+        router.replace("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      setCheckingSession(false);
+    }
+
+    hydrateSession();
+
+    const subscription = onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        router.replace("/dashboard");
+        router.refresh();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const { error: err } = await signIn(email, password);
+      const { error: err } = await signIn(email.trim(), password);
       if (err) {
         setError(err.message);
         setLoading(false);
         return;
       }
-      router.push("/dashboard");
+      router.replace("/dashboard");
+      router.refresh();
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error
           ? err.message
           : "An unexpected error occurred during login.";
       setError(errorMessage);
+    } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-neutral-950">
+        <div className="text-sm text-neutral-500 dark:text-neutral-400">
+          Checking session...
+        </div>
+      </div>
+    );
   }
 
   return (

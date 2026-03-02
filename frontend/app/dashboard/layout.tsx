@@ -12,8 +12,9 @@ import {
   LogOut,
   CreditCard,
 } from "lucide-react";
-import { signOut } from "@/lib/auth";
+import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const nav = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -48,10 +49,61 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function verifySession() {
+      const session = await getSession();
+      if (!mounted) return;
+
+      if (!session) {
+        router.replace("/auth/login");
+        return;
+      }
+
+      setCheckingSession(false);
+    }
+
+    verifySession();
+
+    const subscription = onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.replace("/auth/login");
+        router.refresh();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   async function handleLogout() {
-    await signOut();
-    router.push("/auth/login");
+    setLoggingOut(true);
+    setError("");
+
+    const { error: signOutError } = await signOut();
+    if (signOutError) {
+      setError(signOutError.message);
+      setLoggingOut(false);
+      return;
+    }
+
+    router.replace("/auth/login");
+    router.refresh();
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-sm text-neutral-500">
+        Loading dashboard...
+      </div>
+    );
   }
 
   return (
@@ -99,16 +151,24 @@ export default function DashboardLayout({
           </Link>
           <button
             onClick={handleLogout}
+            disabled={loggingOut}
             className="sidebar-link w-full text-left"
             style={{ color: "var(--text-muted)" }}
           >
-            <LogOut size={16} /> Sign Out
+            <LogOut size={16} /> {loggingOut ? "Signing out..." : "Sign Out"}
           </button>
         </div>
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <main className="flex-1 overflow-y-auto p-8">
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        {children}
+      </main>
     </div>
   );
 }
