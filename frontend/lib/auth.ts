@@ -10,7 +10,7 @@ function getEmailRedirectTo() {
       ? window.location.origin
       : "";
 
-  return baseUrl ? `${baseUrl}/auth/login` : undefined;
+  return baseUrl || undefined;
 }
 
 export async function signUp(
