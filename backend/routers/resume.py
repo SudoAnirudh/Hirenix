@@ -22,12 +22,16 @@ async def upload_resume(
     content = await file.read()
     resume_id = str(uuid.uuid4())
 
-    # Upload raw file to Supabase Storage
+    # Upload raw file to Supabase Storage (non-fatal if bucket doesn't exist)
     storage_path = f"resumes/{user['user_id']}/{resume_id}.pdf"
-    db.storage.from_("resumes").upload(
-        storage_path, content, {"content-type": "application/pdf"}
-    )
-    file_url = db.storage.from_("resumes").get_public_url(storage_path)
+    file_url = ""
+    try:
+        db.storage.from_("resumes").upload(
+            storage_path, content, {"content-type": "application/pdf"}
+        )
+        file_url = db.storage.from_("resumes").get_public_url(storage_path)
+    except Exception:
+        pass  # Storage bucket may not exist; ATS scoring proceeds without file URL
 
     # Parse resume
     sections, raw_text = parse_resume(content)
@@ -50,6 +54,8 @@ async def upload_resume(
             "file_url": file_url,
             "raw_text": raw_text,
             "ats_score": ats_score,
+            "ats_breakdown": ats_breakdown,
+            "feedback": feedback,
             "created_at": now.isoformat(),
         }
     ).execute()
@@ -107,8 +113,8 @@ async def get_resume(
         resume_id=resume_id,
         file_url=r.data["file_url"],
         ats_score=r.data["ats_score"],
-        ats_breakdown={},
+        ats_breakdown=r.data.get("ats_breakdown") or {},
         sections=sections,
-        feedback=[],
+        feedback=r.data.get("feedback") or [],
         created_at=r.data["created_at"],
     )
