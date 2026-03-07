@@ -17,7 +17,33 @@ class SkillGapResult(BaseModel):
 class JobMatchResponse(BaseModel):
     match_id: str
     resume_id: str
-    match_score: float          # 0–100
+    match_score: float  # 0–100
     semantic_similarity: float  # cosine similarity
     skill_gap: SkillGapResult
     recommendations: List[str]
+
+
+class JobScrapeRequest(BaseModel):
+    fields: List[str]
+    location: Optional[str] = None
+    remote_only: bool = False
+    limit: int = 20
+
+
+class JobListing(BaseModel):
+    title: str
+    company: str
+    location: str
+    remote: bool
+    job_type: str
+    tags: List[str]
+    apply_url: str
+    source: str
+    posted_at: str
+    description_snippet: str
+
+
+class JobScrapeResponse(BaseModel):
+    query: str
+    total: int
+    jobs: List[JobListing]

@@ -100,7 +100,10 @@ export default function DashboardLayout({
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-neutral-500">
+      <div
+        className="min-h-screen flex items-center justify-center text-sm"
+        style={{ color: "var(--text-secondary)" }}
+      >
         Loading dashboard...
       </div>
     );
@@ -111,7 +114,6 @@ export default function DashboardLayout({
       className="flex h-screen overflow-hidden"
       style={{ background: "var(--bg-base)" }}
     >
-      {/* Sidebar */}
       <aside
         className="w-60 flex-shrink-0 flex flex-col border-r"
         style={{
@@ -160,7 +162,6 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-y-auto p-8">
         {error && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">

@@ -71,8 +71,8 @@ export default function LoginPage() {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-neutral-950">
-        <div className="text-sm text-neutral-500 dark:text-neutral-400">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
           Checking session...
         </div>
       </div>
@@ -80,26 +80,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-white dark:bg-neutral-950">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-up">
-        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 md:p-10 rounded-3xl shadow-sm">
+        <div className="glass-card p-8 md:p-10 rounded-3xl">
           <div className="flex justify-center mb-8">
-            <div className="h-12 w-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-900 dark:text-white">
+            <div
+              className="h-12 w-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: "rgba(11, 124, 118, 0.12)",
+                color: "var(--indigo)",
+              }}
+            >
               <Brain size={24} />
             </div>
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white mb-2">
+            <h1 className="text-2xl font-semibold tracking-tight mb-2">
               Welcome back
             </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Enter your credentials to access your account
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl text-sm bg-red-50 text-red-600 border border-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30">
+            <div className="mb-6 p-4 rounded-xl text-sm border border-red-200 bg-red-50 text-red-700">
               {error}
             </div>
           )}
@@ -108,14 +114,15 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="login-email"
-                className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                className="text-sm font-medium"
+                style={{ color: "var(--text-primary)" }}
               >
                 Email
               </label>
               <input
                 id="login-email"
                 type="email"
-                className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all placeholder:text-neutral-400"
+                className="input-base"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -126,7 +133,8 @@ export default function LoginPage() {
             <div className="space-y-1.5">
               <label
                 htmlFor="login-password"
-                className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                className="text-sm font-medium"
+                style={{ color: "var(--text-primary)" }}
               >
                 Password
               </label>
@@ -134,7 +142,7 @@ export default function LoginPage() {
                 <input
                   id="login-password"
                   type={showPass ? "text" : "password"}
-                  className="w-full px-4 py-2.5 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl text-sm text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white focus:border-transparent transition-all placeholder:text-neutral-400 pr-11"
+                  className="input-base pr-11"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -143,7 +151,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: "var(--text-muted)" }}
                 >
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -154,17 +163,21 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
 
-          <p className="text-sm text-center text-neutral-500 dark:text-neutral-400 mt-8">
+          <p
+            className="text-sm text-center mt-8"
+            style={{ color: "var(--text-secondary)" }}
+          >
             Don&apos;t have an account?{" "}
             <Link
               href="/auth/register"
-              className="font-medium text-neutral-900 dark:text-white hover:underline underline-offset-4"
+              className="font-medium hover:underline underline-offset-4"
+              style={{ color: "var(--indigo)" }}
             >
               Sign up free
             </Link>

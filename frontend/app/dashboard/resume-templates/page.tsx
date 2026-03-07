@@ -102,7 +102,6 @@ export default function ResumeTemplatesPage() {
   const [isClient, setIsClient] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
 
-  // Avoid hydration mismatch by rendering editor only on client
   useEffect(() => {
     const timer = setTimeout(() => setIsClient(true), 0);
     return () => clearTimeout(timer);
@@ -128,15 +127,26 @@ export default function ResumeTemplatesPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+    <div
+      className="flex flex-col h-full"
+      style={{ background: "var(--bg-base)" }}
+    >
+      <div
+        className="flex items-center justify-between px-6 py-4 shrink-0"
+        style={{ borderBottom: "1px solid var(--border)" }}
+      >
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <LayoutTemplate className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <LayoutTemplate
+              className="w-6 h-6"
+              style={{ color: "var(--indigo)" }}
+            />
             Resume Builder
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p
+            className="text-sm mt-1"
+            style={{ color: "var(--text-secondary)" }}
+          >
             Build ATS-friendly resumes that actually get parsed by recruiters.
           </p>
         </div>
@@ -144,7 +154,7 @@ export default function ResumeTemplatesPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => handlePrint()}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 btn-primary text-sm rounded-lg"
           >
             <Download className="w-4 h-4" />
             Export PDF
@@ -153,27 +163,43 @@ export default function ResumeTemplatesPage() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Main Editor Area */}
         <div className="flex-1 overflow-hidden p-6 print:p-0">
           <div className="h-full" ref={editorRef}>
             {isClient ? (
               <ResumeEditor content={content} onChange={setContent} />
             ) : (
-              <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-neutral-900 rounded-lg animate-pulse">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+              <div
+                className="flex items-center justify-center h-full rounded-lg animate-pulse"
+                style={{ background: "var(--bg-elevated)" }}
+              >
+                <Loader2
+                  className="w-8 h-8 animate-spin"
+                  style={{ color: "var(--indigo)" }}
+                />
               </div>
             )}
           </div>
         </div>
 
-        {/* Sidebar - Templates */}
-        <div className="w-80 border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-neutral-900/30 overflow-y-auto shrink-0 print:hidden p-6">
+        <div
+          className="w-80 overflow-y-auto shrink-0 print:hidden p-6"
+          style={{
+            borderLeft: "1px solid var(--border)",
+            background: "rgba(255, 250, 242, 0.6)",
+          }}
+        >
           <div className="mb-6">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-yellow-500" />
+            <h2 className="text-lg font-medium flex items-center gap-2">
+              <Sparkles
+                className="w-5 h-5"
+                style={{ color: "var(--violet)" }}
+              />
               Templates
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p
+              className="text-xs mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Select a starting layout. Warning: changing templates overrides
               your content.
             </p>
@@ -184,38 +210,64 @@ export default function ResumeTemplatesPage() {
               <button
                 key={template.id}
                 onClick={() => handleTemplateSelect(template.id)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
-                  selectedTemplate === template.id
-                    ? "border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm"
-                    : "border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0a0a0a] hover:border-gray-300 dark:hover:border-gray-700"
-                }`}
+                className="w-full text-left p-4 rounded-xl border transition-all duration-200"
+                style={{
+                  borderColor:
+                    selectedTemplate === template.id
+                      ? "rgba(11,124,118,0.42)"
+                      : "var(--border)",
+                  background:
+                    selectedTemplate === template.id
+                      ? "rgba(11,124,118,0.1)"
+                      : "var(--bg-surface)",
+                }}
               >
                 <div className="flex items-start justify-between">
                   <h3
-                    className={`font-medium ${
-                      selectedTemplate === template.id
-                        ? "text-blue-900 dark:text-blue-100"
-                        : "text-gray-900 dark:text-gray-100"
-                    }`}
+                    className="font-medium"
+                    style={{
+                      color:
+                        selectedTemplate === template.id
+                          ? "var(--indigo)"
+                          : "var(--text-primary)",
+                    }}
                   >
                     {template.name}
                   </h3>
                   {selectedTemplate === template.id && (
-                    <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-500 mt-1.5" />
+                    <div
+                      className="w-2 h-2 rounded-full mt-1.5"
+                      style={{ background: "var(--indigo)" }}
+                    />
                   )}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
+                <p
+                  className="text-xs mt-2 leading-relaxed"
+                  style={{ color: "var(--text-secondary)" }}
+                >
                   {template.description}
                 </p>
               </button>
             ))}
           </div>
 
-          <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-900/50">
-            <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2 mb-2">
+          <div
+            className="mt-8 p-4 rounded-lg border"
+            style={{
+              background: "rgba(221,107,32,0.12)",
+              borderColor: "rgba(221,107,32,0.35)",
+            }}
+          >
+            <h4
+              className="text-sm font-medium flex items-center gap-2 mb-2"
+              style={{ color: "#8a4219" }}
+            >
               ATS Tips
             </h4>
-            <ul className="text-xs text-yellow-700 dark:text-yellow-300 space-y-2 list-disc list-inside">
+            <ul
+              className="text-xs space-y-2 list-disc list-inside"
+              style={{ color: "#8a4219" }}
+            >
               <li>Avoid complex tables and columns.</li>
               <li>Use standard fonts (Arial, Times New Roman).</li>
               <li>Export as PDF to preserve formatting.</li>

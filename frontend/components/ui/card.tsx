@@ -11,9 +11,9 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
       className={cn(
-        "bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl shadow-black/20 overflow-hidden relative",
+        "rounded-3xl border border-[color:var(--border)] bg-[rgba(255,250,242,0.82)] shadow-[0_18px_36px_rgba(76,58,39,0.12)] backdrop-blur-md overflow-hidden relative",
         className,
       )}
       {...props}
@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight text-white",
+      "font-semibold leading-none tracking-tight text-[#17232e]",
       className,
     )}
     {...props}
@@ -53,7 +53,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-slate-400", className)} {...props} />
+  <p ref={ref} className={cn("text-sm text-[#4d5b66]", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 
