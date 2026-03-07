@@ -61,7 +61,7 @@ export default function DashboardLayout({
       if (!mounted) return;
 
       if (!session) {
-        router.replace("/auth/login");
+        router.replace("/");
         return;
       }
 
@@ -72,7 +72,7 @@ export default function DashboardLayout({
 
     const subscription = onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
-        router.replace("/auth/login");
+        router.replace("/");
         router.refresh();
       }
     });
@@ -94,7 +94,7 @@ export default function DashboardLayout({
       return;
     }
 
-    router.replace("/auth/login");
+    router.replace("/");
     router.refresh();
   }
 
