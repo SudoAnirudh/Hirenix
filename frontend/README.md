@@ -40,7 +40,7 @@ The frontend of Hirenix is a modern, responsive single-page application built on
    ```bash
    cp .env.local.example .env.local
    ```
-   *Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are properly configured.*
+   *Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are properly configured. Set `NEXT_PUBLIC_SITE_URL` to the app origin used for auth redirects (`http://localhost:3000` locally, your production domain in deployment).*
 
 4. Run the development server:
    ```bash

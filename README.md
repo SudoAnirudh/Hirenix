@@ -4,59 +4,57 @@
 
 # 🚀 Hirenix
 
-> **Next-Gen AI Career Acceleration Platform**  
-> _Optimize your resume, master interviews, and land your dream job with AI-powered insights._
+> **AI-Powered Career Acceleration Platform**  
+> _Analyze your resume, audit your GitHub, prep for interviews — all in one place._
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-[![Stack](https://img.shields.io/badge/stack-Next.js_|_FastAPI_|_Supabase-purple.svg)]()
+[![Stack](https://img.shields.io/badge/stack-Next.js_16_|_FastAPI_|_Supabase-purple.svg)](https://github.com/SudoAnirudh/Hirenix)
 
 ---
 
 ## 📖 Overview
 
-**Hirenix** is a comprehensive open-source SaaS platform designed to bridge the gap between job seekers and their dream roles. By leveraging advanced NLP, vector embeddings, and Large Language Models (LLMs), Hirenix provides deep, actionable feedback on resumes, GitHub profiles, and interview performance.
+**Hirenix** is an open-source SaaS platform that helps job seekers land their dream roles faster. It combines NLP, vector embeddings, and LLMs to deliver deep, actionable feedback on your resume, GitHub profile, and interview performance — far beyond simple keyword matching.
 
-Unlike generic keyword mashers, Hirenix understands _context_—matching your actual skills and potential to the nuanced requirements of modern job descriptions.
-
-## ✨ Key Features
+## ✨ Features
 
 ### 🧠 AI Resume Intelligence
-- **ATS Scoring 2.0**: Goes beyond keyword counting. Analyzes impact, context, and quantifying metrics.
-- **Skill Gap Analysis**: Identifies exactly what skills you're missing for a specific role.
-- **Tailored Suggestions**: rewriting suggestions to improve clarity and impact.
+- **ATS Scoring**: Analyses impact, context, and quantifiable metrics — not just keywords
+- **Skill Gap Analysis**: Pinpoints exactly what's missing for a specific role
+- **Rewrite Suggestions**: Targeted rewrites to sharpen clarity and impact
 
-### 🐙 GitHub Portfolio Analyzer (GPI)
-- **Code Quality Metrics**: Analyzes your actual code, not just contribution graphs.
-- **Project Depth Scoring**: Evaluates architectural complexity and best practices.
-- **Readme & Documentation Audit**: Ensures your projects tell a compelling story.
+### 🐙 GitHub Portfolio Analyzer
+- **Code Quality Metrics**: Reviews actual code, not just contribution graphs
+- **Project Depth Scoring**: Evaluates architecture and best practices
+- **README Audit**: Ensures your projects tell a compelling story
 
 ### 🎯 Job Matcher & Tailor
-- **Semantic Matching**: Uses `pgvector` to match your resume's semantic meaning against job descriptions.
-- **Custom Cover Letters**: Generates highly personalized cover letters based on the match.
+- **Semantic Matching**: Uses `pgvector` to match resume meaning against job descriptions
+- **Custom Cover Letters**: Generates personalized cover letters based on the match
 
 ### 🎙️ Mock Interview Engine
-- **Context-Aware Questions**: GenAI generates questions based on *your* resume and the specific JD.
-- **Real-time Feedback**: Evaluation of your answers for clarity, depth, and relevance.
-- **Voice Mode**: (Coming Soon) Practice with voice interaction.
+- **Context-Aware Questions**: Questions generated from your own resume and target JD
+- **Real-time Feedback**: Scored on clarity, depth, and relevance
+- **Voice Mode**: _(Coming Soon)_
 
 ---
 
 ## 🏗️ Architecture
 
-Hirenix is built on a modern, scalable, and type-safe stack.
-
 ```mermaid
 graph TD
-    Client[Next.js 14 Client] -->|REST API| API[FastAPI Backend]
+    Client[Next.js 16 / React 19] -->|REST API| API[FastAPI Backend]
     Client -->|Auth| SupabaseAuth[Supabase Auth]
-    
+
     subgraph "Backend Services"
-        API -->|NLP| Spacy[spaCy / BERT]
+        API -->|NLP| Spacy[spaCy · sentence-transformers]
         API -->|LLM| OpenAI[OpenAI GPT-4o]
+        API -->|PDF| PDF[pdfplumber · PyMuPDF]
+        API -->|Billing| Stripe[Stripe]
         API -->|Analysis| GitHubAPI[GitHub REST API]
     end
-    
+
     subgraph "Data Persistence"
         API -->|read/write| DB[(Supabase Postgres)]
         DB -->|Vector Search| PgVector[pgvector]
@@ -66,11 +64,16 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, Lucide Icons, Recharts
-- **Backend**: FastAPI (Python 3.11), Pydantic, Spacy, Sentence-Transformers
-- **Database**: Supabase (PostgreSQL 15), pgvector extension
-- **AI/ML**: OpenAI GPT-4o, En_core_web_sm, HuggingFace embeddings
-- **Infrastructure**: Vercel (Frontend), Railway/Render (Backend)
+| Layer | Technologies |
+|---|---|
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS v4, Framer Motion, Tiptap, Recharts, Lucide Icons |
+| **Backend** | FastAPI, Python 3.11, Pydantic v2, Uvicorn |
+| **AI / NLP** | OpenAI GPT-4o, spaCy, sentence-transformers |
+| **PDF** | pdfplumber, PyMuPDF |
+| **Database** | Supabase (PostgreSQL + pgvector), Supabase Storage |
+| **Payments** | Stripe |
+| **Infra** | Vercel (frontend), Render (backend) |
+| **Tooling** | Husky, lint-staged, Prettier, ESLint, concurrently |
 
 ---
 
@@ -78,72 +81,69 @@ graph TD
 
 ### Prerequisites
 - Node.js 18+
-- Python 3.11+
-- Supabase Account
-- OpenAI API Key
-- GitHub Token
+- Python 3.11
+- Supabase project
+- OpenAI API key
+- GitHub personal access token
 
-### 1. Clone the Repository
+### 1. Clone the repository
 ```bash
 git clone https://github.com/SudoAnirudh/Hirenix.git
 cd Hirenix
 ```
 
-### 2. Backend Setup
+### 2. Backend setup
 ```bash
 cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
 
-# Configure Environment
 cp .env.example .env
-# Edit .env and add your SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, etc.
+# Fill in SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, GITHUB_TOKEN, STRIPE_SECRET_KEY
 
-# Run Server
 uvicorn main:app --reload
 ```
 
-### 3. Frontend Setup
+### 3. Frontend setup
 ```bash
 cd frontend
 npm install
 
-# Configure Environment
 cp .env.local.example .env.local
-# Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+# Fill in NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL
 
-# Run Client
 npm run dev
 ```
 
-### 4. Database Setup
-Execute the SQL commands in `supabase/schema.sql` via the Supabase SQL Editor to verify the schema and enable `pgvector`.
+### 4. Run both together (from root)
+```bash
+npm run dev
+```
+
+### 5. Database setup
+Run the SQL in `supabase/schema.sql` via the Supabase SQL Editor to create the schema and enable `pgvector`.
 
 ---
 
-## 🌍 Community & Contributing
+## 🌍 Contributing
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are greatly appreciated! Please review the community docs first:
 
-Please review our community guidelines before making your first contribution:
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security Policy](SECURITY.md)
 
-### General Contribution Steps:
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
+**Quick steps:**
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Commit: `git commit -m 'feat: add my feature'`
+4. Push: `git push origin feature/my-feature`
 5. Open a Pull Request
 
 ## ✨ Contributors
-
-Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
