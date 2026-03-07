@@ -1,8 +1,8 @@
 import re
-import pdfplumber
-from io import BytesIO
 from typing import Tuple, List
 from models.resume import ResumeSection
+from utils.pdf_extractor import extract_pdf_text
+from utils.text_cleaner import clean_text
 
 # Section headers to detect (case-insensitive)
 SECTION_PATTERNS = {
@@ -15,17 +15,6 @@ SECTION_PATTERNS = {
 }
 
 
-def extract_text_from_pdf(content: bytes) -> str:
-    """Extract raw text from a PDF byte stream using pdfplumber."""
-    text_parts = []
-    with pdfplumber.open(BytesIO(content)) as pdf:
-        for page in pdf.pages:
-            text = page.extract_text()
-            if text:
-                text_parts.append(text)
-    return "\n".join(text_parts)
-
-
 def _clean_line(line: str) -> str:
     return re.sub(r"\s+", " ", line).strip()
 
@@ -35,7 +24,10 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
     Extract text and split into labelled sections.
     Returns (sections, raw_text).
     """
-    raw_text = extract_text_from_pdf(content)
+    raw_text = clean_text(extract_pdf_text(content))
+    if not raw_text.strip():
+        return [ResumeSection(section_type="body", content="")], ""
+
     lines = [_clean_line(l) for l in raw_text.split("\n") if _clean_line(l)]
 
     sections: List[ResumeSection] = []
@@ -44,10 +36,12 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
 
     def flush():
         if current_section and current_lines:
-            sections.append(ResumeSection(
-                section_type=current_section,
-                content="\n".join(current_lines),
-            ))
+            sections.append(
+                ResumeSection(
+                    section_type=current_section,
+                    content="\n".join(current_lines),
+                )
+            )
 
     for line in lines:
         detected = None

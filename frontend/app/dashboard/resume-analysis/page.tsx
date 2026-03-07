@@ -15,7 +15,16 @@ interface AnalysisResult {
 }
 
 export default function ResumeAnalysisPage() {
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(() => {
+    if (typeof window === "undefined") return null;
+    const latest = localStorage.getItem("latest_resume");
+    if (!latest) return null;
+    try {
+      return JSON.parse(latest) as AnalysisResult;
+    } catch {
+      return null;
+    }
+  });
 
   return (
     <div className="animate-fade-up max-w-4xl">

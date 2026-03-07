@@ -51,7 +51,7 @@ const features = [
   {
     icon: Zap,
     title: "Instant Feedback",
-    desc: "Get actionable, prioritised suggestions in seconds — not hours.",
+    desc: "Get actionable, prioritised suggestions in seconds, not hours.",
   },
 ];
 
@@ -60,7 +60,7 @@ const staggerContainer = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
     },
   },
 };
@@ -70,29 +70,27 @@ const fadeUpItem = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 300, damping: 24 },
+    transition: { type: "spring" as const, stiffness: 260, damping: 22 },
   },
 };
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen relative bg-[#0a0a0f] text-slate-200 overflow-hidden">
-      {/* ── Background Effects ── */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-600/10 blur-[120px] mix-blend-screen animate-float" />
+    <main className="min-h-screen relative text-[color:var(--text-primary)] overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-24 -left-20 w-96 h-96 rounded-full bg-orange-300/30 blur-3xl animate-float" />
         <div
-          className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[120px] mix-blend-screen animate-float"
-          style={{ animationDelay: "2s" }}
+          className="absolute top-24 -right-20 w-[28rem] h-[28rem] rounded-full bg-teal-300/30 blur-3xl animate-float"
+          style={{ animationDelay: "1.7s" }}
         />
       </div>
 
-      {/* ── Navbar ── */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 border-b border-[color:var(--border)] bg-[rgba(255,250,242,0.84)] backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <motion.span
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="font-display font-bold text-2xl bg-gradient-to-r from-indigo-400 via-violet-400 to-cyan-400 bg-clip-text text-transparent"
+            className="font-display font-bold text-2xl gradient-text"
           >
             Hirenix
           </motion.span>
@@ -107,49 +105,46 @@ export default function LandingPage() {
               </Button>
             </Link>
             <Link href="/auth/register">
-              <Button variant="shine">Get Started</Button>
+              <Button variant="primary">Get Started</Button>
             </Link>
           </motion.div>
         </div>
       </nav>
 
-      {/* ── Hero ── */}
       <section className="relative z-10 pt-40 pb-20 px-6 text-center">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="show"
-          className="max-w-4xl mx-auto"
+          className="max-w-5xl mx-auto"
         >
           <motion.div
             variants={fadeUpItem}
             className="flex justify-center mb-8"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm font-medium backdrop-blur-md">
-              <Zap
-                size={14}
-                className="text-indigo-400 fill-indigo-400 animate-pulse"
-              />
-              Next-Gen AI Career Analytics
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-300 bg-orange-100/90 text-orange-900 text-sm font-semibold">
+              <Zap size={14} className="text-orange-700" />
+              AI Career Studio
             </div>
           </motion.div>
 
           <motion.h1
             variants={fadeUpItem}
-            className="font-display font-bold text-5xl md:text-7xl lg:text-8xl mb-8 tracking-tight leading-[1.1]"
+            className="font-display font-bold text-5xl md:text-7xl lg:text-8xl mb-7 tracking-tight leading-[1.04]"
           >
-            Land Your Dream Job <br />
-            <span className="bg-gradient-to-br from-white via-slate-200 to-slate-500 bg-clip-text text-transparent">
-              With AI Precision
+            Build an Offer-Ready Profile
+            <br />
+            <span className="bg-gradient-to-r from-[#17232e] via-[#dd6b20] to-[#0b7c76] bg-clip-text text-transparent">
+              Faster and Smarter
             </span>
           </motion.h1>
 
           <motion.p
             variants={fadeUpItem}
-            className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-[color:var(--text-secondary)] mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Resume ATS scoring, massive GitHub intelligence, and AI mock
-            interviews — perfectly tailored to any job description.
+            Resume diagnostics, GitHub signal scoring, job-fit breakdowns, and
+            structured mock interviews in one focused workflow.
           </motion.p>
 
           <motion.div
@@ -169,32 +164,29 @@ export default function LandingPage() {
                 />
               </Button>
             </Link>
-            <div className="flex items-center gap-2 text-sm text-slate-400 ml-4">
-              <CheckCircle2 size={16} className="text-emerald-500" /> Free
-              Forever Tier
+            <div className="flex items-center gap-2 text-sm text-[color:var(--text-secondary)]">
+              <CheckCircle2 size={16} className="text-[color:var(--emerald)]" />
+              Free Tier Available
             </div>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* ── Features ── */}
-      <section className="relative z-10 py-32 px-6">
+      <section className="relative z-10 py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20 max-w-3xl mx-auto"
+            className="text-center mb-16 max-w-3xl mx-auto"
           >
             <h2 className="font-display font-bold text-4xl md:text-5xl mb-6">
-              Everything You Need to{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-                Succeed
-              </span>
+              Career Growth System
+              <span className="gradient-text"> Built for Execution</span>
             </h2>
-            <p className="text-lg text-slate-400">
-              Powerful modules working together to accelerate your career growth
-              and land the offers you deserve.
+            <p className="text-lg text-[color:var(--text-secondary)]">
+              Use focused modules that connect your profile quality, market fit,
+              and interview readiness.
             </p>
           </motion.div>
 
@@ -202,8 +194,8 @@ export default function LandingPage() {
             {features.map(({ icon: Icon, title, desc }) => (
               <Card key={title}>
                 <CardHeader>
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-4">
-                    <Icon size={24} className="text-indigo-400" />
+                  <div className="w-12 h-12 rounded-xl bg-[rgba(11,124,118,0.12)] border border-[rgba(11,124,118,0.3)] flex items-center justify-center mb-4">
+                    <Icon size={22} className="text-[color:var(--indigo)]" />
                   </div>
                   <CardTitle className="text-xl">{title}</CardTitle>
                 </CardHeader>
@@ -218,25 +210,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="relative z-10 py-32 px-6">
+      <section className="relative z-10 py-24 px-6">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.97 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           className="max-w-4xl mx-auto rounded-3xl overflow-hidden relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-violet-600/20 mix-blend-screen" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-
-          <div className="relative p-12 md:p-20 text-center border border-white/10 rounded-3xl bg-black/40 backdrop-blur-md">
-            <Shield size={48} className="text-indigo-400 mx-auto mb-6" />
-            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 text-white">
-              Start Free, Scale as You Grow
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-200/70 via-amber-100/50 to-teal-200/60" />
+          <div className="relative p-12 md:p-20 text-center border border-white/60 rounded-3xl bg-[rgba(255,250,242,0.85)] backdrop-blur-md">
+            <Shield
+              size={46}
+              className="text-[color:var(--indigo)] mx-auto mb-6"
+            />
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 text-[#17232e]">
+              Start Free, Upgrade When Needed
             </h2>
-            <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-              No credit card required. Experience the power of AI career
-              acceleration today.
+            <p className="text-lg md:text-xl text-[color:var(--text-secondary)] mb-10 max-w-2xl mx-auto">
+              No card required. Move from messy resume drafts to structured,
+              data-backed job applications.
             </p>
             <Link href="/auth/register">
               <Button
@@ -251,10 +243,9 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="relative z-10 py-8 px-6 border-t border-white/5 text-center">
-        <p className="text-sm text-slate-500">
-          © {new Date().getFullYear()} Hirenix. Built with Next.js, FastAPI &
+      <footer className="relative z-10 py-8 px-6 border-t border-[color:var(--border)] text-center">
+        <p className="text-sm text-[color:var(--text-secondary)]">
+          {new Date().getFullYear()} Hirenix. Built with Next.js, FastAPI and
           Supabase.
         </p>
       </footer>
