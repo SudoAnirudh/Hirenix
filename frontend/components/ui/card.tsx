@@ -8,10 +8,10 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
   ({ className, ...props }, ref) => (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
         "rounded-3xl border border-[color:var(--border)] bg-[rgba(255,250,242,0.82)] shadow-[0_18px_36px_rgba(76,58,39,0.12)] backdrop-blur-md overflow-hidden relative",
         className,

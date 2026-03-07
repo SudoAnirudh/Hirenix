@@ -60,7 +60,8 @@ const staggerContainer = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
     },
   },
 };
@@ -70,7 +71,12 @@ const fadeUpItem = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 260, damping: 22 },
+    transition: {
+      type: "spring" as const,
+      stiffness: 180,
+      damping: 28,
+      mass: 0.9,
+    },
   },
 };
 
