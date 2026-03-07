@@ -2,16 +2,31 @@
 import { createClient } from "./supabase";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
+function getEmailRedirectTo() {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const baseUrl = configured
+    ? configured.replace(/\/$/, "")
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : "";
+
+  return baseUrl ? `${baseUrl}/auth/login` : undefined;
+}
+
 export async function signUp(
   email: string,
   password: string,
   fullName: string,
 ) {
   const supabase = createClient();
+  const emailRedirectTo = getEmailRedirectTo();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, plan: "free" } },
+    options: {
+      data: { full_name: fullName, plan: "free" },
+      ...(emailRedirectTo ? { emailRedirectTo } : {}),
+    },
   });
   return { data, error };
 }
