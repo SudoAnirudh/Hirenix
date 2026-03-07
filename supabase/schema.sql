@@ -169,3 +169,32 @@ create policy "own matches"   on public.job_matches        for all using (auth.u
 create policy "own github"    on public.github_analyses    for all using (auth.uid() = user_id);
 create policy "own sessions"  on public.interview_sessions for all using (auth.uid() = user_id);
 create policy "own answers"   on public.interview_answers  for all using (exists (select 1 from public.interview_sessions s where s.id = session_id and s.user_id = auth.uid()));
+
+-- 1. Create the storage bucket for resumes
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('resumes', 'resumes', false)
+ON CONFLICT DO NOTHING;
+
+-- 2. Add missing ATS columns to the resumes table
+ALTER TABLE resumes ADD COLUMN IF NOT EXISTS ats_breakdown jsonb;
+ALTER TABLE resumes ADD COLUMN IF NOT EXISTS feedback jsonb;
+
+
+-- ============================================================
+-- STORAGE BUCKETS
+-- ============================================================
+
+-- Bucket for uploaded resume PDFs (private — only accessible via signed URLs)
+insert into storage.buckets (id, name, public)
+values ('resumes', 'resumes', false)
+on conflict do nothing;
+
+-- RLS: users can only upload/read their own resume files
+create policy "upload own resumes"
+  on storage.objects for insert
+  with check (bucket_id = 'resumes' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "read own resumes"
+  on storage.objects for select
+  using (bucket_id = 'resumes' and auth.uid()::text = (storage.foldername(name))[1]);
+
