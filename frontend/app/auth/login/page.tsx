@@ -1,7 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSession, onAuthStateChange, signIn } from "@/lib/auth";
+import {
+  getSession,
+  onAuthStateChange,
+  sendPasswordResetEmail,
+  signIn,
+} from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Brain } from "lucide-react";
 
@@ -11,8 +16,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -69,6 +76,38 @@ export default function LoginPage() {
     }
   }
 
+  async function handleForgotPassword() {
+    setError("");
+    setResetMessage("");
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setError("Enter your email first, then click Forgot password.");
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const { error: resetError } =
+        await sendPasswordResetEmail(normalizedEmail);
+      if (resetError) {
+        setError(resetError.message);
+        return;
+      }
+      setResetMessage(
+        "Password reset link sent. Check your inbox and spam folder.",
+      );
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to send password reset email.";
+      setError(errorMessage);
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
   if (checkingSession) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -109,6 +148,11 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+          {resetMessage && (
+            <div className="mb-6 p-4 rounded-xl text-sm border border-emerald-200 bg-emerald-50 text-emerald-700">
+              {resetMessage}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
@@ -131,13 +175,24 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label
-                htmlFor="login-password"
-                className="text-sm font-medium"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label
+                  htmlFor="login-password"
+                  className="text-sm font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={resetLoading}
+                  className="text-xs font-medium hover:underline underline-offset-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ color: "var(--indigo)" }}
+                >
+                  {resetLoading ? "Sending..." : "Forgot password?"}
+                </button>
+              </div>
               <div className="relative">
                 <input
                   id="login-password"
