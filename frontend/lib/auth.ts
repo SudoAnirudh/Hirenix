@@ -13,6 +13,12 @@ function getEmailRedirectTo() {
   return baseUrl || undefined;
 }
 
+function buildRedirectUrl(pathname: string) {
+  const baseUrl = getEmailRedirectTo();
+  if (!baseUrl) return undefined;
+  return `${baseUrl}${pathname}`;
+}
+
 export async function signUp(
   email: string,
   password: string,
@@ -36,6 +42,25 @@ export async function signIn(email: string, password: string) {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
+  });
+  return { data, error };
+}
+
+export async function sendPasswordResetEmail(email: string) {
+  const supabase = createClient();
+  const redirectTo = buildRedirectUrl("/auth/reset-password");
+
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    ...(redirectTo ? { redirectTo } : {}),
+  });
+
+  return { data, error };
+}
+
+export async function updatePassword(newPassword: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
   });
   return { data, error };
 }
