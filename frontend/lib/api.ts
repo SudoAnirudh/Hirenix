@@ -1,6 +1,44 @@
 import { getAccessToken } from "./auth";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
+
+function getBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configured) return configured;
+
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1";
+    return isLocal ? "http://127.0.0.1:8000" : PROD_API_FALLBACK;
+  }
+
+  return "http://127.0.0.1:8000";
+}
+
+function toApiError(error: unknown) {
+  if (error instanceof Error) {
+    const networkErrors = [
+      "Failed to fetch",
+      "NetworkError when attempting to fetch resource.",
+    ];
+    if (networkErrors.includes(error.message)) {
+      if (
+        typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        /^http:\/\/(localhost|127\.0\.0\.1)/.test(getBaseUrl())
+      ) {
+        return new Error(
+          `This page is running on HTTPS (${window.location.origin}) but API is set to local HTTP (${getBaseUrl()}). Open the frontend on http://localhost:3000 for local development, or set NEXT_PUBLIC_API_URL to an HTTPS backend URL.`,
+        );
+      }
+      return new Error(
+        `Could not reach the API server at ${getBaseUrl()}. Check NEXT_PUBLIC_API_URL and backend CORS ALLOWED_ORIGINS.`,
+      );
+    }
+    return error;
+  }
+  return new Error("Unexpected API error");
+}
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = await getAccessToken();
@@ -8,7 +46,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...(init.headers ?? {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}${path}`, { ...init, headers });
+  } catch (error: unknown) {
+    throw toApiError(error);
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail ?? "API error");
@@ -24,12 +67,20 @@ export async function uploadResume(file: File) {
   const headers: HeadersInit = token
     ? { Authorization: `Bearer ${token}` }
     : {};
-  const res = await fetch(`${BASE_URL}/resume/upload-resume`, {
-    method: "POST",
-    headers,
-    body: formData,
-  });
-  if (!res.ok) throw new Error((await res.json()).detail ?? "Upload failed");
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}/resume/upload-resume`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error: unknown) {
+    throw toApiError(error);
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Upload failed");
+  }
   return res.json();
 }
 
@@ -52,6 +103,39 @@ export async function matchJob(
       target_role: targetRole,
     }),
   });
+}
+
+export async function matchJobWithUpload(
+  resumeFile: File,
+  jdText?: string,
+  targetRole?: string,
+  jdFile?: File,
+) {
+  const token = await getAccessToken();
+  const formData = new FormData();
+  formData.append("resume_file", resumeFile);
+  if (jdText?.trim()) formData.append("jd_text", jdText.trim());
+  if (targetRole?.trim()) formData.append("target_role", targetRole.trim());
+  if (jdFile) formData.append("jd_file", jdFile);
+
+  const headers: HeadersInit = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}/jobs/match-job-upload`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error: unknown) {
+    throw toApiError(error);
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "API error");
+  }
+  return res.json();
 }
 
 export async function scrapeJobs(

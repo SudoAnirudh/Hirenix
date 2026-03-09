@@ -1,14 +1,17 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from dependencies import get_current_user, get_supabase_admin
 from services.jd_matcher import match_job_description
 from services.job_scraper import scrape_jobs
+from services.resume_parser import parse_resume
 from models.analysis import (
     JobMatchRequest,
     JobMatchResponse,
     JobScrapeRequest,
     JobScrapeResponse,
 )
+from utils.pdf_extractor import extract_pdf_text
+from utils.text_cleaner import clean_text
 
 router = APIRouter()
 
@@ -55,6 +58,57 @@ async def match_job(
     return JobMatchResponse(
         match_id=match_id,
         resume_id=payload.resume_id,
+        **result.model_dump(exclude={"match_id", "resume_id"})
+    )
+
+
+@router.post("/match-job-upload", response_model=JobMatchResponse)
+async def match_job_upload(
+    resume_file: UploadFile = File(...),
+    jd_text: str | None = Form(default=None),
+    jd_file: UploadFile | None = File(default=None),
+    target_role: str | None = Form(default=None),
+    user: dict = Depends(get_current_user),
+):
+    """Compare uploaded resume and uploaded/pasted job description."""
+    if not resume_file.filename or not resume_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Resume must be a PDF file.")
+
+    resume_content = await resume_file.read()
+    _, resume_text = parse_resume(resume_content)
+    if len(resume_text.strip()) < 40:
+        raise HTTPException(
+            status_code=422,
+            detail="Could not extract readable text from the resume PDF.",
+        )
+
+    effective_jd_text = (jd_text or "").strip()
+    if jd_file is not None:
+        if not jd_file.filename:
+            raise HTTPException(status_code=400, detail="Job description file is invalid.")
+        jd_content = await jd_file.read()
+        lowered = jd_file.filename.lower()
+        if lowered.endswith(".pdf"):
+            effective_jd_text = clean_text(extract_pdf_text(jd_content))
+        elif lowered.endswith(".txt") or lowered.endswith(".md"):
+            effective_jd_text = clean_text(jd_content.decode("utf-8", errors="ignore"))
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Job description file must be PDF, TXT, or MD.",
+            )
+
+    if len(effective_jd_text) < 40:
+        raise HTTPException(
+            status_code=422,
+            detail="Provide a valid job description (paste text or upload JD file).",
+        )
+
+    result = await match_job_description(resume_text, effective_jd_text, target_role)
+    match_id = str(uuid.uuid4())
+    return JobMatchResponse(
+        match_id=match_id,
+        resume_id=f"uploaded:{user['user_id']}",
         **result.model_dump(exclude={"match_id", "resume_id"})
     )
 

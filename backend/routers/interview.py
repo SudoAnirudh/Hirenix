@@ -33,16 +33,20 @@ async def start_interview(
     )
 
     session_id = str(uuid.uuid4())
-    db.table("interview_sessions").insert({
-        "id": session_id,
-        "user_id": user["user_id"],
-        "resume_id": payload.resume_id,
-        "target_role": payload.target_role,
-        "questions": json.dumps([q.model_dump() for q in questions]),
-        "answers": json.dumps([]),
-        "feedback": json.dumps([]),
-        "overall_score": 0.0,
-    }).execute()
+    try:
+        db.table("interview_sessions").insert({
+            "id": session_id,
+            "user_id": user["user_id"],
+            "resume_id": payload.resume_id,
+            "target_role": payload.target_role,
+            "questions": json.dumps([q.model_dump() for q in questions]),
+            "answers": json.dumps([]),
+            "feedback": json.dumps([]),
+            "overall_score": 0.0,
+        }).execute()
+    except Exception as db_err:
+        print(f"⚠️  interview_sessions insert failed (schema issue?): {db_err}")
+        # Continue — questions are still returned even if session can't be persisted
 
     return StartInterviewResponse(session_id=session_id, target_role=payload.target_role, questions=questions)
 
@@ -69,17 +73,20 @@ async def submit_answer(
         category=question["category"],
     )
 
-    # Append answer + feedback to DB
-    existing_answers = json.loads(session_r.data["answers"])
-    existing_feedback = json.loads(session_r.data["feedback"])
-    existing_answers.append({"question_id": payload.question_id, "answer": payload.answer})
-    existing_feedback.append(feedback.model_dump())
-    avg_score = sum(f["score"] for f in existing_feedback) / len(existing_feedback) * 10
+    # Append answer + feedback to DB (non-fatal if schema is missing columns)
+    try:
+        existing_answers = json.loads(session_r.data.get("answers", "[]") or "[]")
+        existing_feedback = json.loads(session_r.data.get("feedback", "[]") or "[]")
+        existing_answers.append({"question_id": payload.question_id, "answer": payload.answer})
+        existing_feedback.append(feedback.model_dump())
+        avg_score = sum(f["score"] for f in existing_feedback) / len(existing_feedback) * 10
 
-    db.table("interview_sessions").update({
-        "answers": json.dumps(existing_answers),
-        "feedback": json.dumps(existing_feedback),
-        "overall_score": avg_score,
-    }).eq("id", payload.session_id).execute()
+        db.table("interview_sessions").update({
+            "answers": json.dumps(existing_answers),
+            "feedback": json.dumps(existing_feedback),
+            "overall_score": avg_score,
+        }).eq("id", payload.session_id).execute()
+    except Exception as db_err:
+        print(f"⚠️  interview_sessions update failed (schema issue?): {db_err}")
 
     return feedback

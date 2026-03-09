@@ -26,7 +26,13 @@ class Settings(BaseSettings):
     # App
     app_env: str = "development"
     allowed_origins: str = (
-        "https://hirenix-h9ij1n4wf-anirudhs-projects-e6a6ef2f.vercel.app,https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
+        "http://localhost:3000,http://localhost:3001,"
+        "http://127.0.0.1:3000,http://127.0.0.1:3001,"
+        "https://hirenix-h9ij1n4wf-anirudhs-projects-e6a6ef2f.vercel.app,"
+        "https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
+    )
+    allowed_origin_regex: Optional[str] = (
+        r"https://.*\.vercel\.app"
     )
 
     class Config:

@@ -33,6 +33,7 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
     sections: List[ResumeSection] = []
     current_section: str | None = None
     current_lines: List[str] = []
+    preamble_lines: List[str] = []
 
     def flush():
         if current_section and current_lines:
@@ -53,10 +54,24 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
             flush()
             current_section = detected
             current_lines = []
+            # Keep inline text when header and content are on same line
+            inline = re.sub(SECTION_PATTERNS[detected], "", line, flags=re.IGNORECASE)
+            inline = re.sub(r"^[:\-\s]+", "", inline).strip()
+            if inline:
+                current_lines.append(inline)
         else:
-            current_lines.append(line)
+            if current_section:
+                current_lines.append(line)
+            else:
+                preamble_lines.append(line)
 
     flush()
+
+    if preamble_lines:
+        sections.insert(
+            0,
+            ResumeSection(section_type="summary", content="\n".join(preamble_lines)),
+        )
 
     # If no sections detected, treat entire text as a generic body
     if not sections:

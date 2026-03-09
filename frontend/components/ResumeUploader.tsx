@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { uploadResume } from "@/lib/api";
 import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
 
@@ -9,6 +9,7 @@ interface Props {
 }
 
 type Status = "idle" | "uploading" | "success" | "error";
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 export default function ResumeUploader({ onResult }: Props) {
   const [status, setStatus] = useState<Status>("idle");
@@ -19,8 +20,13 @@ export default function ResumeUploader({ onResult }: Props) {
     async (accepted: File[]) => {
       if (!accepted.length) return;
       const file = accepted[0];
-      if (!file.name.endsWith(".pdf")) {
+      if (!file.name.toLowerCase().endsWith(".pdf")) {
         setErrorMsg("Only PDF files allowed.");
+        setStatus("error");
+        return;
+      }
+      if (file.size > MAX_FILE_BYTES) {
+        setErrorMsg("File too large. Max size is 10MB.");
         setStatus("error");
         return;
       }
@@ -41,10 +47,26 @@ export default function ResumeUploader({ onResult }: Props) {
     [onResult],
   );
 
+  const onDropRejected = useCallback((rejections: FileRejection[]) => {
+    const first = rejections[0];
+    if (!first) return;
+    const code = first.errors[0]?.code;
+    if (code === "file-too-large") {
+      setErrorMsg("File too large. Max size is 10MB.");
+    } else if (code === "file-invalid-type") {
+      setErrorMsg("Only PDF files allowed.");
+    } else {
+      setErrorMsg("Invalid file. Please upload a single PDF under 10MB.");
+    }
+    setStatus("error");
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: { "application/pdf": [".pdf"] },
     maxFiles: 1,
+    maxSize: MAX_FILE_BYTES,
   });
 
   const borderColor = isDragActive

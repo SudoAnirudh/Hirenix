@@ -4,6 +4,16 @@ from services.skill_gap import detect_skill_gap
 from models.analysis import JobMatchResponse, SkillGapResult
 
 
+def _fit_verdict(match_score: float) -> str:
+    if match_score >= 80:
+        return "Strong fit"
+    if match_score >= 65:
+        return "Good fit"
+    if match_score >= 50:
+        return "Moderate fit"
+    return "Low fit"
+
+
 async def match_job_description(
     resume_text: str,
     jd_text: str,
@@ -31,6 +41,25 @@ async def match_job_description(
         len(skill_gap_raw["matched_skills"]) / max(total_skills, 1)
     )
     match_score = round((semantic_sim * 0.6 + skill_coverage * 0.4) * 100, 1)
+    fit_verdict = _fit_verdict(match_score)
+
+    pros = []
+    for skill in skill_gap_raw["matched_skills"][:4]:
+        pros.append(f"Matches required skill: {skill}")
+    if semantic_sim >= 0.75:
+        pros.append("Resume experience aligns well with the overall job context.")
+    if not pros:
+        pros.append("Resume has partial overlap with the job requirements.")
+
+    cons = []
+    for skill in skill_gap_raw["mandatory_missing"][:3]:
+        cons.append(f"Missing mandatory skill: {skill}")
+    for skill in skill_gap_raw["competitive_missing"][:2]:
+        cons.append(f"Missing competitive edge skill: {skill}")
+    if semantic_sim < 0.55:
+        cons.append("Resume content is not closely aligned with the job description.")
+    if not cons:
+        cons.append("No major weaknesses detected from the provided JD.")
 
     # Recommendations
     recommendations = []
@@ -46,6 +75,9 @@ async def match_job_description(
         resume_id="",       # filled by router
         match_score=match_score,
         semantic_similarity=round(semantic_sim * 100, 1),
+        fit_verdict=fit_verdict,
+        pros=pros,
+        cons=cons,
         skill_gap=SkillGapResult(**skill_gap_raw),
         recommendations=recommendations,
     )

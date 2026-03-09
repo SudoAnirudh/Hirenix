@@ -7,6 +7,7 @@ from models.resume import ResumeUploadResponse, ResumeGetResponse
 from datetime import datetime, timezone
 
 router = APIRouter()
+MAX_RESUME_SIZE_BYTES = 10 * 1024 * 1024
 
 
 @router.post("/upload-resume", response_model=ResumeUploadResponse)
@@ -20,6 +21,11 @@ async def upload_resume(
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
     content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    if len(content) > MAX_RESUME_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Max size is 10MB.")
+
     resume_id = str(uuid.uuid4())
 
     # Upload raw file to Supabase Storage (non-fatal if bucket doesn't exist)
