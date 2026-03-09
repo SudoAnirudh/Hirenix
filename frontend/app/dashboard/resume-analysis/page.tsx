@@ -8,6 +8,7 @@ interface Section {
 }
 
 interface AnalysisResult {
+  resume_id?: string;
   ats_score: number;
   ats_breakdown: Record<string, number>;
   sections: Section[];
@@ -33,7 +34,13 @@ export default function ResumeAnalysisPage() {
         Upload your resume to get an ATS score and actionable improvement tips.
       </p>
 
-      <ResumeUploader onResult={(res) => setResult(res as AnalysisResult)} />
+      <ResumeUploader
+        onResult={(res) => {
+          const parsed = res as AnalysisResult;
+          setResult(parsed);
+          localStorage.setItem("latest_resume", JSON.stringify(parsed));
+        }}
+      />
 
       {result && (
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-up">
@@ -42,6 +49,18 @@ export default function ResumeAnalysisPage() {
             score={result.ats_score}
             subtitle="Overall ATS compatibility"
           />
+          <div className="glass-card p-6 flex flex-col justify-center">
+            <h3 className="font-semibold text-sm mb-2">Resume ID</h3>
+            <p
+              className="text-xs break-all"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              {result.resume_id ?? "Not available"}
+            </p>
+            <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+              Use this ID for JD matching if you choose the Resume ID workflow.
+            </p>
+          </div>
 
           {/* Breakdown */}
           <div className="glass-card p-6 flex flex-col gap-3">

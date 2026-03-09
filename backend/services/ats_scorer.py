@@ -1,7 +1,7 @@
-import re
 from typing import Tuple, List
 from models.resume import ResumeSection
 from utils.text_cleaner import has_measurable_achievement, extract_keywords
+from services.embedding_engine import compare_texts
 from utils.scoring_weights import (
     ATS_RULE_WEIGHT, ATS_SEMANTIC_WEIGHT,
     ATS_RULES, REQUIRED_SECTIONS,
@@ -14,6 +14,10 @@ TECH_KEYWORDS = {
     "deep learning", "tensorflow", "pytorch", "git", "agile", "rest", "api",
     "mongodb", "postgresql", "redis", "linux", "ci/cd", "microservices",
 }
+ATS_BASELINE_PROFILE = (
+    "Professional resume with clear summary, strong experience, measurable achievements, "
+    "modern technical skills, projects, and concise formatting."
+)
 
 
 def _section_completeness_score(sections: List[ResumeSection]) -> float:
@@ -77,22 +81,27 @@ def _rule_based_score(sections: List[ResumeSection], raw_text: str) -> Tuple[flo
 def compute_ats_score(
     sections: List[ResumeSection],
     raw_text: str,
-    semantic_similarity: float = 0.5,  # default until embedding is run
+    semantic_similarity: float | None = None,
 ) -> Tuple[float, dict, List[str]]:
     """
     Compute ATS score using hybrid approach.
     Returns (final_score 0-100, breakdown dict, feedback list).
     """
     rule_score, breakdown = _rule_based_score(sections, raw_text)
-    final = (rule_score * ATS_RULE_WEIGHT + semantic_similarity * ATS_SEMANTIC_WEIGHT) * 100
+    effective_semantic = (
+        semantic_similarity
+        if semantic_similarity is not None
+        else compare_texts(raw_text, ATS_BASELINE_PROFILE)
+    )
+    final = (rule_score * ATS_RULE_WEIGHT + effective_semantic * ATS_SEMANTIC_WEIGHT) * 100
     final = round(min(final, 100.0), 1)
 
-    breakdown["semantic_similarity"] = round(semantic_similarity * 100, 1)
+    breakdown["semantic_similarity"] = round(effective_semantic * 100, 1)
     breakdown["final_ats_score"] = final
 
     feedback: List[str] = []
     if breakdown["section_completeness"] < 75:
-        missing = REQUIRED_SECTIONS - {s.section_type for s in sections}
+        missing = sorted(REQUIRED_SECTIONS - {s.section_type for s in sections})
         feedback.append(f"Add missing sections: {', '.join(missing)}")
     if breakdown["keyword_density"] < 30:
         feedback.append("Increase relevant technical keywords in your resume.")

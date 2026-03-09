@@ -19,6 +19,9 @@ class JobMatchResponse(BaseModel):
     resume_id: str
     match_score: float  # 0–100
     semantic_similarity: float  # cosine similarity
+    fit_verdict: str
+    pros: List[str]
+    cons: List[str]
     skill_gap: SkillGapResult
     recommendations: List[str]
 

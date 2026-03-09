@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { matchJob, scrapeJobs } from "@/lib/api";
+import { matchJob, matchJobWithUpload, scrapeJobs } from "@/lib/api";
 import ScoreCard from "@/components/ScoreCard";
 import SkillGapList from "@/components/SkillGapList";
 
@@ -18,6 +18,9 @@ const ROLES = [
 interface JobMatchResult {
   match_score: number;
   semantic_similarity: number;
+  fit_verdict?: string;
+  pros?: string[];
+  cons?: string[];
   skill_gap: {
     mandatory_missing: string[];
     competitive_missing: string[];
@@ -52,6 +55,8 @@ export default function JobMatchPage() {
   const [jobs, setJobs] = useState<ScrapedJob[]>([]);
   const [error, setError] = useState("");
   const [jobsError, setJobsError] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [jdFile, setJdFile] = useState<File | null>(null);
 
   async function handleMatch() {
     if (!resumeId || !jdText) return;
@@ -60,6 +65,26 @@ export default function JobMatchPage() {
     setResult(null);
     try {
       const data = await matchJob(resumeId, jdText, role);
+      setResult(data as JobMatchResult);
+    } catch (e: unknown) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleMatchUpload() {
+    if (!resumeFile || (!jdText.trim() && !jdFile)) return;
+    setLoading(true);
+    setError("");
+    setResult(null);
+    try {
+      const data = await matchJobWithUpload(
+        resumeFile,
+        jdText,
+        role,
+        jdFile ?? undefined,
+      );
       setResult(data as JobMatchResult);
     } catch (e: unknown) {
       setError((e as Error).message);
@@ -99,10 +124,26 @@ export default function JobMatchPage() {
         Job Description Matching
       </h1>
       <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-        Paste a job description to get a match score and skill gap analysis.
+        Upload your resume and a job description to get fit score, verdict,
+        pros, and cons.
       </p>
 
       <div className="glass-card p-6 mb-8 flex flex-col gap-4">
+        <div>
+          <label
+            className="text-xs font-medium mb-1 block"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Upload Resume (PDF)
+          </label>
+          <input
+            id="jm-resume-file"
+            className="input-base"
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+          />
+        </div>
         <div>
           <label
             className="text-xs font-medium mb-1 block"
@@ -153,20 +194,43 @@ export default function JobMatchPage() {
             value={jdText}
             onChange={(e) => setJdText(e.target.value)}
           />
+          <label
+            className="text-xs font-medium mt-3 mb-1 block"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            Upload Job Description (PDF/TXT/MD, optional)
+          </label>
+          <input
+            id="jm-jd-file"
+            className="input-base"
+            type="file"
+            accept=".pdf,.txt,.md,application/pdf,text/plain"
+            onChange={(e) => setJdFile(e.target.files?.[0] ?? null)}
+          />
         </div>
         {error && (
           <p className="text-sm" style={{ color: "#f87171" }}>
             {error}
           </p>
         )}
-        <button
-          id="jm-match-btn"
-          className="btn-primary self-start"
-          onClick={handleMatch}
-          disabled={loading || !resumeId || !jdText}
-        >
-          {loading ? "Matching…" : "Analyse Match"}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            id="jm-match-btn"
+            className="btn-primary self-start"
+            onClick={handleMatch}
+            disabled={loading || !resumeId || !jdText}
+          >
+            {loading ? "Matching…" : "Analyse By Resume ID"}
+          </button>
+          <button
+            id="jm-match-upload-btn"
+            className="btn-primary self-start"
+            onClick={handleMatchUpload}
+            disabled={loading || !resumeFile || (!jdText.trim() && !jdFile)}
+          >
+            {loading ? "Matching…" : "Analyse Uploaded Files"}
+          </button>
+        </div>
       </div>
 
       <div className="glass-card p-6 mb-8 flex flex-col gap-4">
@@ -307,6 +371,42 @@ export default function JobMatchPage() {
             />
           </div>
           <SkillGapList skillGap={result.skill_gap} />
+          {result.fit_verdict && (
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-sm mb-2">Fit Verdict</h3>
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                {result.fit_verdict}
+              </p>
+            </div>
+          )}
+          {!!result.pros?.length && (
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-sm mb-3">Pros</h3>
+              {result.pros.map((item: string, i: number) => (
+                <p
+                  key={i}
+                  className="text-sm mb-2"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  + {item}
+                </p>
+              ))}
+            </div>
+          )}
+          {!!result.cons?.length && (
+            <div className="glass-card p-6">
+              <h3 className="font-semibold text-sm mb-3">Cons</h3>
+              {result.cons.map((item: string, i: number) => (
+                <p
+                  key={i}
+                  className="text-sm mb-2"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  - {item}
+                </p>
+              ))}
+            </div>
+          )}
           <div className="glass-card p-6">
             <h3 className="font-semibold text-sm mb-3">Recommendations</h3>
             {result.recommendations.map((r: string, i: number) => (
