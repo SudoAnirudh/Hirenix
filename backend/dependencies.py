@@ -1,4 +1,5 @@
 import jwt
+import base64
 from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -39,9 +40,15 @@ async def get_current_user(
 
     try:
         print(f"Token unverified header: {jwt.get_unverified_header(token)}")
+        # Supabase JWT secrets are base64 encoded
+        try:
+            secret = base64.b64decode(settings.jwt_secret)
+        except Exception:
+            secret = settings.jwt_secret
+
         payload = jwt.decode(
             token,
-            settings.jwt_secret,
+            secret,
             algorithms=[settings.jwt_algorithm, "HS256"],
             audience="authenticated",
             options={"verify_exp": True},

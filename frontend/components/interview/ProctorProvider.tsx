@@ -145,7 +145,7 @@ export function ProctorProvider({
     useState<ProctorState["faceStatus"]>("checking");
   const [sessionRisk, setSessionRisk] =
     useState<ProctorState["sessionRisk"]>("low");
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const startedRef = useRef(false);
   const stoppingRef = useRef(false);
   const hasBeenFullscreenRef = useRef(false);

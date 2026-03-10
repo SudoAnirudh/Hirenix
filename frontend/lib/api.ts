@@ -1,18 +1,19 @@
 import { getAccessToken, refreshSession, signOut } from "./auth";
 
 const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
+const LOCAL_API_FALLBACK = "http://127.0.0.1:8000";
 
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (configured) return configured;
 
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
     const isLocal = host === "localhost" || host === "127.0.0.1";
-    return isLocal ? "http://127.0.0.1:8000" : PROD_API_FALLBACK;
+    return isLocal ? LOCAL_API_FALLBACK : PROD_API_FALLBACK;
   }
 
-  return "http://127.0.0.1:8000";
+  return LOCAL_API_FALLBACK;
 }
 
 function toApiError(error: unknown) {
@@ -32,7 +33,7 @@ function toApiError(error: unknown) {
         );
       }
       return new Error(
-        `Could not reach the API server at ${getBaseUrl()}. Check NEXT_PUBLIC_API_URL and backend CORS ALLOWED_ORIGINS.`,
+        `Could not reach the API server at ${getBaseUrl()}. Start the backend with \`npm run dev\` from the repo root or \`cd backend && . venv/bin/activate && uvicorn main:app --reload\`, then verify NEXT_PUBLIC_API_URL and backend CORS ALLOWED_ORIGINS.`,
       );
     }
     return error;
@@ -237,7 +238,7 @@ export async function submitAnswer(
 
 export async function saveProctorReport(
   sessionId: string,
-  report: Record<string, any>,
+  report: Record<string, unknown>,
 ) {
   return request("/interview/save-proctor-report", {
     method: "POST",
