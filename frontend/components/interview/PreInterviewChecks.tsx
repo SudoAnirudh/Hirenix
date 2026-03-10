@@ -7,7 +7,6 @@ import {
   MicOff,
   Sun,
   Wifi,
-  WifiOff,
   Users,
   CheckCircle,
   XCircle,
@@ -16,6 +15,7 @@ import {
   ShieldCheck,
   ChevronRight,
 } from "lucide-react";
+import { getBaseUrl } from "@/lib/api";
 
 /* ─── Types ─── */
 type CheckStatus = "pending" | "running" | "pass" | "fail" | "warn";
@@ -378,10 +378,7 @@ export default function PreInterviewChecks({
 
     try {
       const start = performance.now();
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/health`,
-        { cache: "no-store" },
-      );
+      await fetch(`${getBaseUrl()}/health`, { cache: "no-store" });
       const duration = performance.now() - start;
 
       if (duration < 500) {
