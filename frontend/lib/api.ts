@@ -1,4 +1,4 @@
-import { getAccessToken } from "./auth";
+import { getAccessToken, refreshSession, signOut } from "./auth";
 
 const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
 
@@ -40,7 +40,11 @@ function toApiError(error: unknown) {
   return new Error("Unexpected API error");
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(
+  path: string,
+  init: RequestInit = {},
+  attempt = 0,
+): Promise<T> {
   const token = await getAccessToken();
   const headers: HeadersInit = {
     ...(init.headers ?? {}),
@@ -54,7 +58,38 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? "API error");
+    const detail = err.detail ?? "API error";
+
+    if (
+      res.status === 401 &&
+      attempt === 0 &&
+      typeof detail === "string" &&
+      (detail.includes("Authentication timed out") ||
+        detail.includes("Could not validate credentials via Supabase"))
+    ) {
+      try {
+        const refreshed = await refreshSession();
+        if (refreshed?.access_token) {
+          return request<T>(path, init, attempt + 1);
+        }
+      } catch {
+        // Fall through to sign-out and error.
+      }
+    }
+
+    if (
+      res.status === 401 &&
+      typeof detail === "string" &&
+      (detail.includes("Authentication timed out") ||
+        detail.includes("Could not validate credentials via Supabase") ||
+        detail.includes("Not authenticated"))
+    ) {
+      await signOut().catch(() => {});
+      throw new Error(
+        "Your session expired or could not be verified. Please sign in again.",
+      );
+    }
+    throw new Error(detail);
   }
   return res.json();
 }
@@ -169,6 +204,7 @@ export async function analyzeGithub(username: string) {
 export async function startInterview(
   resumeId: string,
   targetRole: string,
+  difficulty = "medium",
   numQuestions = 5,
 ) {
   return request("/interview/start-interview", {
@@ -177,6 +213,7 @@ export async function startInterview(
     body: JSON.stringify({
       resume_id: resumeId,
       target_role: targetRole,
+      difficulty,
       num_questions: numQuestions,
     }),
   });
@@ -194,6 +231,20 @@ export async function submitAnswer(
       session_id: sessionId,
       question_id: questionId,
       answer,
+    }),
+  });
+}
+
+export async function saveProctorReport(
+  sessionId: string,
+  report: Record<string, any>,
+) {
+  return request("/interview/save-proctor-report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: sessionId,
+      report,
     }),
   });
 }

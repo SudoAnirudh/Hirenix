@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { submitAnswer } from "@/lib/api";
-import { ChevronRight, CheckCircle } from "lucide-react";
+import { ChevronRight, CheckCircle, Timer } from "lucide-react";
 
 interface Question {
   question_id: string;
@@ -16,11 +16,6 @@ interface Session {
   questions: Question[];
 }
 
-interface Props {
-  session: Session;
-  onComplete: () => void;
-}
-
 interface Feedback {
   score: number;
   clarity_score: number;
@@ -32,21 +27,52 @@ interface Feedback {
   model_answer_hint: string;
 }
 
+interface Props {
+  session: Session;
+  onComplete: (scores: Feedback[]) => void;
+}
+
 export default function InterviewPanel({ session, onComplete }: Props) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [allFeedback, setAllFeedback] = useState<Feedback[]>([]);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per question
 
   const q = session.questions[currentIdx];
   const isLast = currentIdx === session.questions.length - 1;
 
-  async function handleSubmit() {
-    if (!answer.trim()) return;
+  useEffect(() => {
+    if (feedback || submitting) return;
+
+    if (timeLeft <= 0) {
+      if (!feedback && !submitting) {
+        void handleSubmit(true);
+      }
+      return;
+    }
+
+    const id = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeft, feedback, submitting]);
+
+  async function handleSubmit(autoSubmit = false) {
+    let finalAnswer = answer.trim();
+    if (!finalAnswer && !autoSubmit) return;
+    if (!finalAnswer && autoSubmit) finalAnswer = "No answer provided.";
+
     setSubmitting(true);
     try {
-      const fb = await submitAnswer(session.session_id, q.question_id, answer);
-      setFeedback(fb as Feedback);
+      const fb = await submitAnswer(
+        session.session_id,
+        q.question_id,
+        finalAnswer,
+      );
+      const fbTyped = fb as Feedback;
+      setFeedback(fbTyped);
+      setAllFeedback((prev) => [...prev, fbTyped]);
     } catch (e) {
       console.error(e);
     } finally {
@@ -56,16 +82,22 @@ export default function InterviewPanel({ session, onComplete }: Props) {
 
   function handleNext() {
     if (isLast) {
-      onComplete();
+      onComplete(allFeedback);
       return;
     }
     setCurrentIdx((i) => i + 1);
     setAnswer("");
     setFeedback(null);
+    setTimeLeft(120);
   }
 
   const categoryColor =
     q.category === "technical" ? "var(--cyan)" : "var(--violet)";
+
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  const timeString = `${mins}:${secs.toString().padStart(2, "0")}`;
+  const isUrgent = timeLeft <= 30;
 
   return (
     <div className="flex flex-col gap-5 animate-fade-up">
@@ -109,6 +141,22 @@ export default function InterviewPanel({ session, onComplete }: Props) {
           >
             {q.difficulty}
           </span>
+
+          {!feedback && (
+            <div
+              className={`ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isUrgent ? "animate-timer-pulse" : ""}`}
+              style={{
+                background: isUrgent
+                  ? "rgba(239,68,68,0.1)"
+                  : "var(--bg-elevated)",
+                color: isUrgent ? "#ef4444" : "var(--text-secondary)",
+                border: `1px solid ${isUrgent ? "rgba(239,68,68,0.3)" : "var(--border)"}`,
+              }}
+            >
+              <Timer size={14} />
+              {timeString}
+            </div>
+          )}
         </div>
         <p className="font-medium text-base leading-relaxed">{q.question}</p>
 
@@ -119,13 +167,16 @@ export default function InterviewPanel({ session, onComplete }: Props) {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           disabled={!!feedback}
+          onPaste={(e) => e.preventDefault()}
+          onCopy={(e) => e.preventDefault()}
+          onCut={(e) => e.preventDefault()}
         />
 
         {!feedback && (
           <button
             id="submit-answer-btn"
             className="btn-primary self-start flex items-center gap-2"
-            onClick={handleSubmit}
+            onClick={() => handleSubmit(false)}
             disabled={submitting || !answer.trim()}
           >
             {submitting ? "Evaluating…" : "Submit Answer"}{" "}
