@@ -48,3 +48,22 @@ class SessionSummaryResponse(BaseModel):
     feedback: List[AnswerFeedback]
     overall_strengths: List[str]
     overall_improvements: List[str]
+
+class Violation(BaseModel):
+    type: str
+    timestamp: int
+    label: str
+
+class ProctorReport(BaseModel):
+    trustScore: float
+    violations: List[Violation]
+    elapsed: int
+    cameraStatus: str
+    faceStatus: str
+    fullscreenActive: bool
+    sessionRisk: str
+
+class SaveProctorReportRequest(BaseModel):
+    session_id: str
+    report: ProctorReport
+

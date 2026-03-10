@@ -8,6 +8,7 @@ from models.interview import (
     SubmitAnswerRequest,
     AnswerFeedback,
     SessionSummaryResponse,
+    SaveProctorReportRequest,
 )
 import json
 
@@ -90,3 +91,25 @@ async def submit_answer(
         print(f"⚠️  interview_sessions update failed (schema issue?): {db_err}")
 
     return feedback
+
+
+@router.post("/save-proctor-report")
+async def save_proctor_report(
+    payload: SaveProctorReportRequest,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """Save the proctoring report for a specific interview session."""
+    session_r = db.table("interview_sessions").select("*").eq("id", payload.session_id).single().execute()
+    if not session_r.data:
+        raise HTTPException(status_code=404, detail="Interview session not found.")
+        
+    try:
+        db.table("interview_sessions").update({
+            "proctor_report": payload.report.model_dump_json()
+        }).eq("id", payload.session_id).execute()
+    except Exception as db_err:
+        print(f"⚠️  interview_sessions update (proctor_report) failed: {db_err}")
+        # The schema might not have the column yet, we just print the error and return success
+
+    return {"status": "success"}

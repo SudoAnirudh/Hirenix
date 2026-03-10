@@ -1,4 +1,5 @@
-import asyncio
+import jwt
+from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
@@ -7,20 +8,26 @@ from config import settings
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
+@lru_cache(maxsize=1)
 def get_supabase() -> Client:
-    """Return an authenticated Supabase client (anon key)."""
+    """Return a cached Supabase client (anon key)."""
     return create_client(settings.supabase_url, settings.supabase_key)
 
 
+@lru_cache(maxsize=1)
 def get_supabase_admin() -> Client:
-    """Return a Supabase client with service role (admin) access."""
+    """Return a cached Supabase client with service role (admin) access."""
     return create_client(settings.supabase_url, settings.supabase_service_key)
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> dict:
-    """Validate token against Supabase Auth API (handles RS256/HS256 and secret rotation)."""
+    """Validate the Supabase JWT locally using the project's JWT secret.
+
+    This avoids making a network call to Supabase on every request,
+    which was causing timeouts and 401 errors.
+    """
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -31,36 +38,40 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        supabase = get_supabase()
-        # Timeout after 10s to prevent hanging on invalid/expired tokens
-        user_response = await asyncio.wait_for(
-            asyncio.get_event_loop().run_in_executor(
-                None, lambda: supabase.auth.get_user(token)
-            ),
-            timeout=10.0,
+        print(f"Token unverified header: {jwt.get_unverified_header(token)}")
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret,
+            algorithms=[settings.jwt_algorithm, "HS256"],
+            audience="authenticated",
+            options={"verify_exp": True},
         )
-        user = user_response.user
 
-        if not user:
-            raise Exception("User not found")
+        user_id = payload.get("sub")
+        email = payload.get("email")
+
+        if not user_id:
+            raise Exception("Token missing 'sub' claim")
+
+        # user_metadata lives in the JWT under the same key
+        metadata = payload.get("user_metadata", {})
 
         return {
-            "user_id": user.id,
-            "email": user.email,
-            "plan": user.user_metadata.get("plan", "free"),
+            "user_id": user_id,
+            "email": email,
+            "plan": metadata.get("plan", "free"),
         }
-    except asyncio.TimeoutError:
-        print("❌ Auth Error: Supabase auth timed out")
+    except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication timed out. Please log in again.",
+            detail="Token has expired. Please log in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except Exception as e:
-        print(f"❌ Auth Error: {e}")
+    except jwt.InvalidTokenError as e:
+        print(f"❌ JWT validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials via Supabase",
+            detail="Could not validate credentials. Please log in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

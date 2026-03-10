@@ -1,293 +1,693 @@
 "use client";
-
-import { motion, useAnimationFrame } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { startInterview, saveProctorReport } from "@/lib/api";
+import InterviewPanel from "@/components/InterviewPanel";
+import {
+  ProctorProvider,
+  useProctor,
+} from "@/components/interview/ProctorProvider";
+import WebcamMonitor from "@/components/interview/WebcamMonitor";
+import ProctorToolbar from "@/components/interview/ProctorToolbar";
+import TrustScoreReport from "@/components/interview/TrustScoreReport";
+import PreInterviewChecks from "@/components/interview/PreInterviewChecks";
+import { ToastProvider } from "@/components/interview/ToastProvider";
 import {
   BrainCircuit,
-  Mic,
   Sparkles,
-  Zap,
-  Code2,
-  Globe,
-  Database,
-  Layers,
+  ChevronRight,
+  Trophy,
+  RotateCcw,
+  Target,
+  BarChart3,
+  Shield,
+  ShieldCheck,
+  Camera,
+  MonitorOff,
+  Clipboard,
+  Eye,
 } from "lucide-react";
 
-/* ─── Orbiting ring particle ─── */
-function OrbitDot({
-  radius,
-  speed,
-  size,
-  color,
-  startAngle = 0,
-}: {
-  radius: number;
-  speed: number;
-  size: number;
-  color: string;
-  startAngle?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const angle = useRef(startAngle);
+/* ─── Constants ─── */
+const ROLES = [
+  "Software Engineer",
+  "Frontend Engineer",
+  "Backend Engineer",
+  "Full Stack Engineer",
+  "Data Scientist",
+  "Data Engineer",
+  "ML Engineer",
+  "DevOps Engineer",
+];
 
-  useAnimationFrame((_, delta) => {
-    angle.current += (delta / 1000) * speed;
-    const x = Math.cos(angle.current) * radius;
-    const y = Math.sin(angle.current) * radius;
-    if (ref.current) {
-      ref.current.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-    }
-  });
+const DIFFICULTIES = [
+  { value: "easy", label: "Easy", desc: "Fundamental concepts" },
+  { value: "medium", label: "Medium", desc: "Industry standard" },
+  { value: "hard", label: "Hard", desc: "Senior-level depth" },
+];
+
+const QUESTION_COUNTS = [3, 5, 8, 10];
+
+/* ─── Types ─── */
+interface Question {
+  question_id: string;
+  question: string;
+  category: string;
+  difficulty: string;
+}
+
+interface Session {
+  session_id: string;
+  target_role: string;
+  questions: Question[];
+}
+
+interface AnswerScore {
+  score: number;
+  clarity_score: number;
+  technical_score: number;
+  depth_score: number;
+  communication_score: number;
+}
+
+type Phase = "setup" | "preflight" | "interview" | "report";
+
+/* ═══════════════════════════════════════════════════════════
+   Inner interview view — lives inside ProctorProvider
+   ═══════════════════════════════════════════════════════════ */
+function InterviewView({
+  session,
+  difficulty,
+  onComplete,
+}: {
+  session: Session;
+  difficulty: string;
+  onComplete: (scores: AnswerScore[]) => void;
+}) {
+  const proctor = useProctor();
 
   return (
-    <div
-      ref={ref}
-      className="absolute top-1/2 left-1/2 rounded-full pointer-events-none"
-      style={{
-        width: size,
-        height: size,
-        background: color,
-        boxShadow: `0 0 ${size * 2}px ${color}`,
-      }}
-    />
+    <div className="animate-fade-up max-w-4xl">
+      {/* Proctor toolbar */}
+      <ProctorToolbar />
+
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(11,124,118,0.15), rgba(221,107,32,0.15))",
+            border: "1px solid rgba(11,124,118,0.25)",
+          }}
+        >
+          <BrainCircuit size={20} style={{ color: "var(--indigo)" }} />
+        </div>
+        <div>
+          <h1 className="font-display font-bold text-2xl">
+            AI-Proctored Interview
+          </h1>
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            {session.target_role} · {session.questions.length} questions ·{" "}
+            {difficulty}
+          </p>
+        </div>
+      </div>
+
+      {/* Main layout: Questions + Webcam side-by-side */}
+      <div className="flex gap-5" style={{ alignItems: "flex-start" }}>
+        {/* Questions */}
+        <div className="flex-1 min-w-0">
+          <InterviewPanel
+            session={session}
+            onComplete={(scores) => {
+              proctor.stop();
+              onComplete(scores);
+            }}
+          />
+        </div>
+
+        {/* Webcam sidebar */}
+        <div className="hidden md:block">
+          <WebcamMonitor />
+        </div>
+      </div>
+    </div>
   );
 }
 
-/* ─── Floating skill badge ─── */
-const skills = [
-  { icon: Code2, label: "DSA Rounds" },
-  { icon: Globe, label: "System Design" },
-  { icon: Database, label: "SQL Quizzes" },
-  { icon: Layers, label: "Behavioral" },
-  { icon: Zap, label: "Real-time Feedback" },
-  { icon: Sparkles, label: "AI Grading" },
-];
-
-export default function MockInterviewComingSoon() {
-  const [hovered, setHovered] = useState<number | null>(null);
-
+/* ═══════════════════════════════════════════════════════════
+   Main page component
+   ═══════════════════════════════════════════════════════════ */
+export default function MockInterviewPage() {
   return (
-    <div className="relative min-h-[80vh] flex flex-col items-center justify-center overflow-hidden select-none">
-      {/* ── Ambient background blobs ── */}
-      <motion.div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 600,
-          height: 600,
-          background:
-            "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
-          top: "10%",
-          left: "50%",
-          x: "-50%",
-          filter: "blur(40px)",
-        }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-          width: 400,
-          height: 400,
-          background:
-            "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
-          bottom: "5%",
-          right: "10%",
-          filter: "blur(50px)",
-        }}
-        animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }}
-        transition={{
-          repeat: Infinity,
-          duration: 8,
-          ease: "easeInOut",
-          delay: 2,
-        }}
-      />
+    <ToastProvider>
+      <MockInterviewPageContent />
+    </ToastProvider>
+  );
+}
 
-      {/* ── Central orb with orbiting particles ── */}
-      <div
-        className="relative flex items-center justify-center mb-12"
-        style={{ width: 220, height: 220 }}
-      >
-        {/* Orbit rings */}
-        {[90, 100].map((r, i) => (
+function MockInterviewPageContent() {
+  const [phase, setPhase] = useState<Phase>("setup");
+  const [role, setRole] = useState(ROLES[0]);
+  const [difficulty, setDifficulty] = useState("medium");
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [resumeId, setResumeId] = useState("");
+  const [proctoring, setProctoring] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [session, setSession] = useState<Session | null>(null);
+
+  /* Report data */
+  const [answerScores, setAnswerScores] = useState<AnswerScore[]>([]);
+  const proctorSnapshotRef = useRef<{
+    trustScore: number;
+    violations: { type: string; timestamp: number; label: string }[];
+    elapsed: number;
+    cameraStatus: string;
+    faceStatus:
+      | "checking"
+      | "single_face"
+      | "no_face"
+      | "multiple_faces"
+      | "misaligned"
+      | "unsupported";
+    fullscreenActive: boolean;
+    sessionRisk: "low" | "medium" | "high";
+  } | null>(null);
+  const [reportData, setReportData] =
+    useState<typeof proctorSnapshotRef.current>(null);
+
+  /* Auto-fill resume ID from localStorage */
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("latest_resume");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed?.resume_id) setResumeId(parsed.resume_id);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  async function handleStart() {
+    if (!resumeId.trim()) {
+      setError(
+        "Please enter a Resume ID. Upload your resume first in the Resume Analysis page.",
+      );
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const data = (await startInterview(
+        resumeId.trim(),
+        role,
+        difficulty,
+        numQuestions,
+      )) as Session;
+      setSession(data);
+      setPhase(proctoring ? "preflight" : "interview");
+    } catch (e: unknown) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleComplete = useCallback(
+    async (scores: AnswerScore[]) => {
+      setAnswerScores(scores);
+      const report = proctorSnapshotRef.current;
+      setReportData(report);
+      setPhase("report");
+
+      // Save proctor report to backend in the background
+      if (session && proctoring && report) {
+        try {
+          await saveProctorReport(session.session_id, report);
+        } catch (e) {
+          console.error("Failed to save proctor report:", e);
+        }
+      }
+    },
+    [session, proctoring],
+  );
+
+  function handleRestart() {
+    setPhase("setup");
+    setSession(null);
+    setAnswerScores([]);
+    setReportData(null);
+    setError("");
+  }
+
+  /* ─────────────────────── SETUP SCREEN ─────────────────────── */
+  if (phase === "setup") {
+    return (
+      <div className="animate-fade-up max-w-3xl">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-2">
           <div
-            key={i}
-            className="absolute rounded-full border pointer-events-none"
-            style={{
-              width: r * 2,
-              height: r * 2,
-              borderColor:
-                i === 0 ? "rgba(99,102,241,0.15)" : "rgba(139,92,246,0.1)",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          />
-        ))}
-
-        {/* Orbiting dots */}
-        <OrbitDot
-          radius={90}
-          speed={0.6}
-          size={8}
-          color="rgba(99,102,241,0.9)"
-          startAngle={0}
-        />
-        <OrbitDot
-          radius={90}
-          speed={0.6}
-          size={5}
-          color="rgba(139,92,246,0.7)"
-          startAngle={Math.PI}
-        />
-        <OrbitDot
-          radius={100}
-          speed={-0.4}
-          size={6}
-          color="rgba(236,72,153,0.8)"
-          startAngle={Math.PI / 2}
-        />
-        <OrbitDot
-          radius={100}
-          speed={-0.4}
-          size={4}
-          color="rgba(34,211,238,0.7)"
-          startAngle={(3 * Math.PI) / 2}
-        />
-
-        {/* Core icon */}
-        <motion.div
-          className="relative z-10 w-24 h-24 rounded-3xl flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25))",
-            border: "1px solid rgba(99,102,241,0.3)",
-            backdropFilter: "blur(12px)",
-          }}
-          animate={{
-            scale: [1, 1.06, 1],
-            boxShadow: [
-              "0 0 20px rgba(99,102,241,0.2)",
-              "0 0 50px rgba(99,102,241,0.5)",
-              "0 0 20px rgba(99,102,241,0.2)",
-            ],
-          }}
-          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-        >
-          <BrainCircuit size={42} style={{ color: "var(--indigo)" }} />
-        </motion.div>
-      </div>
-
-      {/* ── Headline ── */}
-      <div className="text-center mb-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-center justify-center gap-2 mb-3"
-        >
-          <motion.div
-            animate={{ rotate: [0, 15, -10, 15, 0] }}
-            transition={{ repeat: Infinity, duration: 3, delay: 1 }}
-          >
-            <Mic size={18} style={{ color: "var(--violet)" }} />
-          </motion.div>
-          <span
-            className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
-            style={{
-              background: "rgba(139,92,246,0.12)",
-              color: "var(--violet)",
-              border: "1px solid rgba(139,92,246,0.25)",
-            }}
-          >
-            In Development
-          </span>
-        </motion.div>
-
-        <motion.h1
-          className="font-display font-bold text-4xl md:text-5xl mb-4"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.1 }}
-        >
-          Mock Interview Engine
-          <br />
-          <motion.span
-            className="gradient-text"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, var(--indigo), var(--violet), #ec4899)",
-            }}
-            animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-            transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
-          >
-            is coming soon
-          </motion.span>
-        </motion.h1>
-
-        <motion.p
-          className="text-base max-w-md mx-auto"
-          style={{ color: "var(--text-secondary)" }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25 }}
-        >
-          We're training an AI interviewer that reads your resume, adapts to
-          your role, and gives real-time structured feedback — just like a real
-          panel interview.
-        </motion.p>
-      </div>
-
-      {/* ── Feature badges ── */}
-      <motion.div
-        className="flex flex-wrap justify-center gap-3 max-w-xl mt-8"
-        initial="hidden"
-        animate="visible"
-        variants={{
-          visible: {
-            transition: { staggerChildren: 0.08, delayChildren: 0.4 },
-          },
-        }}
-      >
-        {skills.map(({ icon: Icon, label }, i) => (
-          <motion.div
-            key={label}
-            variants={{
-              hidden: { opacity: 0, y: 12 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            whileHover={{ scale: 1.08, y: -3 }}
-            onHoverStart={() => setHovered(i)}
-            onHoverEnd={() => setHovered(null)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl cursor-default transition-all"
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
               background:
-                hovered === i
-                  ? "rgba(99,102,241,0.15)"
-                  : "rgba(255,255,255,0.04)",
-              border: `1px solid ${hovered === i ? "rgba(99,102,241,0.4)" : "rgba(255,255,255,0.08)"}`,
-              backdropFilter: "blur(8px)",
-              color: hovered === i ? "var(--indigo)" : "var(--text-secondary)",
-              transition: "all 0.2s ease",
+                "linear-gradient(135deg, rgba(11,124,118,0.15), rgba(221,107,32,0.15))",
+              border: "1px solid rgba(11,124,118,0.25)",
             }}
           >
-            <Icon size={14} />
-            <span className="text-sm font-medium">{label}</span>
-          </motion.div>
-        ))}
-      </motion.div>
+            <Shield size={20} style={{ color: "var(--indigo)" }} />
+          </div>
+          <div>
+            <h1 className="font-display font-bold text-3xl">
+              AI-Proctored Interview
+            </h1>
+          </div>
+        </div>
+        <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
+          Simulate a real AI-proctored assessment with webcam monitoring,
+          tab-switch detection, and conduct scoring — just like HackerRank or
+          top-tier hiring platforms.
+        </p>
 
-      {/* ── Bottom pulse bar ── */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, var(--indigo), var(--violet), transparent)",
-        }}
-        animate={{ opacity: [0.3, 1, 0.3] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-      />
+        {/* Setup Form */}
+        <div className="glass-card p-6 flex flex-col gap-5">
+          <div
+            className="flex items-center gap-2 pb-3"
+            style={{ borderBottom: "1px solid var(--border)" }}
+          >
+            <Sparkles size={16} style={{ color: "var(--violet)" }} />
+            <span className="font-semibold text-sm">
+              Configure Your Interview
+            </span>
+          </div>
+
+          {/* Resume ID */}
+          <div>
+            <label
+              className="text-xs font-medium mb-1 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Resume ID
+            </label>
+            <input
+              id="mi-resume-id"
+              className="input-base"
+              placeholder="Paste your resume ID from the Resume Analysis page"
+              value={resumeId}
+              onChange={(e) => setResumeId(e.target.value)}
+            />
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+              Upload your resume in the Resume Analysis page first to get an ID.
+            </p>
+          </div>
+
+          {/* Target Role */}
+          <div>
+            <label
+              className="text-xs font-medium mb-1 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Target Role
+            </label>
+            <select
+              id="mi-role"
+              className="input-base"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              style={{ cursor: "pointer" }}
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Difficulty */}
+          <div>
+            <label
+              className="text-xs font-medium mb-2 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Difficulty
+            </label>
+            <div className="flex gap-3">
+              {DIFFICULTIES.map((d) => (
+                <button
+                  key={d.value}
+                  className="flex-1 px-4 py-3 rounded-xl text-left transition-all"
+                  style={{
+                    background:
+                      difficulty === d.value
+                        ? "rgba(11,124,118,0.1)"
+                        : "var(--bg-elevated)",
+                    border: `1px solid ${difficulty === d.value ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
+                    color:
+                      difficulty === d.value
+                        ? "var(--indigo)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setDifficulty(d.value)}
+                >
+                  <span className="text-sm font-medium block">{d.label}</span>
+                  <span className="text-xs" style={{ opacity: 0.7 }}>
+                    {d.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Number of Questions */}
+          <div>
+            <label
+              className="text-xs font-medium mb-2 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Number of Questions
+            </label>
+            <div className="flex gap-2">
+              {QUESTION_COUNTS.map((n) => (
+                <button
+                  key={n}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    background:
+                      numQuestions === n
+                        ? "rgba(11,124,118,0.1)"
+                        : "var(--bg-elevated)",
+                    border: `1px solid ${numQuestions === n ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
+                    color:
+                      numQuestions === n
+                        ? "var(--indigo)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setNumQuestions(n)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Proctoring Toggle */}
+          <div
+            className="p-4 rounded-xl flex items-start gap-4"
+            style={{
+              background: proctoring
+                ? "rgba(11,124,118,0.06)"
+                : "var(--bg-elevated)",
+              border: `1px solid ${proctoring ? "rgba(11,124,118,0.25)" : "var(--border)"}`,
+            }}
+          >
+            <button
+              onClick={() => setProctoring(!proctoring)}
+              style={{
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                background: proctoring
+                  ? "linear-gradient(120deg, #0b7c76, #0f766e)"
+                  : "var(--bg-elevated)",
+                border: `1px solid ${proctoring ? "rgba(11,124,118,0.4)" : "var(--border)"}`,
+                cursor: "pointer",
+                position: "relative",
+                flexShrink: 0,
+                transition: "all 0.2s ease",
+              }}
+            >
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  background: proctoring ? "#fff" : "var(--text-muted)",
+                  position: "absolute",
+                  top: 2,
+                  left: proctoring ? 22 : 3,
+                  transition: "left 0.2s ease",
+                }}
+              />
+            </button>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <ShieldCheck
+                  size={14}
+                  style={{
+                    color: proctoring ? "var(--indigo)" : "var(--text-muted)",
+                  }}
+                />
+                <span className="text-sm font-semibold">AI Proctoring</span>
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                Enable webcam monitoring, fullscreen integrity checks,
+                face-presence detection, attention-drift checks, restricted
+                shortcut blocking, and Trust Score tracking to simulate a real
+                proctored assessment.
+              </p>
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p className="text-sm" style={{ color: "#ef4444" }}>
+              {error}
+            </p>
+          )}
+
+          {/* Start Button */}
+          <button
+            id="start-interview-btn"
+            className="btn-primary self-start flex items-center gap-2"
+            onClick={handleStart}
+            disabled={loading}
+          >
+            {loading ? (
+              "Setting up interview…"
+            ) : (
+              <>
+                Start Proctored Interview <ChevronRight size={14} />
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Feature cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          {[
+            {
+              icon: Camera,
+              title: "Webcam Monitoring",
+              desc: "Live camera feed with recording indicators and camera interruption alerts.",
+            },
+            {
+              icon: MonitorOff,
+              title: "Session Integrity",
+              desc: "Tracks tab switches, focus loss, fullscreen exits, and restricted browser shortcuts.",
+            },
+            {
+              icon: Clipboard,
+              title: "Copy/Paste Blocking",
+              desc: "Clipboard operations are blocked and logged as violations.",
+            },
+            {
+              icon: Eye,
+              title: "Attention & Risk Signals",
+              desc: "Detects face absence, multiple faces, off-frame attention drift, and rolls them into a live risk level.",
+            },
+            {
+              icon: Target,
+              title: "Role-Specific Questions",
+              desc: "Questions tailored to your target role and resume context.",
+            },
+            {
+              icon: BarChart3,
+              title: "Scored Feedback",
+              desc: "Clarity, technical depth, communication scores for every answer.",
+            },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="glass-card p-4 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Icon size={16} style={{ color: "var(--indigo)" }} />
+                <span className="font-medium text-sm">{title}</span>
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                {desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ─────────────────────── PREFLIGHT PHASE ─────────────────────── */
+  if (phase === "preflight") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <PreInterviewChecks
+          onReady={() => setPhase("interview")}
+          onBack={() => {
+            setPhase("setup");
+            setSession(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  /* ─────────────────────── INTERVIEW PHASE ─────────────────────── */
+  if (phase === "interview" && session) {
+    return (
+      <ProctorProvider enabled={proctoring}>
+        <ProctorSnapshotCapture snapshotRef={proctorSnapshotRef} />
+        <InterviewView
+          session={session}
+          difficulty={difficulty}
+          onComplete={handleComplete}
+        />
+      </ProctorProvider>
+    );
+  }
+
+  /* ─────────────────────── REPORT PHASE ─────────────────────── */
+  return (
+    <div className="animate-fade-up max-w-3xl mx-auto py-6">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(11,124,118,0.15))",
+            border: "1px solid rgba(16,185,129,0.25)",
+          }}
+        >
+          <Trophy size={28} style={{ color: "var(--emerald)" }} />
+        </div>
+        <h1 className="font-display font-bold text-3xl mb-2">
+          Interview Complete
+        </h1>
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          Here&apos;s your detailed performance and conduct report for the{" "}
+          <strong style={{ color: "var(--indigo)" }}>
+            {session?.target_role}
+          </strong>{" "}
+          interview.
+        </p>
+      </div>
+
+      {/* Trust Score Report */}
+      {proctoring && reportData ? (
+        <TrustScoreReport
+          trustScore={reportData.trustScore}
+          violations={
+            reportData.violations as Parameters<
+              typeof TrustScoreReport
+            >[0]["violations"]
+          }
+          elapsed={reportData.elapsed}
+          cameraStatus={reportData.cameraStatus}
+          faceStatus={reportData.faceStatus}
+          fullscreenActive={reportData.fullscreenActive}
+          sessionRisk={reportData.sessionRisk}
+          answerScores={answerScores}
+          targetRole={session?.target_role}
+        />
+      ) : (
+        /* Non-proctored: just show answer scores */
+        answerScores.length > 0 && (
+          <div className="glass-card p-5 mb-6">
+            <h3 className="font-semibold text-sm mb-3">Answer Scores</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Clarity", key: "clarity_score" as const },
+                { label: "Technical", key: "technical_score" as const },
+                { label: "Depth", key: "depth_score" as const },
+                { label: "Communication", key: "communication_score" as const },
+              ].map(({ label, key }) => {
+                const avg =
+                  answerScores.reduce((s, a) => s + a[key], 0) /
+                  answerScores.length;
+                return (
+                  <div key={label} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-xs">
+                      <span style={{ color: "var(--text-secondary)" }}>
+                        {label}
+                      </span>
+                      <span className="font-semibold">{avg.toFixed(1)}/10</span>
+                    </div>
+                    <div
+                      className="h-1.5 rounded-full"
+                      style={{ background: "var(--bg-elevated)" }}
+                    >
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${avg * 10}%`,
+                          background:
+                            "linear-gradient(90deg, var(--indigo), var(--violet))",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )
+      )}
+
+      {/* Restart button */}
+      <div className="flex justify-center mt-8">
+        <button
+          className="btn-primary inline-flex items-center gap-2"
+          onClick={handleRestart}
+        >
+          <RotateCcw size={14} /> Start Another Interview
+        </button>
+      </div>
     </div>
   );
+}
+
+/* ─── Helper: captures proctor state into a ref for the report phase ─── */
+function ProctorSnapshotCapture({
+  snapshotRef,
+}: {
+  snapshotRef: React.MutableRefObject<{
+    trustScore: number;
+    violations: { type: string; timestamp: number; label: string }[];
+    elapsed: number;
+    cameraStatus: string;
+    faceStatus:
+      | "checking"
+      | "single_face"
+      | "no_face"
+      | "multiple_faces"
+      | "misaligned"
+      | "unsupported";
+    fullscreenActive: boolean;
+    sessionRisk: "low" | "medium" | "high";
+  } | null>;
+}) {
+  const proctor = useProctor();
+
+  useEffect(() => {
+    snapshotRef.current = {
+      trustScore: proctor.trustScore,
+      violations: proctor.violations,
+      elapsed: proctor.elapsed,
+      cameraStatus: proctor.cameraStatus,
+      faceStatus: proctor.faceStatus,
+      fullscreenActive: proctor.fullscreenActive,
+      sessionRisk: proctor.sessionRisk,
+    };
+  });
+
+  return null;
 }

@@ -77,8 +77,28 @@ export async function getSession(): Promise<Session | null> {
   return data.session;
 }
 
+export async function refreshSession(): Promise<Session | null> {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.refreshSession();
+  if (error) {
+    throw error;
+  }
+  return data.session;
+}
+
 export async function getAccessToken(): Promise<string | null> {
-  const session = await getSession();
+  let session = await getSession();
+  const expiresAt = session?.expires_at ?? 0;
+  const expiresSoon = expiresAt > 0 && expiresAt * 1000 - Date.now() < 60_000;
+
+  if (!session || expiresSoon) {
+    try {
+      session = await refreshSession();
+    } catch {
+      return null;
+    }
+  }
+
   return session?.access_token ?? null;
 }
 
