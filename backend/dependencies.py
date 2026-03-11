@@ -75,12 +75,28 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError as e:
-        print(f"❌ JWT validation error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Could not validate credentials. Please log in again. Debug info: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # Fallback for ES256 / asymmetric tokens or when local HS256 secret fails
+        print(f"⚠️ Local JWT validation failed ({e}), attempting Supabase network verification...")
+        try:
+            supabase = get_supabase()
+            user_res = supabase.auth.get_user(token)
+            if not user_res or not user_res.user:
+                raise Exception("Network verification returned no user")
+            user = user_res.user
+            metadata = getattr(user, "user_metadata", {}) or {}
+            print("✅ Supabase network verification succeeded.")
+            return {
+                "user_id": user.id,
+                "email": user.email,
+                "plan": metadata.get("plan", "free"),
+            }
+        except Exception as net_e:
+            print(f"❌ Supabase network verification failed: {net_e}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Could not validate credentials via Supabase. Local: {e}. Network: {net_e}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
 
 def require_plan(*allowed_plans: str):
