@@ -1,12 +1,21 @@
-import jwt
 import base64
+import time
 from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import httpx
+import jwt
 from supabase import create_client, Client
 from config import settings
 
 bearer_scheme = HTTPBearer(auto_error=False)
+SUPPORTED_ASYMMETRIC_ALGORITHMS = {"ES256", "RS256"}
+JWKS_CACHE_TTL_SECONDS = 300
+_jwks_cache: dict[str, object] = {"keys": None, "expires_at": 0.0}
+
+
+class MalformedTokenError(Exception):
+    """Raised when the bearer token is not a syntactically valid JWT."""
 
 
 @lru_cache(maxsize=1)
@@ -19,6 +28,71 @@ def get_supabase() -> Client:
 def get_supabase_admin() -> Client:
     """Return a cached Supabase client with service role (admin) access."""
     return create_client(settings.supabase_url, settings.supabase_service_key)
+
+
+def _decode_hs_secret() -> str | bytes:
+    try:
+        return base64.b64decode(settings.jwt_secret)
+    except Exception:
+        return settings.jwt_secret
+
+
+def _get_jwks() -> list[dict]:
+    now = time.time()
+    cached_keys = _jwks_cache.get("keys")
+    expires_at = _jwks_cache.get("expires_at", 0.0)
+    if isinstance(cached_keys, list) and isinstance(expires_at, (int, float)) and now < expires_at:
+        return cached_keys
+
+    jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
+    response = httpx.get(jwks_url, timeout=5.0)
+    response.raise_for_status()
+    keys = response.json().get("keys", [])
+    if not isinstance(keys, list) or not keys:
+        raise ValueError("JWKS response did not contain any signing keys")
+
+    _jwks_cache["keys"] = keys
+    _jwks_cache["expires_at"] = now + JWKS_CACHE_TTL_SECONDS
+    return keys
+
+
+def _get_signing_key(token: str) -> tuple[object, list[str]]:
+    try:
+        header = jwt.get_unverified_header(token)
+    except jwt.DecodeError as exc:
+        raise MalformedTokenError("Malformed bearer token") from exc
+
+    algorithm = header.get("alg")
+    if not algorithm:
+        raise MalformedTokenError("Token header missing alg")
+
+    if algorithm in {"HS256", settings.jwt_algorithm}:
+        return _decode_hs_secret(), [algorithm]
+
+    if algorithm not in SUPPORTED_ASYMMETRIC_ALGORITHMS:
+        raise jwt.InvalidAlgorithmError(f"Unsupported JWT algorithm: {algorithm}")
+
+    key_id = header.get("kid")
+    if not key_id:
+        raise MalformedTokenError("Token header missing kid")
+
+    for jwk in _get_jwks():
+        if jwk.get("kid") == key_id:
+            return jwt.PyJWK.from_dict(jwk).key, [algorithm]
+
+    raise jwt.InvalidTokenError(f"No signing key found for kid={key_id}")
+
+
+def _decode_token(token: str) -> dict:
+    signing_key, algorithms = _get_signing_key(token)
+    return jwt.decode(
+        token,
+        signing_key,
+        algorithms=algorithms,
+        audience="authenticated",
+        issuer=f"{settings.supabase_url.rstrip('/')}/auth/v1",
+        options={"verify_exp": True},
+    )
 
 
 async def get_current_user(
@@ -39,20 +113,7 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        print(f"Token unverified header: {jwt.get_unverified_header(token)}")
-        # Supabase JWT secrets are base64 encoded
-        try:
-            secret = base64.b64decode(settings.jwt_secret)
-        except Exception:
-            secret = settings.jwt_secret
-
-        payload = jwt.decode(
-            token,
-            secret,
-            algorithms=[settings.jwt_algorithm, "HS256"],
-            audience="authenticated",
-            options={"verify_exp": True},
-        )
+        payload = _decode_token(token)
 
         user_id = payload.get("sub")
         email = payload.get("email")
@@ -74,9 +135,14 @@ async def get_current_user(
             detail="Token has expired. Please log in again.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except jwt.InvalidTokenError as e:
-        # Fallback for ES256 / asymmetric tokens or when local HS256 secret fails
-        print(f"⚠️ Local JWT validation failed ({e}), attempting Supabase network verification...")
+    except MalformedTokenError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except jwt.InvalidTokenError as exc:
+        print(f"⚠️ Local JWT validation failed ({exc}), attempting Supabase network verification...")
         try:
             supabase = get_supabase()
             user_res = supabase.auth.get_user(token)
@@ -94,7 +160,7 @@ async def get_current_user(
             print(f"❌ Supabase network verification failed: {net_e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Could not validate credentials via Supabase. Local: {e}. Network: {net_e}",
+                detail=f"Could not validate credentials via Supabase. Local: {exc}. Network: {net_e}",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
