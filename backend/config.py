@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         "https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
     )
     allowed_origin_regex: Optional[str] = (
-        r"https://.*\.vercel\.app"
+        r"https://.*\.vercel\.app|https://.*\.onrender\.com|https://.*\.netlify\.app"
     )
 
     class Config:
