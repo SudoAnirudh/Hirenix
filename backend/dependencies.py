@@ -119,7 +119,7 @@ async def get_current_user(
         email = payload.get("email")
 
         if not user_id:
-            raise Exception("Token missing 'sub' claim")
+            raise jwt.InvalidTokenError("Token missing 'sub' claim")
 
         # user_metadata lives in the JWT under the same key
         metadata = payload.get("user_metadata", {})
