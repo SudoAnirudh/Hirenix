@@ -78,7 +78,7 @@ async def get_current_user(
         print(f"❌ JWT validation error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials. Please log in again.",
+            detail=f"Could not validate credentials. Please log in again. Debug info: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
