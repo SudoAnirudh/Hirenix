@@ -33,7 +33,7 @@ function toApiError(error: unknown) {
         );
       }
       return new Error(
-        `Could not reach the API server at ${getBaseUrl()}. Start the backend with \`npm run dev\` from the repo root or \`cd backend && . venv/bin/activate && uvicorn main:app --reload\`, then verify NEXT_PUBLIC_API_URL and backend CORS ALLOWED_ORIGINS.`,
+        `Could not reach the API server at ${getBaseUrl()}. If this is a deployed app, verify the frontend deployment's NEXT_PUBLIC_API_URL points to the live backend and redeploy. For local development, start the backend with \`npm run dev\` from the repo root or \`cd backend && . venv/bin/activate && uvicorn main:app --reload\`, then verify NEXT_PUBLIC_API_URL and backend CORS ALLOWED_ORIGINS.`,
       );
     }
     return error;
