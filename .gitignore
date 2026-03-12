@@ -45,3 +45,6 @@ __pycache__/
 venv/
 .vscode/
 .env*.local
+
+# agents
+.agents/
