@@ -1,12 +1,16 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
 class StartInterviewRequest(BaseModel):
-    resume_id: str
+    resume_id: Optional[str] = None
     target_role: str
+    experience_level: str = "junior"  # junior | mid | senior
+    interview_type: str = "mixed"  # technical | behavioral | system_design | mixed
     difficulty: str = "medium"  # easy | medium | hard
     num_questions: int = 5
+    answer_mode: str = "text"  # text | voice | video
+    proctoring_enabled: bool = False
 
 
 class InterviewQuestion(BaseModel):
@@ -14,11 +18,28 @@ class InterviewQuestion(BaseModel):
     question: str
     category: str  # technical | behavioral | situational
     difficulty: str
+    expected_topics: List[str] = Field(default_factory=list)
+    follow_up_prompt: Optional[str] = None
+
+
+class InterviewPlan(BaseModel):
+    role: str
+    experience_level: str
+    interview_type: str
+    difficulty: str
+    num_questions: int
+    technical: int = 0
+    behavioral: int = 0
+    system_design: int = 0
 
 
 class StartInterviewResponse(BaseModel):
     session_id: str
     target_role: str
+    experience_level: str
+    interview_type: str
+    answer_mode: str
+    interview_plan: InterviewPlan
     questions: List[InterviewQuestion]
 
 
@@ -33,13 +54,17 @@ class AnswerFeedback(BaseModel):
 
     question_id: str
     score: float  # 0–10
+    overall_score: float
     clarity_score: float
     technical_score: float
     depth_score: float
     communication_score: float
+    problem_solving_score: float
     strengths: List[str]
     improvements: List[str]
     model_answer_hint: str
+    model_answer: str
+    coaching_tip: str
 
 
 class SessionSummaryResponse(BaseModel):
@@ -66,4 +91,3 @@ class ProctorReport(BaseModel):
 class SaveProctorReportRequest(BaseModel):
     session_id: str
     report: ProctorReport
-
