@@ -203,10 +203,16 @@ export async function analyzeGithub(username: string) {
 
 // ─── Interview ────────────────────────────────────────────────────────────────
 export async function startInterview(
-  resumeId: string,
+  resumeId: string | null,
   targetRole: string,
-  difficulty = "medium",
-  numQuestions = 5,
+  options: {
+    difficulty?: string;
+    numQuestions?: number;
+    experienceLevel?: string;
+    interviewType?: string;
+    answerMode?: string;
+    proctoringEnabled?: boolean;
+  } = {},
 ) {
   return request("/interview/start-interview", {
     method: "POST",
@@ -214,8 +220,12 @@ export async function startInterview(
     body: JSON.stringify({
       resume_id: resumeId,
       target_role: targetRole,
-      difficulty,
-      num_questions: numQuestions,
+      difficulty: options.difficulty ?? "medium",
+      num_questions: options.numQuestions ?? 5,
+      experience_level: options.experienceLevel ?? "junior",
+      interview_type: options.interviewType ?? "mixed",
+      answer_mode: options.answerMode ?? "text",
+      proctoring_enabled: options.proctoringEnabled ?? false,
     }),
   });
 }

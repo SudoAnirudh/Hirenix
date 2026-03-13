@@ -22,9 +22,11 @@ import {
   Shield,
   ShieldCheck,
   Camera,
-  MonitorOff,
-  Clipboard,
   Eye,
+  Mic,
+  MessageSquareText,
+  LayoutTemplate,
+  ScanFace,
 } from "lucide-react";
 
 /* ─── Constants ─── */
@@ -46,6 +48,53 @@ const DIFFICULTIES = [
 ];
 
 const QUESTION_COUNTS = [3, 5, 8, 10];
+const EXPERIENCE_LEVELS = [
+  { value: "junior", label: "0-2 years", desc: "Foundational decision-making" },
+  { value: "mid", label: "3-5 years", desc: "Delivery and tradeoffs" },
+  { value: "senior", label: "6+ years", desc: "Leadership and architecture" },
+];
+const INTERVIEW_TYPES = [
+  {
+    value: "mixed",
+    label: "Mixed",
+    desc: "Balanced technical, design, and behavioral",
+  },
+  {
+    value: "technical",
+    label: "Technical",
+    desc: "Implementation and debugging focus",
+  },
+  {
+    value: "system_design",
+    label: "System Design",
+    desc: "Architecture and scale",
+  },
+  {
+    value: "behavioral",
+    label: "Behavioral",
+    desc: "Ownership, conflict, and storytelling",
+  },
+];
+const ANSWER_MODES = [
+  {
+    value: "text",
+    label: "Text",
+    desc: "Type structured responses",
+    icon: MessageSquareText,
+  },
+  {
+    value: "voice",
+    label: "Voice",
+    desc: "Practice speaking with transcript support",
+    icon: Mic,
+  },
+  {
+    value: "video",
+    label: "Video",
+    desc: "Simulate camera-first interview answers",
+    icon: ScanFace,
+  },
+];
 
 /* ─── Types ─── */
 interface Question {
@@ -53,20 +102,44 @@ interface Question {
   question: string;
   category: string;
   difficulty: string;
+  expected_topics: string[];
+  follow_up_prompt?: string | null;
+}
+
+interface InterviewPlan {
+  role: string;
+  experience_level: string;
+  interview_type: string;
+  difficulty: string;
+  num_questions: number;
+  technical: number;
+  behavioral: number;
+  system_design: number;
 }
 
 interface Session {
   session_id: string;
   target_role: string;
+  experience_level: string;
+  interview_type: string;
+  answer_mode: string;
+  interview_plan: InterviewPlan;
   questions: Question[];
 }
 
 interface AnswerScore {
   score: number;
+  overall_score: number;
   clarity_score: number;
   technical_score: number;
   depth_score: number;
   communication_score: number;
+  problem_solving_score: number;
+  strengths: string[];
+  improvements: string[];
+  model_answer_hint: string;
+  model_answer: string;
+  coaching_tip: string;
 }
 
 type Phase = "setup" | "preflight" | "interview" | "report";
@@ -76,11 +149,11 @@ type Phase = "setup" | "preflight" | "interview" | "report";
    ═══════════════════════════════════════════════════════════ */
 function InterviewView({
   session,
-  difficulty,
+  proctoringEnabled,
   onComplete,
 }: {
   session: Session;
-  difficulty: string;
+  proctoringEnabled: boolean;
   onComplete: (scores: AnswerScore[]) => void;
 }) {
   const proctor = useProctor();
@@ -103,12 +176,10 @@ function InterviewView({
           <BrainCircuit size={20} style={{ color: "var(--indigo)" }} />
         </div>
         <div>
-          <h1 className="font-display font-bold text-2xl">
-            AI-Proctored Interview
-          </h1>
+          <h1 className="font-display font-bold text-2xl">AI Mock Interview</h1>
           <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            {session.target_role} · {session.questions.length} questions ·{" "}
-            {difficulty}
+            {session.target_role} · {session.interview_type.replace("_", " ")} ·{" "}
+            {session.experience_level} · {session.questions.length} questions
           </p>
         </div>
       </div>
@@ -119,6 +190,7 @@ function InterviewView({
         <div className="flex-1 min-w-0">
           <InterviewPanel
             session={session}
+            proctoringEnabled={proctoringEnabled}
             onComplete={(scores) => {
               proctor.stop();
               onComplete(scores);
@@ -149,10 +221,13 @@ export default function MockInterviewPage() {
 function MockInterviewPageContent() {
   const [phase, setPhase] = useState<Phase>("setup");
   const [role, setRole] = useState(ROLES[0]);
+  const [experienceLevel, setExperienceLevel] = useState("junior");
+  const [interviewType, setInterviewType] = useState("mixed");
   const [difficulty, setDifficulty] = useState("medium");
   const [numQuestions, setNumQuestions] = useState(5);
   const [resumeId, setResumeId] = useState("");
-  const [proctoring, setProctoring] = useState(true);
+  const [answerMode, setAnswerMode] = useState("text");
+  const [proctoring, setProctoring] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [session, setSession] = useState<Session | null>(null);
@@ -191,21 +266,17 @@ function MockInterviewPageContent() {
   }, []);
 
   async function handleStart() {
-    if (!resumeId.trim()) {
-      setError(
-        "Please enter a Resume ID. Upload your resume first in the Resume Analysis page.",
-      );
-      return;
-    }
     setLoading(true);
     setError("");
     try {
-      const data = (await startInterview(
-        resumeId.trim(),
-        role,
+      const data = (await startInterview(resumeId.trim() || null, role, {
         difficulty,
         numQuestions,
-      )) as Session;
+        experienceLevel,
+        interviewType,
+        answerMode,
+        proctoringEnabled: proctoring,
+      })) as Session;
       setSession(data);
       setPhase(proctoring ? "preflight" : "interview");
     } catch (e: unknown) {
@@ -260,14 +331,14 @@ function MockInterviewPageContent() {
           </div>
           <div>
             <h1 className="font-display font-bold text-3xl">
-              AI-Proctored Interview
+              AI Mock Interview
             </h1>
           </div>
         </div>
         <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-          Simulate a real AI-proctored assessment with webcam monitoring,
-          tab-switch detection, and conduct scoring — just like HackerRank or
-          top-tier hiring platforms.
+          Practice role-specific interviews with structured coaching, model
+          answers, and optional focus tracking. The goal is self-evaluation and
+          improvement, not exam-style enforcement.
         </p>
 
         {/* Setup Form */}
@@ -298,7 +369,8 @@ function MockInterviewPageContent() {
               onChange={(e) => setResumeId(e.target.value)}
             />
             <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-              Upload your resume in the Resume Analysis page first to get an ID.
+              Optional. Add a resume ID to get questions nudged toward your
+              background and projects.
             </p>
           </div>
 
@@ -323,6 +395,80 @@ function MockInterviewPageContent() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label
+              className="text-xs font-medium mb-2 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Experience Level
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {EXPERIENCE_LEVELS.map((level) => (
+                <button
+                  key={level.value}
+                  className="px-4 py-3 rounded-xl text-left transition-all"
+                  style={{
+                    background:
+                      experienceLevel === level.value
+                        ? "rgba(11,124,118,0.1)"
+                        : "var(--bg-elevated)",
+                    border: `1px solid ${experienceLevel === level.value ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
+                    color:
+                      experienceLevel === level.value
+                        ? "var(--indigo)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setExperienceLevel(level.value)}
+                >
+                  <span className="text-sm font-medium block">
+                    {level.label}
+                  </span>
+                  <span className="text-xs" style={{ opacity: 0.7 }}>
+                    {level.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label
+              className="text-xs font-medium mb-2 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Interview Type
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {INTERVIEW_TYPES.map((type) => (
+                <button
+                  key={type.value}
+                  className="px-4 py-3 rounded-xl text-left transition-all"
+                  style={{
+                    background:
+                      interviewType === type.value
+                        ? "rgba(124,58,237,0.1)"
+                        : "var(--bg-elevated)",
+                    border: `1px solid ${interviewType === type.value ? "rgba(124,58,237,0.35)" : "var(--border)"}`,
+                    color:
+                      interviewType === type.value
+                        ? "var(--violet)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setInterviewType(type.value)}
+                >
+                  <span className="text-sm font-medium block">
+                    {type.label}
+                  </span>
+                  <span className="text-xs" style={{ opacity: 0.7 }}>
+                    {type.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Difficulty */}
@@ -394,6 +540,48 @@ function MockInterviewPageContent() {
             </div>
           </div>
 
+          <div>
+            <label
+              className="text-xs font-medium mb-2 block"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Answer Mode
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {ANSWER_MODES.map(({ value, label, desc, icon: Icon }) => (
+                <button
+                  key={value}
+                  className="px-4 py-3 rounded-xl text-left transition-all"
+                  style={{
+                    background:
+                      answerMode === value
+                        ? "rgba(221,107,32,0.1)"
+                        : "var(--bg-elevated)",
+                    border: `1px solid ${answerMode === value ? "rgba(221,107,32,0.35)" : "var(--border)"}`,
+                    color:
+                      answerMode === value
+                        ? "var(--violet)"
+                        : "var(--text-secondary)",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setAnswerMode(value)}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Icon size={15} />
+                    <span className="text-sm font-medium block">{label}</span>
+                  </div>
+                  <span className="text-xs" style={{ opacity: 0.7 }}>
+                    {desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+              Voice and video modes currently use the text answer flow while the
+              capture pipeline is being expanded.
+            </p>
+          </div>
+
           {/* Proctoring Toggle */}
           <div
             className="p-4 rounded-xl flex items-start gap-4"
@@ -441,13 +629,13 @@ function MockInterviewPageContent() {
                     color: proctoring ? "var(--indigo)" : "var(--text-muted)",
                   }}
                 />
-                <span className="text-sm font-semibold">AI Proctoring</span>
+                <span className="text-sm font-semibold">Focus Mode</span>
               </div>
               <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Enable webcam monitoring, fullscreen integrity checks,
-                face-presence detection, attention-drift checks, restricted
-                shortcut blocking, and Trust Score tracking to simulate a real
-                proctored assessment.
+                Enable webcam checks, fullscreen prompts, and attention signals
+                if you want a more realistic practice environment. This is
+                optional and only adds session-integrity insights to the final
+                report.
               </p>
             </div>
           </div>
@@ -470,7 +658,7 @@ function MockInterviewPageContent() {
               "Setting up interview…"
             ) : (
               <>
-                Start Proctored Interview <ChevronRight size={14} />
+                Start Mock Interview <ChevronRight size={14} />
               </>
             )}
           </button>
@@ -480,34 +668,34 @@ function MockInterviewPageContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           {[
             {
-              icon: Camera,
-              title: "Webcam Monitoring",
-              desc: "Live camera feed with recording indicators and camera interruption alerts.",
-            },
-            {
-              icon: MonitorOff,
-              title: "Session Integrity",
-              desc: "Tracks tab switches, focus loss, fullscreen exits, and restricted browser shortcuts.",
-            },
-            {
-              icon: Clipboard,
-              title: "Copy/Paste Blocking",
-              desc: "Clipboard operations are blocked and logged as violations.",
-            },
-            {
-              icon: Eye,
-              title: "Attention & Risk Signals",
-              desc: "Detects face absence, multiple faces, off-frame attention drift, and rolls them into a live risk level.",
+              icon: LayoutTemplate,
+              title: "Structured Interview Plan",
+              desc: "Builds a role-aware mix of technical, system design, and behavioral questions.",
             },
             {
               icon: Target,
               title: "Role-Specific Questions",
-              desc: "Questions tailored to your target role and resume context.",
+              desc: "Questions adapt to your target role, difficulty, and optional resume context.",
             },
             {
               icon: BarChart3,
-              title: "Scored Feedback",
-              desc: "Clarity, technical depth, communication scores for every answer.",
+              title: "Coaching Feedback",
+              desc: "Each answer gets rubric-based scoring, strengths, improvements, and model-answer guidance.",
+            },
+            {
+              icon: Sparkles,
+              title: "Practice-Focused Flow",
+              desc: "Designed for self-evaluation and improvement instead of pass-fail screening.",
+            },
+            {
+              icon: Camera,
+              title: "Optional Focus Mode",
+              desc: "Add webcam and attention tracking only if you want exam-style practice pressure.",
+            },
+            {
+              icon: Eye,
+              title: "Model Answers",
+              desc: "Compare your response to a stronger answer pattern and next-step coaching tip.",
             },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="glass-card p-4 flex flex-col gap-2">
@@ -547,7 +735,7 @@ function MockInterviewPageContent() {
         <ProctorSnapshotCapture snapshotRef={proctorSnapshotRef} />
         <InterviewView
           session={session}
-          difficulty={difficulty}
+          proctoringEnabled={proctoring}
           onComplete={handleComplete}
         />
       </ProctorProvider>
@@ -570,15 +758,21 @@ function MockInterviewPageContent() {
           <Trophy size={28} style={{ color: "var(--emerald)" }} />
         </div>
         <h1 className="font-display font-bold text-3xl mb-2">
-          Interview Complete
+          Practice Session Complete
         </h1>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Here&apos;s your detailed performance and conduct report for the{" "}
+          Here&apos;s your coaching report for the{" "}
           <strong style={{ color: "var(--indigo)" }}>
             {session?.target_role}
           </strong>{" "}
           interview.
         </p>
+        {session && (
+          <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+            {session.interview_type.replace("_", " ")} ·{" "}
+            {session.experience_level} · {session.answer_mode}
+          </p>
+        )}
       </div>
 
       {/* Trust Score Report */}
@@ -609,6 +803,10 @@ function MockInterviewPageContent() {
                 { label: "Technical", key: "technical_score" as const },
                 { label: "Depth", key: "depth_score" as const },
                 { label: "Communication", key: "communication_score" as const },
+                {
+                  label: "Problem Solving",
+                  key: "problem_solving_score" as const,
+                },
               ].map(({ label, key }) => {
                 const avg =
                   answerScores.reduce((s, a) => s + a[key], 0) /
@@ -637,6 +835,42 @@ function MockInterviewPageContent() {
                   </div>
                 );
               })}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+              <div>
+                <h4 className="font-medium text-sm mb-2">Session strengths</h4>
+                {Array.from(
+                  new Set(answerScores.flatMap((item) => item.strengths)),
+                )
+                  .slice(0, 4)
+                  .map((item) => (
+                    <p
+                      key={item}
+                      className="text-sm mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      ✓ {item}
+                    </p>
+                  ))}
+              </div>
+              <div>
+                <h4 className="font-medium text-sm mb-2">
+                  Next practice goals
+                </h4>
+                {Array.from(
+                  new Set(answerScores.flatMap((item) => item.improvements)),
+                )
+                  .slice(0, 4)
+                  .map((item) => (
+                    <p
+                      key={item}
+                      className="text-sm mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      → {item}
+                    </p>
+                  ))}
+              </div>
             </div>
           </div>
         )

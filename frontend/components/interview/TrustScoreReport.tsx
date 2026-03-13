@@ -19,10 +19,12 @@ import {
 /* ─── Types ─── */
 interface AnswerScore {
   score: number;
+  overall_score: number;
   clarity_score: number;
   technical_score: number;
   depth_score: number;
   communication_score: number;
+  problem_solving_score: number;
 }
 
 interface Props {
@@ -155,8 +157,8 @@ export default function TrustScoreReport({
           {verdict.text}
         </h2>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Based on your conduct and answer quality for the{" "}
-          <strong>{targetRole}</strong> interview.
+          Based on your practice-session focus signals and answer quality for
+          the <strong>{targetRole}</strong> interview.
         </p>
       </div>
 

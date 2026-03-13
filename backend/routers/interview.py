@@ -23,14 +23,23 @@ async def start_interview(
 ):
     """Generate interview questions tailored to the user's resume and target role."""
     # Fetch resume sections for context
-    sections_r = db.table("resume_sections").select("*").eq("resume_id", payload.resume_id).execute()
-    resume_context = " ".join([s["content"] for s in (sections_r.data or [])])
+    resume_context = ""
+    if payload.resume_id:
+        sections_r = (
+            db.table("resume_sections")
+            .select("*")
+            .eq("resume_id", payload.resume_id)
+            .execute()
+        )
+        resume_context = " ".join([s["content"] for s in (sections_r.data or [])])
 
-    questions = await generate_questions(
+    interview_plan, questions = await generate_questions(
         resume_context=resume_context,
         target_role=payload.target_role,
         difficulty=payload.difficulty,
         num_questions=payload.num_questions,
+        interview_type=payload.interview_type,
+        experience_level=payload.experience_level,
     )
 
     session_id = str(uuid.uuid4())
@@ -49,7 +58,15 @@ async def start_interview(
         print(f"⚠️  interview_sessions insert failed (schema issue?): {db_err}")
         # Continue — questions are still returned even if session can't be persisted
 
-    return StartInterviewResponse(session_id=session_id, target_role=payload.target_role, questions=questions)
+    return StartInterviewResponse(
+        session_id=session_id,
+        target_role=payload.target_role,
+        experience_level=payload.experience_level,
+        interview_type=payload.interview_type,
+        answer_mode=payload.answer_mode,
+        interview_plan=interview_plan,
+        questions=questions,
+    )
 
 
 @router.post("/submit-answer", response_model=AnswerFeedback)
@@ -69,9 +86,11 @@ async def submit_answer(
         raise HTTPException(status_code=404, detail="Question not found in session.")
 
     feedback = await evaluate_answer(
+        question_id=payload.question_id,
         question=question["question"],
         answer=payload.answer,
         category=question["category"],
+        expected_topics=question.get("expected_topics", []),
     )
 
     # Append answer + feedback to DB (non-fatal if schema is missing columns)

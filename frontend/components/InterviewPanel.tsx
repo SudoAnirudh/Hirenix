@@ -8,31 +8,45 @@ interface Question {
   question: string;
   category: string;
   difficulty: string;
+  expected_topics: string[];
+  follow_up_prompt?: string | null;
 }
 
 interface Session {
   session_id: string;
   target_role: string;
+  experience_level: string;
+  interview_type: string;
+  answer_mode: string;
   questions: Question[];
 }
 
 interface Feedback {
   score: number;
+  overall_score: number;
   clarity_score: number;
   technical_score: number;
   depth_score: number;
   communication_score: number;
+  problem_solving_score: number;
   strengths: string[];
   improvements: string[];
   model_answer_hint: string;
+  model_answer: string;
+  coaching_tip: string;
 }
 
 interface Props {
   session: Session;
+  proctoringEnabled: boolean;
   onComplete: (scores: Feedback[]) => void;
 }
 
-export default function InterviewPanel({ session, onComplete }: Props) {
+export default function InterviewPanel({
+  session,
+  proctoringEnabled,
+  onComplete,
+}: Props) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -92,7 +106,11 @@ export default function InterviewPanel({ session, onComplete }: Props) {
   }
 
   const categoryColor =
-    q.category === "technical" ? "var(--cyan)" : "var(--violet)";
+    q.category === "technical"
+      ? "var(--cyan)"
+      : q.category === "system_design"
+        ? "var(--indigo)"
+        : "var(--violet)";
 
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
@@ -159,17 +177,62 @@ export default function InterviewPanel({ session, onComplete }: Props) {
           )}
         </div>
         <p className="font-medium text-base leading-relaxed">{q.question}</p>
+        {q.expected_topics.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {q.expected_topics.map((topic) => (
+              <span
+                key={topic}
+                className="px-2 py-1 rounded-full text-[11px]"
+                style={{
+                  background: "var(--bg-elevated)",
+                  color: "var(--text-secondary)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div
+          className="rounded-xl p-3 text-xs"
+          style={{
+            background: "rgba(11,124,118,0.06)",
+            border: "1px solid rgba(11,124,118,0.14)",
+            color: "var(--text-secondary)",
+          }}
+        >
+          <span className="font-semibold" style={{ color: "var(--indigo)" }}>
+            Coaching structure:
+          </span>{" "}
+          {q.category === "behavioral"
+            ? "Use STAR and keep the Action section concrete."
+            : q.category === "system_design"
+              ? "State assumptions, outline the architecture, then explain bottlenecks and tradeoffs."
+              : "Define the concept, explain tradeoffs, then anchor with a concrete example."}
+        </div>
 
         <textarea
           id={`answer-${q.question_id}`}
           className="input-base min-h-[120px] resize-y mt-2"
-          placeholder="Type your answer here… Try to be specific and use examples."
+          placeholder={
+            session.answer_mode === "text"
+              ? "Type your answer here. Be specific, mention tradeoffs, and use examples."
+              : `Respond in ${session.answer_mode} mode, then write the transcript or summary here for evaluation.`
+          }
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           disabled={!!feedback}
-          onPaste={(e) => e.preventDefault()}
-          onCopy={(e) => e.preventDefault()}
-          onCut={(e) => e.preventDefault()}
+          onPaste={(e) => {
+            if (proctoringEnabled) e.preventDefault();
+          }}
+          onCopy={(e) => {
+            if (proctoringEnabled) e.preventDefault();
+          }}
+          onCut={(e) => {
+            if (proctoringEnabled) e.preventDefault();
+          }}
         />
 
         {!feedback && (
@@ -203,6 +266,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
               { label: "Technical", val: feedback.technical_score },
               { label: "Depth", val: feedback.depth_score },
               { label: "Communication", val: feedback.communication_score },
+              { label: "Problem Solving", val: feedback.problem_solving_score },
             ].map(({ label, val }) => (
               <div key={label}>
                 <div className="flex justify-between text-xs mb-1">
@@ -264,8 +328,32 @@ export default function InterviewPanel({ session, onComplete }: Props) {
               color: "var(--text-secondary)",
             }}
           >
-            💡 {feedback.model_answer_hint}
+            Tip: {feedback.coaching_tip}
           </p>
+
+          <p
+            className="text-xs p-3 rounded-lg"
+            style={{
+              background: "rgba(221,107,32,0.08)",
+              color: "var(--text-secondary)",
+              border: "1px solid rgba(221,107,32,0.14)",
+            }}
+          >
+            Model answer: {feedback.model_answer}
+          </p>
+
+          {q.follow_up_prompt && (
+            <p
+              className="text-xs p-3 rounded-lg"
+              style={{
+                background: "rgba(11,124,118,0.06)",
+                color: "var(--text-secondary)",
+                border: "1px solid rgba(11,124,118,0.14)",
+              }}
+            >
+              Follow-up to practice next: {q.follow_up_prompt}
+            </p>
+          )}
 
           <button className="btn-primary self-start" onClick={handleNext}>
             {isLast ? "Finish Interview" : "Next Question"}{" "}
