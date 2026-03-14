@@ -15,7 +15,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
 }
 
-type MotionButtonProps = React.ComponentPropsWithoutRef<typeof motion.button>;
+type MotionButtonProps = Omit<
+  React.ComponentPropsWithoutRef<typeof motion.button>,
+  "whileHover" | "whileTap"
+>;
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -31,39 +34,36 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--indigo)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--bg-base)] disabled:pointer-events-none disabled:opacity-50";
+      "inline-flex items-center justify-center whitespace-nowrap rounded-none font-display uppercase tracking-widest font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-accent)] disabled:pointer-events-none disabled:opacity-50 border-2";
 
     const variants = {
       primary:
-        "bg-[linear-gradient(120deg,#dd6b20_0%,#c05621_100%)] text-white border border-[#8d3a12]/35 shadow-[0_14px_30px_rgba(192,86,33,0.34)] hover:shadow-[0_18px_36px_rgba(192,86,33,0.44)]",
+        "bg-[var(--border-accent)] text-black border-[var(--border-accent)] shadow-[4px_4px_0px_#000] hover:bg-black hover:text-[var(--border-accent)] hover:shadow-[6px_6px_0px_var(--indigo)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
       ghost:
-        "bg-white/60 text-[color:var(--text-secondary)] border border-[color:var(--border)] hover:bg-[rgba(11,124,118,0.08)] hover:text-[color:var(--text-primary)]",
+        "bg-transparent text-[var(--text-primary)] border-[var(--border)] shadow-[4px_4px_0px_var(--border)] hover:bg-[rgba(57,255,20,0.1)] hover:border-[var(--emerald)] hover:text-[var(--emerald)] hover:shadow-[6px_6px_0px_var(--emerald)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
       outline:
-        "border border-[color:var(--border)] bg-transparent text-[color:var(--text-primary)] hover:bg-white/55",
+        "bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-white/10 shadow-[4px_4px_0px_var(--border)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
       shine:
-        "relative overflow-hidden bg-[linear-gradient(120deg,#0b7c76_0%,#0f766e_100%)] text-white border border-[#0b5f5a]/40 shadow-[0_12px_26px_rgba(11,124,118,0.28)] before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+        "relative overflow-hidden bg-[#050505] text-[var(--indigo)] border-[var(--indigo)] shadow-[4px_4px_0px_var(--indigo)] before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-[var(--indigo)]/20 before:to-transparent hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_var(--border-accent)] hover:border-[var(--border-accent)] hover:text-[var(--border-accent)] active:translate-y-0 active:translate-x-0 active:shadow-[0px_0px_0px]",
     };
 
     const sizes = {
-      default: "h-10 px-4 py-2 text-sm",
-      sm: "h-8 rounded-md px-3 text-xs",
-      lg: "h-12 rounded-lg px-8 text-base",
-      icon: "h-10 w-10",
+      default: "h-12 px-6 py-2 text-sm",
+      sm: "h-10 px-4 text-xs",
+      lg: "h-14 px-8 text-base",
+      icon: "h-12 w-12",
     };
 
     return (
-      <motion.button
+      <button
         ref={ref}
-        whileHover={{ scale: disabled || isLoading ? 1 : 1.025 }}
-        whileTap={{ scale: disabled || isLoading ? 1 : 0.97 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20, mass: 0.6 }}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         disabled={disabled || isLoading}
-        {...(props as MotionButtonProps)}
+        {...props}
       >
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {children}
-      </motion.button>
+      </button>
     );
   },
 );
