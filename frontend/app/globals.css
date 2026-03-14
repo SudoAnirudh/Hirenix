@@ -5,11 +5,23 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-indigo: #0b7c76;
+  --color-violet: #dd6b20;
+  --color-emerald: #15803d;
+  --color-cyan: #0f766e;
+  --color-pink: #b45309;
+  --color-base: #f3ede3;
+  --color-surface: #fffaf2;
+  --color-elevated: #fff5e7;
+  --color-primary: #17232e;
+  --color-secondary: #4d5b66;
+  --color-muted: #7d8b96;
+  --color-border: rgba(23, 35, 46, 0.14);
+  --font-display: "Space Grotesk", "Manrope", sans-serif;
+  --radius-4xl: 2.5rem;
 }
 
 @media (prefers-color-scheme: dark) {

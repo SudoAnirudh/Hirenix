@@ -21,7 +21,6 @@ import {
   BarChart3,
   Shield,
   ShieldCheck,
-  Camera,
   Eye,
   Mic,
   MessageSquareText,
@@ -165,19 +164,14 @@ function InterviewView({
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(11,124,118,0.15), rgba(221,107,32,0.15))",
-            border: "1px solid rgba(11,124,118,0.25)",
-          }}
-        >
-          <BrainCircuit size={20} style={{ color: "var(--indigo)" }} />
+        <div className="w-10 h-10 rounded-none border-2 border-[var(--border)] bg-[#111] flex items-center justify-center">
+          <BrainCircuit size={20} className="text-[var(--primary)]" />
         </div>
         <div>
-          <h1 className="font-display font-bold text-2xl">AI Mock Interview</h1>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+          <h1 className="font-display font-bold text-2xl uppercase tracking-tight text-[var(--text-primary)]">
+            AI Mock Interview
+          </h1>
+          <p className="text-xs font-mono text-[var(--text-secondary)]">
             {session.target_role} · {session.interview_type.replace("_", " ")} ·{" "}
             {session.experience_level} · {session.questions.length} questions
           </p>
@@ -316,398 +310,377 @@ function MockInterviewPageContent() {
   /* ─────────────────────── SETUP SCREEN ─────────────────────── */
   if (phase === "setup") {
     return (
-      <div className="animate-fade-up max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(11,124,118,0.15), rgba(221,107,32,0.15))",
-              border: "1px solid rgba(11,124,118,0.25)",
-            }}
-          >
-            <Shield size={20} style={{ color: "var(--indigo)" }} />
-          </div>
-          <div>
-            <h1 className="font-display font-bold text-3xl">
-              AI Mock Interview
-            </h1>
-          </div>
-        </div>
-        <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-          Practice role-specific interviews with structured coaching, model
-          answers, and optional focus tracking. The goal is self-evaluation and
-          improvement, not exam-style enforcement.
-        </p>
+      <div className="animate-fade-up max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 pb-16">
+        {/* Left Column: Strong Identity */}
+        <div className="lg:col-span-5 flex flex-col gap-8 relative">
+          <div className="sticky top-8 flex flex-col gap-10">
+            {/* Header section with dramatic typography */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-none border-2 border-dashed border-[var(--indigo)] text-[var(--indigo)] bg-[var(--indigo)]/5 text-xs font-bold uppercase tracking-widest font-mono">
+                <Shield size={14} />
+                <span>Interview Configuration</span>
+              </div>
 
-        {/* Setup Form */}
-        <div className="glass-card p-6 flex flex-col gap-5">
-          <div
-            className="flex items-center gap-2 pb-3"
-            style={{ borderBottom: "1px solid var(--border)" }}
-          >
-            <Sparkles size={16} style={{ color: "var(--violet)" }} />
-            <span className="font-semibold text-sm">
-              Configure Your Interview
-            </span>
-          </div>
-
-          {/* Resume ID */}
-          <div>
-            <label
-              className="text-xs font-medium mb-1 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Resume ID
-            </label>
-            <input
-              id="mi-resume-id"
-              className="input-base"
-              placeholder="Paste your resume ID from the Resume Analysis page"
-              value={resumeId}
-              onChange={(e) => setResumeId(e.target.value)}
-            />
-            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-              Optional. Add a resume ID to get questions nudged toward your
-              background and projects.
-            </p>
-          </div>
-
-          {/* Target Role */}
-          <div>
-            <label
-              className="text-xs font-medium mb-1 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Target Role
-            </label>
-            <select
-              id="mi-role"
-              className="input-base"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              style={{ cursor: "pointer" }}
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              className="text-xs font-medium mb-2 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Experience Level
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {EXPERIENCE_LEVELS.map((level) => (
-                <button
-                  key={level.value}
-                  className="px-4 py-3 rounded-xl text-left transition-all"
-                  style={{
-                    background:
-                      experienceLevel === level.value
-                        ? "rgba(11,124,118,0.1)"
-                        : "var(--bg-elevated)",
-                    border: `1px solid ${experienceLevel === level.value ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
-                    color:
-                      experienceLevel === level.value
-                        ? "var(--indigo)"
-                        : "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setExperienceLevel(level.value)}
+              <h1 className="font-display font-black text-6xl xl:text-7xl leading-[0.9] tracking-tighter uppercase text-[var(--text-primary)]">
+                Mock <br />
+                <span
+                  className="text-[var(--primary)] glitch"
+                  data-text="Interview"
                 >
-                  <span className="text-sm font-medium block">
-                    {level.label}
-                  </span>
-                  <span className="text-xs" style={{ opacity: 0.7 }}>
-                    {level.desc}
-                  </span>
-                </button>
-              ))}
+                  Interview
+                </span>
+              </h1>
+
+              <p className="text-base font-mono text-[var(--text-secondary)] max-w-sm">
+                Configure a highly realistic, stress-tested environment.
+                Practice delivery, receive deep technical coaching, and perfect
+                your performance.
+              </p>
             </div>
-          </div>
 
-          <div>
-            <label
-              className="text-xs font-medium mb-2 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Interview Type
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {INTERVIEW_TYPES.map((type) => (
-                <button
-                  key={type.value}
-                  className="px-4 py-3 rounded-xl text-left transition-all"
-                  style={{
-                    background:
-                      interviewType === type.value
-                        ? "rgba(124,58,237,0.1)"
-                        : "var(--bg-elevated)",
-                    border: `1px solid ${interviewType === type.value ? "rgba(124,58,237,0.35)" : "var(--border)"}`,
-                    color:
-                      interviewType === type.value
-                        ? "var(--violet)"
-                        : "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setInterviewType(type.value)}
+            {/* List of capabilities */}
+            <div className="flex flex-col gap-4">
+              {[
+                {
+                  icon: LayoutTemplate,
+                  label: "Role-Aware Strategy",
+                  colorClass:
+                    "text-[var(--indigo)] border-[var(--indigo)] bg-[var(--indigo)]/10",
+                },
+                {
+                  icon: BarChart3,
+                  label: "Rubric-Based Coaching",
+                  colorClass:
+                    "text-[var(--violet)] border-[var(--violet)] bg-[var(--violet)]/10",
+                },
+                {
+                  icon: Eye,
+                  label: "Exemplar Comparisons",
+                  colorClass:
+                    "text-[var(--emerald)] border-[var(--emerald)] bg-[var(--emerald)]/10",
+                },
+              ].map(({ icon: Icon, label, colorClass }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-4 text-sm font-bold bg-transparent font-mono uppercase tracking-tight"
                 >
-                  <span className="text-sm font-medium block">
-                    {type.label}
-                  </span>
-                  <span className="text-xs" style={{ opacity: 0.7 }}>
-                    {type.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Difficulty */}
-          <div>
-            <label
-              className="text-xs font-medium mb-2 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Difficulty
-            </label>
-            <div className="flex gap-3">
-              {DIFFICULTIES.map((d) => (
-                <button
-                  key={d.value}
-                  className="flex-1 px-4 py-3 rounded-xl text-left transition-all"
-                  style={{
-                    background:
-                      difficulty === d.value
-                        ? "rgba(11,124,118,0.1)"
-                        : "var(--bg-elevated)",
-                    border: `1px solid ${difficulty === d.value ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
-                    color:
-                      difficulty === d.value
-                        ? "var(--indigo)"
-                        : "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setDifficulty(d.value)}
-                >
-                  <span className="text-sm font-medium block">{d.label}</span>
-                  <span className="text-xs" style={{ opacity: 0.7 }}>
-                    {d.desc}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Number of Questions */}
-          <div>
-            <label
-              className="text-xs font-medium mb-2 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Number of Questions
-            </label>
-            <div className="flex gap-2">
-              {QUESTION_COUNTS.map((n) => (
-                <button
-                  key={n}
-                  className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    background:
-                      numQuestions === n
-                        ? "rgba(11,124,118,0.1)"
-                        : "var(--bg-elevated)",
-                    border: `1px solid ${numQuestions === n ? "rgba(11,124,118,0.35)" : "var(--border)"}`,
-                    color:
-                      numQuestions === n
-                        ? "var(--indigo)"
-                        : "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setNumQuestions(n)}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label
-              className="text-xs font-medium mb-2 block"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Answer Mode
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {ANSWER_MODES.map(({ value, label, desc, icon: Icon }) => (
-                <button
-                  key={value}
-                  className="px-4 py-3 rounded-xl text-left transition-all"
-                  style={{
-                    background:
-                      answerMode === value
-                        ? "rgba(221,107,32,0.1)"
-                        : "var(--bg-elevated)",
-                    border: `1px solid ${answerMode === value ? "rgba(221,107,32,0.35)" : "var(--border)"}`,
-                    color:
-                      answerMode === value
-                        ? "var(--violet)"
-                        : "var(--text-secondary)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => setAnswerMode(value)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon size={15} />
-                    <span className="text-sm font-medium block">{label}</span>
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-none border-2 ${colorClass}`}
+                  >
+                    <Icon size={18} strokeWidth={2} />
                   </div>
-                  <span className="text-xs" style={{ opacity: 0.7 }}>
-                    {desc}
-                  </span>
-                </button>
+                  <span className="text-[var(--text-primary)]">{label}</span>
+                </div>
               ))}
             </div>
-            <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
-              Voice and video modes currently use the text answer flow while the
-              capture pipeline is being expanded.
-            </p>
-          </div>
 
-          {/* Proctoring Toggle */}
-          <div
-            className="p-4 rounded-xl flex items-start gap-4"
-            style={{
-              background: proctoring
-                ? "rgba(11,124,118,0.06)"
-                : "var(--bg-elevated)",
-              border: `1px solid ${proctoring ? "rgba(11,124,118,0.25)" : "var(--border)"}`,
-            }}
-          >
+            {/* CTA Button */}
             <button
-              onClick={() => setProctoring(!proctoring)}
-              style={{
-                width: 44,
-                height: 24,
-                borderRadius: 12,
-                background: proctoring
-                  ? "linear-gradient(120deg, #0b7c76, #0f766e)"
-                  : "var(--bg-elevated)",
-                border: `1px solid ${proctoring ? "rgba(11,124,118,0.4)" : "var(--border)"}`,
-                cursor: "pointer",
-                position: "relative",
-                flexShrink: 0,
-                transition: "all 0.2s ease",
-              }}
+              id="start-interview-btn"
+              className={`mt-4 w-full flex items-center justify-between px-6 py-5 rounded-none border-2 border-[var(--primary)] shadow-[6px_6px_0px_var(--primary)] hover:shadow-[2px_2px_0px_var(--primary)] hover:translate-x-[4px] hover:translate-y-[4px] transition-all group overflow-hidden relative bg-[var(--bg-elevated)] text-[var(--primary)] ${loading ? "cursor-wait" : "cursor-pointer"}`}
+              onClick={handleStart}
+              disabled={loading}
             >
-              <div
-                style={{
-                  width: 18,
-                  height: 18,
-                  borderRadius: "50%",
-                  background: proctoring ? "#fff" : "var(--text-muted)",
-                  position: "absolute",
-                  top: 2,
-                  left: proctoring ? 22 : 3,
-                  transition: "left 0.2s ease",
-                }}
-              />
-            </button>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <ShieldCheck
-                  size={14}
-                  style={{
-                    color: proctoring ? "var(--indigo)" : "var(--text-muted)",
-                  }}
-                />
-                <span className="text-sm font-semibold">Focus Mode</span>
+              <div className="absolute inset-0 w-full h-full bg-[var(--primary)]/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
+              <div className="relative z-10 flex flex-col items-start gap-1">
+                <span className="font-display font-black text-xl lg:text-2xl tracking-tight uppercase">
+                  {loading ? "INITIALIZING..." : "LAUNCH SESSION"}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-80 decoration-black font-mono">
+                  BEGIN PRACTICE
+                </span>
               </div>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                Enable webcam checks, fullscreen prompts, and attention signals
-                if you want a more realistic practice environment. This is
-                optional and only adds session-integrity insights to the final
-                report.
-              </p>
-            </div>
-          </div>
+              <div className="relative z-10 w-12 h-12 rounded-none border-2 border-[var(--primary)] flex items-center justify-center bg-transparent group-hover:bg-[var(--primary)] group-hover:text-black transition-colors">
+                <ChevronRight
+                  size={24}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              </div>
+            </button>
 
-          {/* Error */}
-          {error && (
-            <p className="text-sm" style={{ color: "#ef4444" }}>
-              {error}
-            </p>
-          )}
-
-          {/* Start Button */}
-          <button
-            id="start-interview-btn"
-            className="btn-primary self-start flex items-center gap-2"
-            onClick={handleStart}
-            disabled={loading}
-          >
-            {loading ? (
-              "Setting up interview…"
-            ) : (
-              <>
-                Start Mock Interview <ChevronRight size={14} />
-              </>
+            {error && (
+              <div className="p-4 rounded-none text-sm font-bold font-mono animate-fade-up border-2 text-[var(--pink)] bg-[var(--pink)]/5 border-[var(--pink)]">
+                {error}
+              </div>
             )}
-          </button>
+          </div>
         </div>
 
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          {[
-            {
-              icon: LayoutTemplate,
-              title: "Structured Interview Plan",
-              desc: "Builds a role-aware mix of technical, system design, and behavioral questions.",
-            },
-            {
-              icon: Target,
-              title: "Role-Specific Questions",
-              desc: "Questions adapt to your target role, difficulty, and optional resume context.",
-            },
-            {
-              icon: BarChart3,
-              title: "Coaching Feedback",
-              desc: "Each answer gets rubric-based scoring, strengths, improvements, and model-answer guidance.",
-            },
-            {
-              icon: Sparkles,
-              title: "Practice-Focused Flow",
-              desc: "Designed for self-evaluation and improvement instead of pass-fail screening.",
-            },
-            {
-              icon: Camera,
-              title: "Optional Focus Mode",
-              desc: "Add webcam and attention tracking only if you want exam-style practice pressure.",
-            },
-            {
-              icon: Eye,
-              title: "Model Answers",
-              desc: "Compare your response to a stronger answer pattern and next-step coaching tip.",
-            },
-          ].map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="glass-card p-4 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Icon size={16} style={{ color: "var(--indigo)" }} />
-                <span className="font-medium text-sm">{title}</span>
-              </div>
-              <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                {desc}
-              </p>
+        {/* Right Column: Configuration Modules */}
+        <div className="lg:col-span-7 flex flex-col gap-8">
+          {/* Section 1: Target Architecture */}
+          <div className="p-6 md:p-10 rounded-[2.5rem] flex flex-col gap-10 relative overflow-hidden group bg-surface border border-border/10 shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
+            <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] opacity-20 pointer-events-none transition-opacity duration-1000 group-hover:opacity-40 bg-indigo" />
+
+            <div className="flex items-center justify-between relative z-10">
+              <h2 className="font-display font-black text-3xl tracking-tight">
+                Target Role
+              </h2>
+              <Target size={32} strokeWidth={1.5} className="text-indigo/30" />
             </div>
-          ))}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+                  Target Role
+                </label>
+                <div className="relative group/select">
+                  <select
+                    id="mi-role"
+                    className="w-full appearance-none bg-transparent font-display font-bold text-xl h-14 border-b-2 outline-none transition-colors cursor-pointer"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    style={{
+                      borderColor: "var(--border)",
+                      color: "var(--text-primary)",
+                      paddingRight: "40px",
+                    }}
+                    onFocus={(e) =>
+                      (e.target.style.borderColor = "var(--indigo)")
+                    }
+                    onBlur={(e) =>
+                      (e.target.style.borderColor = "var(--border)")
+                    }
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronRight
+                    size={20}
+                    className="absolute right-0 bottom-4 pointer-events-none rotate-90 transition-transform group-hover/select:translate-y-1"
+                    style={{ color: "var(--indigo)" }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black uppercase tracking-widest flex items-center justify-between text-muted">
+                  <span>Resume ID</span>
+                  <span className="px-2 py-0.5 rounded-full bg-black/5">
+                    Optional
+                  </span>
+                </label>
+                <input
+                  id="mi-resume-id"
+                  className="w-full bg-transparent font-display font-semibold text-xl h-14 border-b-2 border-border text-primary outline-none transition-colors focus:border-indigo"
+                  placeholder="Paste ID"
+                  value={resumeId}
+                  onChange={(e) => setResumeId(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 relative z-10">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted">
+                Experience Level
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {EXPERIENCE_LEVELS.map((level) => (
+                  <button
+                    key={level.value}
+                    className={`flex flex-col items-start p-5 rounded-3xl transition-all border-2 text-left hover:-translate-y-1 ${
+                      experienceLevel === level.value
+                        ? "bg-primary text-base shadow-[0_12px_24px_rgba(0,0,0,0.1)] border-primary"
+                        : "bg-transparent text-secondary border-border"
+                    }`}
+                    onClick={() => setExperienceLevel(level.value)}
+                  >
+                    <span className="font-display font-black text-xl tracking-tight mb-1">
+                      {level.label}
+                    </span>
+                    <span className="text-[11px] font-bold opacity-80">
+                      {level.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Format & Modality */}
+          <div className="p-6 md:p-10 rounded-none flex flex-col gap-10 relative overflow-hidden group bg-[#050505] border-2 border-[var(--border)] shadow-[8px_8px_0px_var(--border)]">
+            <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full blur-[100px] opacity-10 pointer-events-none transition-opacity duration-1000 group-hover:opacity-20 bg-[var(--violet)]" />
+
+            <div className="flex items-center justify-between relative z-10">
+              <h2 className="font-display font-black text-3xl tracking-tight uppercase text-[var(--text-primary)]">
+                Format Settings
+              </h2>
+              <BrainCircuit
+                size={32}
+                strokeWidth={1.5}
+                className="text-[var(--violet)]/50"
+              />
+            </div>
+
+            <div className="flex flex-col gap-4 relative z-10">
+              <label className="text-[10px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)]">
+                Interview Type
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {INTERVIEW_TYPES.map((type) => (
+                  <button
+                    key={type.value}
+                    className={`flex flex-col gap-3 p-5 rounded-none transition-all text-left relative overflow-hidden border-2 ${
+                      interviewType === type.value
+                        ? "border-[var(--violet)] shadow-[4px_4px_0px_var(--violet)] bg-[#111] translate-x-[-2px] translate-y-[-2px]"
+                        : "border-[var(--border)] bg-[#111] hover:border-[var(--text-muted)]"
+                    }`}
+                    onClick={() => setInterviewType(type.value)}
+                  >
+                    {interviewType === type.value && (
+                      <div className="absolute top-0 right-0 p-4 -translate-y-2 translate-x-2">
+                        <div className="w-8 h-8 rounded-none border-4 border-[var(--violet)] opacity-20" />
+                      </div>
+                    )}
+                    <span
+                      className={`font-display font-black text-lg tracking-tight uppercase relative z-10 ${interviewType === type.value ? "text-[var(--violet)]" : "text-[var(--text-primary)]"}`}
+                    >
+                      {type.label}
+                    </span>
+                    <span className="text-xs font-mono relative z-10 text-[var(--text-secondary)]">
+                      {type.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 relative z-10">
+              <div className="flex flex-col gap-5">
+                <label className="text-[10px] font-bold font-mono uppercase tracking-widest flex items-center justify-between text-[var(--text-secondary)]">
+                  <span>Difficulty Depth</span>
+                  <span className="font-display text-sm font-bold text-[var(--indigo)] uppercase">
+                    {DIFFICULTIES.find((d) => d.value === difficulty)?.label}
+                  </span>
+                </label>
+                <div className="flex gap-2 h-10">
+                  {DIFFICULTIES.map((d, index) => {
+                    const isActive =
+                      DIFFICULTIES.findIndex((x) => x.value === difficulty) >=
+                      index;
+                    return (
+                      <button
+                        key={d.value}
+                        className={`flex-1 h-full rounded-none transition-all border-2 ${
+                          isActive
+                            ? "bg-[var(--indigo)] border-[var(--indigo)] opacity-100"
+                            : "bg-[#111] border-[var(--border)] opacity-40 hover:opacity-80"
+                        }`}
+                        onClick={() => setDifficulty(d.value)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-5">
+                <label className="text-[10px] font-bold font-mono uppercase tracking-widest flex items-center justify-between text-[var(--text-secondary)]">
+                  <span>Question Count</span>
+                  <span className="font-display text-sm font-bold text-[var(--violet)]">
+                    {numQuestions}
+                  </span>
+                </label>
+                <div className="flex gap-2">
+                  {QUESTION_COUNTS.map((n) => (
+                    <button
+                      key={n}
+                      className={`flex-1 h-10 flex items-center justify-center font-mono font-bold rounded-none border-2 transition-all hover:bg-[var(--violet)]/10 hover:border-[var(--violet)] hover:text-[var(--violet)] ${
+                        numQuestions === n
+                          ? "border-[var(--violet)] bg-[var(--violet)] text-black"
+                          : "border-[var(--border)] bg-[#111] text-[var(--text-muted)]"
+                      }`}
+                      onClick={() => setNumQuestions(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 relative z-10">
+              <label className="text-[10px] font-bold font-mono uppercase tracking-widest text-[var(--text-secondary)]">
+                Answer Modality
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {ANSWER_MODES.map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    className={`flex flex-col items-center justify-center gap-3 py-6 rounded-none border-2 transition-all group/mode ${
+                      answerMode === value
+                        ? "border-[var(--primary)] bg-[var(--primary)] text-black shadow-[4px_4px_0px_var(--primary)] translate-x-[-2px] translate-y-[-2px]"
+                        : "border-[var(--border)] bg-[#111] text-[var(--text-primary)] hover:border-[var(--text-muted)]"
+                    }`}
+                    onClick={() => setAnswerMode(value)}
+                  >
+                    <Icon
+                      size={24}
+                      strokeWidth={2}
+                      className="group-hover/mode:scale-110 transition-transform"
+                    />
+                    <span className="text-[11px] font-mono font-bold tracking-widest uppercase">
+                      {label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div
+              className={`mt-2 p-6 md:p-8 rounded-none border-2 flex flex-col md:flex-row items-center md:items-start gap-6 transition-all w-full relative overflow-hidden group/proctor ${
+                proctoring
+                  ? "bg-[var(--indigo)]/10 border-[var(--indigo)] text-[var(--text-primary)]"
+                  : "bg-[#111] border-[var(--border)] text-[var(--text-primary)]"
+              }`}
+            >
+              <div className="flex-1 text-center md:text-left relative z-10">
+                <div className="flex flex-col md:flex-row items-center gap-3 mb-3">
+                  <ShieldCheck
+                    size={24}
+                    strokeWidth={2}
+                    className={
+                      proctoring
+                        ? "text-[var(--indigo)]"
+                        : "text-[var(--text-muted)]"
+                    }
+                  />
+                  <span className="font-display font-black text-xl tracking-tight uppercase">
+                    Immersive Focus Mode
+                  </span>
+                  {proctoring && (
+                    <span className="md:ml-auto text-[10px] font-mono font-bold uppercase px-3 py-1 rounded-none border border-[var(--indigo)] bg-[var(--indigo)]/20 text-[var(--indigo)] tracking-widest">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p
+                  className={`text-sm font-mono ${proctoring ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
+                >
+                  Enables anti-cheating measures, webcam tracking, and
+                  fullscreen enforcement to simulate a highly realistic practice
+                  environment.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setProctoring(!proctoring)}
+                className={`relative z-10 w-[64px] h-8 outline-none border-2 rounded-none transition-all duration-200 mt-2 ${
+                  proctoring
+                    ? "bg-[var(--indigo)] border-[var(--indigo)] shadow-[2px_2px_0px_var(--indigo)]"
+                    : "bg-[#050505] border-[var(--border)]"
+                }`}
+              >
+                <div
+                  className={`absolute top-0 w-7 h-7 bg-[var(--text-primary)] border-2 border-transparent transition-all duration-200 ${
+                    proctoring ? "left-[32px]" : "left-0 bg-[var(--text-muted)]"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -747,28 +720,21 @@ function MockInterviewPageContent() {
     <div className="animate-fade-up max-w-3xl mx-auto py-6">
       {/* Header */}
       <div className="text-center mb-8">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(11,124,118,0.15))",
-            border: "1px solid rgba(16,185,129,0.25)",
-          }}
-        >
-          <Trophy size={28} style={{ color: "var(--emerald)" }} />
+        <div className="w-16 h-16 rounded-none flex items-center justify-center mx-auto mb-4 border-2 border-[var(--emerald)] bg-[var(--emerald)]/10">
+          <Trophy size={28} className="text-[var(--emerald)]" />
         </div>
-        <h1 className="font-display font-bold text-3xl mb-2">
+        <h1 className="font-display font-black text-3xl mb-2 uppercase tracking-tight text-[var(--text-primary)]">
           Practice Session Complete
         </h1>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+        <p className="text-sm font-mono text-[var(--text-secondary)]">
           Here&apos;s your coaching report for the{" "}
-          <strong style={{ color: "var(--indigo)" }}>
+          <strong className="text-[var(--indigo)]">
             {session?.target_role}
           </strong>{" "}
           interview.
         </p>
         {session && (
-          <p className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>
+          <p className="text-xs mt-2 font-mono font-bold uppercase tracking-widest text-[var(--text-muted)]">
             {session.interview_type.replace("_", " ")} ·{" "}
             {session.experience_level} · {session.answer_mode}
           </p>
@@ -795,8 +761,10 @@ function MockInterviewPageContent() {
       ) : (
         /* Non-proctored: just show answer scores */
         answerScores.length > 0 && (
-          <div className="glass-card p-5 mb-6">
-            <h3 className="font-semibold text-sm mb-3">Answer Scores</h3>
+          <div className="glass-card p-5 mb-6 rounded-none border-2 border-[var(--border)] shadow-[6px_6px_0px_var(--border)]">
+            <h3 className="font-display font-bold text-sm mb-3 uppercase tracking-widest text-[var(--text-primary)]">
+              Answer Scores
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { label: "Clarity", key: "clarity_score" as const },
@@ -813,23 +781,18 @@ function MockInterviewPageContent() {
                   answerScores.length;
                 return (
                   <div key={label} className="flex flex-col gap-1">
-                    <div className="flex justify-between text-xs">
-                      <span style={{ color: "var(--text-secondary)" }}>
+                    <div className="flex justify-between text-xs font-mono font-bold uppercase">
+                      <span className="text-[var(--text-secondary)]">
                         {label}
                       </span>
-                      <span className="font-semibold">{avg.toFixed(1)}/10</span>
+                      <span className="text-[var(--text-primary)]">
+                        {avg.toFixed(1)}/10
+                      </span>
                     </div>
-                    <div
-                      className="h-1.5 rounded-full"
-                      style={{ background: "var(--bg-elevated)" }}
-                    >
+                    <div className="h-1.5 rounded-none bg-[#111] border border-[var(--border)]">
                       <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${avg * 10}%`,
-                          background:
-                            "linear-gradient(90deg, var(--indigo), var(--violet))",
-                        }}
+                        className="h-full rounded-none bg-[var(--primary)]"
+                        style={{ width: `${avg * 10}%` }}
                       />
                     </div>
                   </div>
@@ -837,8 +800,10 @@ function MockInterviewPageContent() {
               })}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
-              <div>
-                <h4 className="font-medium text-sm mb-2">Session strengths</h4>
+              <div className="p-4 border-2 border-[var(--emerald)] bg-[var(--emerald)]/5 rounded-none">
+                <h4 className="font-mono font-bold text-xs mb-3 uppercase tracking-widest text-[var(--emerald)]">
+                  Session strengths
+                </h4>
                 {Array.from(
                   new Set(answerScores.flatMap((item) => item.strengths)),
                 )
@@ -846,15 +811,14 @@ function MockInterviewPageContent() {
                   .map((item) => (
                     <p
                       key={item}
-                      className="text-sm mb-1"
-                      style={{ color: "var(--text-secondary)" }}
+                      className="text-sm mb-1 font-mono text-[var(--text-primary)]"
                     >
                       ✓ {item}
                     </p>
                   ))}
               </div>
-              <div>
-                <h4 className="font-medium text-sm mb-2">
+              <div className="p-4 border-2 border-[var(--indigo)] bg-[var(--indigo)]/5 rounded-none">
+                <h4 className="font-mono font-bold text-xs mb-3 uppercase tracking-widest text-[var(--indigo)]">
                   Next practice goals
                 </h4>
                 {Array.from(
@@ -864,8 +828,7 @@ function MockInterviewPageContent() {
                   .map((item) => (
                     <p
                       key={item}
-                      className="text-sm mb-1"
-                      style={{ color: "var(--text-secondary)" }}
+                      className="text-sm mb-1 font-mono text-[var(--text-primary)]"
                     >
                       → {item}
                     </p>
