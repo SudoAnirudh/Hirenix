@@ -393,6 +393,7 @@ function AddBtn({ label, onClick }: { label: string; onClick: () => void }) {
 // ─── Accordion with drag handle ───────────────────────────────────────────────
 
 function AccordionSection({
+  sectionId,
   icon,
   title,
   open,
@@ -404,6 +405,7 @@ function AccordionSection({
   onDrop,
   isDragOver,
 }: {
+  sectionId?: string;
   icon: React.ReactNode;
   title: string;
   open: boolean;
@@ -417,6 +419,7 @@ function AccordionSection({
 }) {
   return (
     <div
+      data-section-id={sectionId}
       style={{
         borderBottom: "1px solid var(--border)",
         transition: "opacity 0.15s, background 0.15s",
