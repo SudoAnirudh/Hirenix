@@ -162,13 +162,17 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-8">
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
+      <main className="flex-1 overflow-y-auto">
+        <div className="min-h-full w-full px-6 py-8 md:px-8">
+          <div className="flex w-full flex-col items-center">
+            {error && (
+              <div className="mb-4 w-full max-w-5xl rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            <div className="w-full flex flex-col items-center">{children}</div>
           </div>
-        )}
-        {children}
+        </div>
       </main>
     </div>
   );
