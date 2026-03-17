@@ -119,242 +119,260 @@ export default function JobMatchPage() {
   }
 
   return (
-    <div className="animate-fade-up max-w-4xl">
-      <h1 className="font-display font-bold text-3xl mb-2">
-        Job Description Matching
-      </h1>
-      <p className="mb-8" style={{ color: "var(--text-secondary)" }}>
-        Upload your resume and a job description to get fit score, verdict,
-        pros, and cons.
-      </p>
-
-      <div className="glass-card p-6 mb-8 flex flex-col gap-4">
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Upload Resume (PDF)
-          </label>
-          <input
-            id="jm-resume-file"
-            className="input-base"
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Resume ID
-          </label>
-          <input
-            id="jm-resume-id"
-            className="input-base"
-            placeholder="Paste your resume ID from the analysis page"
-            value={resumeId}
-            onChange={(e) => setResumeId(e.target.value)}
-          />
-        </div>
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Target Role
-          </label>
-          <select
-            id="jm-role"
-            className="input-base"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            style={{ cursor: "pointer" }}
-          >
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Job Description
-          </label>
-          <textarea
-            id="jm-jd-text"
-            className="input-base min-h-[140px] resize-y"
-            placeholder="Paste the full job description here…"
-            value={jdText}
-            onChange={(e) => setJdText(e.target.value)}
-          />
-          <label
-            className="text-xs font-medium mt-3 mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Upload Job Description (PDF/TXT/MD, optional)
-          </label>
-          <input
-            id="jm-jd-file"
-            className="input-base"
-            type="file"
-            accept=".pdf,.txt,.md,application/pdf,text/plain"
-            onChange={(e) => setJdFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
-        {error && (
-          <p className="text-sm" style={{ color: "#f87171" }}>
-            {error}
-          </p>
-        )}
-        <div className="flex flex-wrap gap-3">
-          <button
-            id="jm-match-btn"
-            className="btn-primary self-start"
-            onClick={handleMatch}
-            disabled={loading || !resumeId || !jdText}
-          >
-            {loading ? "Matching…" : "Analyse By Resume ID"}
-          </button>
-          <button
-            id="jm-match-upload-btn"
-            className="btn-primary self-start"
-            onClick={handleMatchUpload}
-            disabled={loading || !resumeFile || (!jdText.trim() && !jdFile)}
-          >
-            {loading ? "Matching…" : "Analyse Uploaded Files"}
-          </button>
-        </div>
-      </div>
-
-      <div className="glass-card p-6 mb-8 flex flex-col gap-4">
-        <h3 className="font-semibold text-lg">Job Scraper</h3>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Enter user-specific fields (comma-separated) to fetch matching jobs
-          with apply links.
+    <div className="flex flex-col gap-8 animate-fade-up max-w-5xl mx-auto w-full pb-20">
+      <div>
+        <h1 className="font-display font-black text-3xl md:text-4xl tracking-tight uppercase mb-2 text-(--text-primary)">
+          Job Description Matching
+        </h1>
+        <p className="font-mono text-sm font-bold uppercase tracking-widest text-(--text-muted)">
+          Benchmarking your profile against market requirements.
         </p>
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Fields / Skills / Roles
-          </label>
-          <input
-            className="input-base"
-            placeholder="e.g. frontend, react, typescript"
-            value={fieldInput}
-            onChange={(e) => setFieldInput(e.target.value)}
-          />
-        </div>
-        <div>
-          <label
-            className="text-xs font-medium mb-1 block"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Location (optional)
-          </label>
-          <input
-            className="input-base"
-            placeholder="e.g. Bangalore, India"
-            value={jobLocation}
-            onChange={(e) => setJobLocation(e.target.value)}
-          />
-        </div>
-        <label
-          className="text-sm flex items-center gap-2"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          <input
-            type="checkbox"
-            checked={remoteOnly}
-            onChange={(e) => setRemoteOnly(e.target.checked)}
-          />
-          Remote only
-        </label>
-        {jobsError && (
-          <p className="text-sm" style={{ color: "#f87171" }}>
-            {jobsError}
-          </p>
-        )}
-        <button
-          className="btn-primary self-start"
-          onClick={handleScrapeJobs}
-          disabled={jobsLoading || !fieldInput.trim()}
-        >
-          {jobsLoading ? "Scraping…" : "Scrape Jobs"}
-        </button>
       </div>
 
-      {jobs.length > 0 && (
-        <div className="space-y-4 mb-8 animate-fade-up">
-          <h3 className="font-semibold text-xl">
-            Scraped Jobs ({jobs.length})
-          </h3>
-          {jobs.map((job) => (
-            <div
-              key={`${job.apply_url}-${job.title}`}
-              className="glass-card p-5"
-            >
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Input Controls */}
+        <div className="lg:col-span-12">
+          <div className="glass-card p-8 md:p-10 rounded-none bg-(--bg-surface) border-2 border-(--border) shadow-[8px_8px_0px_var(--border)] relative overflow-hidden group">
+            <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] bg-(--indigo)/10 pointer-events-none group-hover:opacity-20 transition-opacity" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+              <div className="space-y-6">
                 <div>
-                  <h4 className="font-semibold text-lg">{job.title}</h4>
-                  <p
-                    className="text-sm"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {job.company} · {job.location} · {job.job_type}
-                    {job.remote ? " · Remote" : ""}
-                  </p>
-                  <p
-                    className="text-sm mt-2"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {job.description_snippet}
-                  </p>
-                  {job.tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {job.tags.slice(0, 6).map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 rounded text-xs"
-                          style={{
-                            background: "rgba(11,124,118,0.12)",
-                            color: "var(--indigo)",
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                    Professional Credentials
+                  </label>
+                  <div className="flex flex-col gap-4">
+                    <div className="p-4 border-2 border-(--border) bg-black/40">
+                      <span className="text-[10px] font-mono font-medium uppercase text-(--text-muted) block mb-2">
+                        Upload Resume (PDF)
+                      </span>
+                      <input
+                        id="jm-resume-file"
+                        className="w-full text-xs font-mono text-(--text-primary) file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-2 file:border-(--indigo) file:bg-(--indigo)/10 file:text-(--indigo) file:text-xs file:font-bold file:uppercase cursor-pointer"
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={(e) =>
+                          setResumeFile(e.target.files?.[0] ?? null)
+                        }
+                      />
                     </div>
-                  )}
+                    <input
+                      id="jm-resume-id"
+                      className="input-base"
+                      placeholder="OR ENTER RESUME ID FROM ANALYSIS..."
+                      value={resumeId}
+                      onChange={(e) => setResumeId(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <a
-                  href={job.apply_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-primary text-sm text-center"
-                >
-                  Apply
-                </a>
+
+                <div>
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                    Target Industry Role
+                  </label>
+                  <select
+                    id="jm-role"
+                    className="input-base appearance-none cursor-pointer"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    {ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {r.toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <p
-                className="text-xs mt-3"
-                style={{ color: "var(--text-muted)" }}
-              >
-                Source: {job.source}
-                {job.posted_at ? ` · Posted: ${job.posted_at}` : ""}
-              </p>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                    Benchmark Criteria
+                  </label>
+                  <textarea
+                    id="jm-jd-text"
+                    className="input-base min-h-[160px] resize-y"
+                    placeholder="PASTE FULL JOB DESCRIPTION FOR DEEP CORRELATION ANALYSIS..."
+                    value={jdText}
+                    onChange={(e) => setJdText(e.target.value)}
+                  />
+                  <div className="mt-4 p-4 border-2 border-(--border) bg-black/40">
+                    <span className="text-[10px] font-mono font-medium uppercase text-(--text-muted) block mb-2">
+                      Attached JD (Optional)
+                    </span>
+                    <input
+                      id="jm-jd-file"
+                      className="w-full text-xs font-mono text-(--text-primary) file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-2 file:border-(--violet) file:bg-(--violet)/10 file:text-(--violet) file:text-xs file:font-bold file:uppercase cursor-pointer"
+                      type="file"
+                      accept=".pdf,.txt,.md,application/pdf,text/plain"
+                      onChange={(e) => setJdFile(e.target.files?.[0] ?? null)}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+
+            {error && (
+              <div className="mt-6 p-4 border-2 border-red-500 bg-red-500/5 text-red-500 font-mono text-xs font-bold uppercase animate-pulse">
+                ERR_MATCH_FAILED: {error}
+              </div>
+            )}
+
+            <div className="mt-10 pt-8 border-t-2 border-(--border) flex flex-wrap gap-4 relative z-10">
+              <button
+                id="jm-match-btn"
+                className="btn-primary"
+                onClick={handleMatch}
+                disabled={loading || !resumeId || !jdText}
+              >
+                <span className="flex items-center gap-2">
+                  {loading ? "MATCHING..." : "ANALYSE BY ID"}
+                  {!loading && <div className="w-1.5 h-1.5 bg-black" />}
+                </span>
+              </button>
+              <button
+                id="jm-match-upload-btn"
+                className="btn-primary"
+                onClick={handleMatchUpload}
+                disabled={loading || !resumeFile || (!jdText.trim() && !jdFile)}
+              >
+                <span className="flex items-center gap-2">
+                  {loading ? "PROCESSING..." : "PROCESS FILES"}
+                  {!loading && <div className="w-1.5 h-1.5 bg-black" />}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Scraper Section */}
+        <div className="lg:col-span-12">
+          <div className="glass-card p-8 md:p-10 rounded-none bg-(--bg-surface) border-2 border-(--border) shadow-[8px_8px_0px_var(--border)] relative group">
+            <h3 className="font-display font-black text-2xl tracking-tight uppercase mb-6 text-(--text-primary)">
+              Correlated Opportunities
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                    Search Parameters (Primary Skills)
+                  </label>
+                  <input
+                    className="input-base"
+                    placeholder="E.G. FRONTEND, REACT, TYPESCRIPT..."
+                    value={fieldInput}
+                    onChange={(e) => setFieldInput(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                    Geographic Focus
+                  </label>
+                  <input
+                    className="input-base"
+                    placeholder="E.G. NEW YORK, REMOTE, GLOBAL..."
+                    value={jobLocation}
+                    onChange={(e) => setJobLocation(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-between items-start">
+                <div className="flex items-center gap-4 p-4 border-2 border-(--border) w-full bg-black/40">
+                  <input
+                    type="checkbox"
+                    id="remote-only"
+                    className="w-5 h-5 accent-(--indigo) cursor-pointer"
+                    checked={remoteOnly}
+                    onChange={(e) => setRemoteOnly(e.target.checked)}
+                  />
+                  <label
+                    htmlFor="remote-only"
+                    className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-primary) cursor-pointer"
+                  >
+                    Enforce Remote Protocol
+                  </label>
+                </div>
+
+                {jobsError && (
+                  <div className="mt-4 p-4 border-2 border-red-500 bg-red-500/5 text-red-500 font-mono text-xs font-bold uppercase">
+                    SCRAPER_ERR: {jobsError}
+                  </div>
+                )}
+
+                <button
+                  className="btn-primary mt-6"
+                  onClick={handleScrapeJobs}
+                  disabled={jobsLoading || !fieldInput.trim()}
+                >
+                  <span className="flex items-center gap-2">
+                    {jobsLoading ? "SCRAPING..." : "EXECUTE SCRAPING"}
+                    {!jobsLoading && <div className="w-1.5 h-1.5 bg-black" />}
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {jobs.length > 0 && (
+              <div className="space-y-6 pt-10 border-t-2 border-(--border) animate-fade-up">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-display font-black text-xl tracking-tight uppercase text-(--indigo)">
+                    Scraped Signals ({jobs.length})
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {jobs.map((job) => (
+                    <div
+                      key={`${job.apply_url}-${job.title}`}
+                      className="p-6 border-2 border-(--border) bg-black/40 hover:border-(--indigo) transition-all group/item"
+                    >
+                      <div className="flex flex-col h-full justify-between gap-4">
+                        <div>
+                          <h5 className="font-display font-black text-lg uppercase tracking-tight text-(--text-primary) mb-1 group-hover/item:text-(--indigo)">
+                            {job.title}
+                          </h5>
+                          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3">
+                            <span className="text-[10px] font-mono font-bold uppercase text-(--text-muted)">
+                              {job.company}
+                            </span>
+                            <span className="text-[10px] font-mono font-bold uppercase text-(--indigo)">
+                              {job.location}
+                            </span>
+                            {job.remote && (
+                              <span className="text-[10px] font-mono font-bold uppercase text-(--emerald)">
+                                [REMOTE]
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs font-mono text-(--text-secondary) line-clamp-2 leading-relaxed">
+                            {job.description_snippet}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between pt-4 border-t border-(--border)">
+                          <span className="text-[9px] font-mono text-(--text-muted) uppercase">
+                            SOURCE: {job.source.substring(0, 10)}...
+                          </span>
+                          <a
+                            href={job.apply_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-mono font-black uppercase text-(--indigo) hover:underline flex items-center gap-1"
+                          >
+                            APPLY_NOW →
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {result && (
         <div className="animate-fade-up space-y-6">

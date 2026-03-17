@@ -76,41 +76,31 @@ export default function ResumeUploader({ onResult }: Props) {
       : status === "error"
         ? "#ef4444"
         : "var(--border)";
-  const bg = isDragActive ? "rgba(99,102,241,0.08)" : "var(--bg-glass)";
 
   return (
     <div
       {...getRootProps()}
       id="resume-dropzone"
-      className="glass-card p-10 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all"
+      className={`glass-card p-10 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-none ${isDragActive ? "bg-(--indigo)/5 border-(--indigo) translate-y-[-2px] translate-x-[-2px] shadow-[8px_8px_0px_var(--indigo)]" : ""}`}
       style={{
-        border: `2px dashed ${borderColor}`,
-        background: bg,
-        minHeight: "200px",
+        borderColor: isDragActive ? "var(--indigo)" : borderColor,
+        minHeight: "240px",
       }}
     >
       <input {...getInputProps()} id="resume-file-input" />
 
       {status === "idle" && (
         <>
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(99,102,241,0.12)" }}
-          >
-            <Upload size={26} style={{ color: "var(--indigo)" }} />
+          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--indigo) bg-(--indigo)/10 text-(--indigo) shadow-[4px_4px_0px_var(--indigo)]">
+            <Upload size={28} strokeWidth={2.5} />
           </div>
           <div className="text-center">
-            <p className="font-semibold">
-              {isDragActive
-                ? "Drop your resume here"
-                : "Drag & drop your resume"}
+            <p className="font-display font-black text-lg uppercase tracking-tight mb-1">
+              {isDragActive ? "Drop it here!" : "Upload your resume"}
             </p>
-            <p
-              className="text-sm mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              or <span style={{ color: "var(--indigo)" }}>browse files</span> ·
-              PDF only · Max 10MB
+            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
+              or <span className="text-(--indigo) underline">browse files</span>{" "}
+              · PDF · Max 10MB
             </p>
           </div>
         </>
@@ -118,21 +108,14 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "uploading" && (
         <>
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center animate-pulse"
-            style={{ background: "rgba(99,102,241,0.12)" }}
-          >
-            <FileText size={26} style={{ color: "var(--indigo)" }} />
+          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--indigo) bg-(--indigo)/10 text-(--indigo) shadow-[4px_4px_0px_var(--indigo)] animate-pulse">
+            <FileText size={28} strokeWidth={2.5} />
           </div>
           <div className="text-center">
-            <p className="font-semibold">
-              Analysing{" "}
-              <span style={{ color: "var(--indigo)" }}>{fileName}</span>
+            <p className="font-display font-black text-lg uppercase tracking-tight mb-1">
+              Analysing <span className="text-(--indigo)">{fileName}</span>
             </p>
-            <p
-              className="text-sm mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
               Extracting text · Computing ATS score…
             </p>
           </div>
@@ -141,16 +124,15 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "success" && (
         <>
-          <CheckCircle size={40} style={{ color: "var(--emerald)" }} />
+          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--emerald) bg-(--emerald)/10 text-(--emerald) shadow-[4px_4px_0px_var(--emerald)]">
+            <CheckCircle size={32} strokeWidth={2.5} />
+          </div>
           <div className="text-center">
-            <p className="font-semibold" style={{ color: "var(--emerald)" }}>
+            <p className="font-display font-black text-lg uppercase tracking-tight mb-1 text-(--emerald)">
               Analysis complete!
             </p>
-            <p
-              className="text-sm mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              {fileName} · Results shown below
+            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
+              {fileName} · Results ready
             </p>
           </div>
         </>
@@ -158,15 +140,14 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "error" && (
         <>
-          <AlertCircle size={40} style={{ color: "#ef4444" }} />
+          <div className="w-16 h-16 flex items-center justify-center border-2 border-red-500 bg-red-500/10 text-red-500 shadow-[4px_4px_0px_#ef4444]">
+            <AlertCircle size={32} strokeWidth={2.5} />
+          </div>
           <div className="text-center">
-            <p className="font-semibold" style={{ color: "#ef4444" }}>
+            <p className="font-display font-black text-lg uppercase tracking-tight mb-1 text-red-500">
               Upload failed
             </p>
-            <p
-              className="text-sm mt-1"
-              style={{ color: "var(--text-secondary)" }}
-            >
+            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
               {errorMsg}
             </p>
           </div>
