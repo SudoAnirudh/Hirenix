@@ -1,7 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { submitAnswer } from "@/lib/api";
-import { ChevronRight, CheckCircle, Timer } from "lucide-react";
+import {
+  ChevronRight,
+  CheckCircle,
+  Timer,
+  Brain,
+  TrendingUp,
+} from "lucide-react";
 
 interface Question {
   question_id: string;
@@ -107,10 +113,10 @@ export default function InterviewPanel({
 
   const categoryColor =
     q.category === "technical"
-      ? "var(--cyan)"
+      ? "#7C9ADD"
       : q.category === "system_design"
-        ? "var(--indigo)"
-        : "var(--violet)";
+        ? "#98C9A3"
+        : "#B8C1EC"; // Soft violet
 
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
@@ -118,26 +124,26 @@ export default function InterviewPanel({
   const isUrgent = timeLeft <= 30;
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-up max-w-5xl mx-auto w-full">
+    <div className="flex flex-col gap-10 animate-fade-up max-w-5xl mx-auto w-full pb-20">
       {/* Header / Progress Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-display font-black text-2xl tracking-tight uppercase mb-1 text-[var(--text-primary)]">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+        <div className="flex-1">
+          <h2 className="font-display font-bold text-4xl tracking-tight text-[#2D3748] mb-4">
             Question {currentIdx + 1}
-            <span className="text-lg font-bold ml-2 text-[var(--text-muted)]">
+            <span className="text-xl font-medium ml-3 text-[#A0AEC0]">
               / {session.questions.length}
             </span>
           </h2>
-          <div className="flex items-center gap-1.5 mt-2">
+          <div className="flex items-center gap-3">
             {session.questions.map((_, i) => (
               <div
                 key={i}
-                className={`h-2 rounded-none border-2 border-[var(--border)] transition-all ${
+                className={`h-2 transition-all duration-700 rounded-full ${
                   i < currentIdx
-                    ? "bg-[var(--indigo)] border-[var(--indigo)] w-4"
+                    ? "bg-[#7C9ADD] w-10 opacity-40"
                     : i === currentIdx
-                      ? "bg-[var(--violet)] border-[var(--violet)] w-8"
-                      : "bg-[#111] w-4"
+                      ? "bg-[#7C9ADD] w-16 shadow-lg shadow-[#7C9ADD]/20"
+                      : "bg-[#E2E8F0] w-10"
                 }`}
               />
             ))}
@@ -147,56 +153,57 @@ export default function InterviewPanel({
         {/* Timer */}
         {!feedback && (
           <div
-            className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-bold border-2 transition-all ${
+            className={`flex items-center gap-3 px-8 py-4 rounded-[20px] text-sm font-bold transition-all duration-500 border border-(--border) ${
               isUrgent
-                ? "animate-timer-pulse border-red-500 bg-red-500/10 text-red-500 shadow-[4px_4px_0px_rgba(239,68,68,1)] translate-x-[-2px] translate-y-[-2px]"
-                : "border-[var(--border)] bg-[#111] text-[var(--text-primary)] shadow-[4px_4px_0px_var(--border)]"
+                ? "animate-pulse bg-[#F28C8C]/5 text-[#F28C8C] shadow-lg shadow-[#F28C8C]/10"
+                : "bg-white/40 backdrop-blur-sm text-[#4A5568] shadow-glass"
             }`}
           >
-            <Timer size={16} className={isUrgent ? "animate-pulse" : ""} />
-            <span className="tracking-widest tabular-nums font-mono">
-              {timeString}
-            </span>
+            <Timer
+              size={20}
+              className={isUrgent ? "text-[#F28C8C]" : "text-[#7C9ADD]"}
+            />
+            <span className="tabular-nums tracking-tight">{timeString}</span>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-        {/* Left/Top Area: Question Details */}
-        <div className="lg:col-span-12 flex flex-col gap-6">
-          <div className="glass-card p-8 md:p-10 relative overflow-hidden group rounded-none border-2 border-[var(--border)] bg-[#050505] shadow-[8px_8px_0px_var(--border)]">
-            {/* Decorative Element */}
+      <div className="flex flex-col gap-10 px-4">
+        {/* Main Question Card */}
+        <div className="flex flex-col gap-6">
+          <div className="glass-card p-12 md:p-16 relative overflow-hidden group rounded-[40px] shadow-glass bg-white/50 border border-white/60">
+            {/* Decorative Glow */}
             <div
-              className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] opacity-10 pointer-events-none transition-opacity duration-1000 group-hover:opacity-20"
+              className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-[100px] opacity-10 pointer-events-none transition-opacity duration-1000 group-hover:opacity-20"
               style={{ background: categoryColor }}
             />
 
-            <div className="flex flex-wrap items-center gap-3 mb-6 relative z-10">
+            <div className="flex flex-wrap items-center gap-3 mb-10 relative z-10 transition-transform duration-500">
               <span
-                className="px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-widest border-2 bg-black shadow-[2px_2px_0px_currentColor]"
-                style={{ color: categoryColor, borderColor: categoryColor }}
+                className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40"
+                style={{ color: categoryColor }}
               >
                 {q.category.replace("_", " ")}
               </span>
-              <span className="px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-widest border-2 border-[var(--border)] bg-[#111] text-[var(--text-secondary)] shadow-[2px_2px_0px_var(--border)]">
+              <span className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40 text-[#718096]">
                 {q.difficulty}
               </span>
             </div>
 
-            <h3 className="font-display font-black text-2xl md:text-3xl lg:text-4xl leading-tight mb-8 relative z-10 text-balance tracking-tight text-[var(--text-primary)] uppercase">
+            <h3 className="font-display font-bold text-3xl md:text-5xl leading-[1.1] mb-12 relative z-10 text-[#2D3748] tracking-tighter text-balance">
               {q.question}
             </h3>
 
             {q.expected_topics.length > 0 && (
-              <div className="mb-8 relative z-10">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest mb-3 block text-[var(--text-secondary)]">
+              <div className="mb-12 relative z-10">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block text-[#A0AEC0]">
                   Target Topics
                 </span>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {q.expected_topics.map((topic) => (
                     <span
                       key={topic}
-                      className="px-3 py-1.5 border-2 border-[var(--border)] bg-[#111] text-xs font-mono font-bold text-[var(--text-primary)] shadow-[2px_2px_0px_var(--border)] uppercase"
+                      className="px-5 py-2.5 rounded-2xl bg-white/40 text-[13px] font-semibold text-[#4A5568] border border-white/60 hover:bg-white/80 hover:shadow-glass hover:-translate-y-0.5 transition-all cursor-default"
                     >
                       {topic}
                     </span>
@@ -205,84 +212,71 @@ export default function InterviewPanel({
               </div>
             )}
 
-            <div className="p-5 md:p-6 text-sm leading-relaxed relative z-10 border-2 border-[var(--indigo)] bg-[var(--indigo)]/5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="text-[var(--indigo)]">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4" />
-                    <path d="M12 8h.01" />
-                  </svg>
+            <div className="p-10 rounded-[32px] relative z-10 bg-[#7C9ADD]/5 border border-[#7C9ADD]/10 backdrop-blur-sm shadow-inner group/tip">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 group-hover/tip:scale-110 transition-transform">
+                  <Brain size={20} />
                 </div>
-                <span className="font-mono font-bold uppercase tracking-widest text-[var(--indigo)]">
-                  Coaching Structure
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#7C9ADD]">
+                  Strategy Guide
                 </span>
               </div>
-              <span className="font-mono font-medium text-[var(--text-primary)]">
+              <p className="text-base font-body text-[#4A5568] leading-relaxed">
                 {q.category === "behavioral"
-                  ? "Use the STAR method (Situation, Task, Action, Result) and keep the Action section concrete. Focus on your specific contributions."
+                  ? "Use the STAR method (Situation, Task, Action, Result). Focus on specific contributions and quantified results."
                   : q.category === "system_design"
-                    ? "State assumptions clearly, outline the high-level architecture, then explain potential bottlenecks and tradeoffs."
-                    : "Define the core concept, explain tradeoffs objectively, then anchor your explanation with a concrete, real-world example."}
-              </span>
+                    ? "Outline high-level architecture first, then explain specific bottlenecks and tradeoffs."
+                    : "Define the core concept, explore tradeoffs, and provide a concrete real-world example."}
+              </p>
             </div>
           </div>
 
           {/* Answer Area */}
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] font-mono font-bold tracking-widest uppercase flex items-center justify-between text-[var(--text-secondary)]">
-              <span>Your Response</span>
+          <div className="flex flex-col gap-6 mt-4">
+            <div className="flex items-center justify-between px-4">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#718096]">
+                Your Response
+              </span>
               {session.answer_mode !== "text" && (
-                <span className="text-[10px] font-bold tracking-widest uppercase border-2 border-[var(--border)] px-2 py-0.5 bg-[#111] text-[var(--text-primary)]">
-                  {session.answer_mode} MODE
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-3 py-1 rounded-full bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20">
+                  {session.answer_mode} ACTIVE
                 </span>
               )}
-            </span>
+            </div>
             <div className="relative group">
               <textarea
                 id={`answer-${q.question_id}`}
-                className="w-full rounded-none p-6 text-base leading-relaxed resize-y min-h-[180px] transition-all duration-200 font-mono font-medium outline-none bg-[#050505] border-2 border-[var(--border)] text-[var(--text-primary)] focus:border-[var(--primary)] focus:shadow-[4px_4px_0px_var(--primary)] focus:-translate-y-1 focus:-translate-x-1"
+                className="w-full rounded-[32px] p-10 text-lg leading-relaxed resize-y min-h-[220px] transition-all duration-500 font-body outline-none bg-white/40 backdrop-blur-md border border-white/60 text-[#2D3748] placeholder:text-[#A0AEC0] shadow-glass focus:bg-white/60 focus:border-[#7C9ADD]/50 focus:shadow-xl focus:shadow-[#7C9ADD]/10"
                 placeholder={
                   session.answer_mode === "text"
-                    ? "Type your answer here. Be specific, mention tradeoffs, and use examples..."
-                    : `Respond via ${session.answer_mode === "audio" ? "voice" : "video"}, then summarize or provide key points here for analysis...`
+                    ? "Draft your response here. Anchor your points with clear examples and technical depth..."
+                    : `Respond via ${session.answer_mode === "audio" ? "voice" : "video"}, then summarize key points here...`
                 }
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 disabled={!!feedback}
-                onPaste={(e) => {
-                  if (proctoringEnabled) e.preventDefault();
-                }}
-                onCopy={(e) => {
-                  if (proctoringEnabled) e.preventDefault();
-                }}
-                onCut={(e) => {
-                  if (proctoringEnabled) e.preventDefault();
-                }}
               />
             </div>
 
             {!feedback && (
-              <div className="mt-2 flex justify-end">
+              <div className="mt-4 flex justify-end">
                 <button
                   id="submit-answer-btn"
-                  className="btn-primary flex items-center gap-3 px-8 py-4"
+                  className="flex items-center gap-4 px-12 py-5 rounded-[24px] bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/30 hover:bg-[#7C9ADD]/90 hover:shadow-2xl hover:-translate-y-1 transition-all group disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
                   onClick={() => handleSubmit(false)}
                   disabled={submitting || !answer.trim()}
                 >
-                  <span className="font-display font-black tracking-tight uppercase">
-                    {submitting ? "Evaluating Response…" : "Submit Answer"}
+                  <span className="font-display font-bold text-xl tracking-tight">
+                    {submitting
+                      ? "Analyzing performance..."
+                      : "Submit Response"}
                   </span>
-                  {!submitting && <ChevronRight size={18} strokeWidth={3} />}
+                  {!submitting && (
+                    <ChevronRight
+                      size={24}
+                      className="group-hover:translate-x-1 transition-transform"
+                    />
+                  )}
                 </button>
               </div>
             )}
@@ -291,47 +285,51 @@ export default function InterviewPanel({
 
         {/* Feedback Section */}
         {feedback && (
-          <div className="lg:col-span-12 animate-fade-up mt-6">
-            <div className="glass-card overflow-hidden rounded-none border-2 border-[var(--emerald)] bg-[#050505] shadow-[8px_8px_0px_var(--emerald)] relative">
+          <div className="animate-fade-up mt-10">
+            <div className="glass-card overflow-hidden rounded-[40px] border border-white/60 bg-white/60 shadow-glass relative">
               {/* Feedback Header */}
-              <div className="p-8 md:p-10 border-b-2 border-[var(--emerald)] relative bg-black">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--emerald)]/10 blur-[50px] pointer-events-none" />
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 relative z-10">
-                  <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 flex items-center justify-center border-2 border-[var(--emerald)] bg-[var(--emerald)]/20 text-[var(--emerald)]">
-                        <CheckCircle size={24} strokeWidth={2.5} />
-                      </div>
-                      <span className="font-display font-black text-2xl lg:text-3xl tracking-tight uppercase text-[var(--emerald)]">
+              <div className="p-12 md:p-16 border-b border-white/40 relative">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-[#98C9A3]/10 blur-[90px] pointer-events-none" />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-10 relative z-10">
+                  <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 flex items-center justify-center rounded-[32px] bg-[#98C9A3] text-white shadow-xl shadow-[#98C9A3]/30 shrink-0">
+                      <CheckCircle size={36} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#98C9A3] block mb-2">
                         Evaluation Complete
                       </span>
+                      <h4 className="font-display font-bold text-4xl text-[#2D3748] tracking-tighter">
+                        Insightful Analysis
+                      </h4>
                     </div>
-                    <p className="text-sm font-mono text-[var(--text-secondary)]">
-                      Detailed breakdown of your response based on the rubric
-                      for {q.category.replace("_", " ")} questions.
-                    </p>
                   </div>
 
-                  <div className="flex flex-col items-end shrink-0">
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-widest mb-1 text-[var(--emerald)]">
-                      Overall Score
-                    </span>
-                    <div className="font-display font-black text-6xl tracking-tighter leading-none text-[var(--emerald)]">
-                      {feedback.score}
-                      <span className="text-3xl opacity-40">/10</span>
+                  <div className="flex items-center gap-8 px-10 py-6 rounded-[32px] bg-white/40 shrink-0 border border-white/60 shadow-inner">
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#718096] block mb-1">
+                        Impact Score
+                      </span>
+                      <div className="font-display font-bold text-6xl tracking-tighter text-[#98C9A3] leading-none">
+                        {feedback.score}
+                        <span className="text-2xl opacity-30 ml-2">/ 10</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8 md:p-10 bg-[#050505]">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+              <div className="p-12 md:p-16">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
                   {/* Left Column: Scores */}
-                  <div className="lg:col-span-4 flex flex-col gap-6">
-                    <h4 className="font-mono font-bold text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-                      Metrics Dashboard
-                    </h4>
-                    <div className="flex flex-col gap-6">
+                  <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-10">
+                    <div className="flex items-center gap-4">
+                      <span className="w-12 h-0.5 bg-[#7C9ADD]/20 rounded-full" />
+                      <h5 className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.3em]">
+                        Performance Metrics
+                      </h5>
+                    </div>
+                    <div className="flex flex-col gap-10">
                       {[
                         { label: "Clarity", val: feedback.clarity_score },
                         { label: "Technical", val: feedback.technical_score },
@@ -345,27 +343,29 @@ export default function InterviewPanel({
                           val: feedback.problem_solving_score,
                         },
                       ].map(({ label, val }) => (
-                        <div key={label} className="group">
-                          <div className="flex justify-between items-end mb-2.5">
-                            <span className="text-sm font-display font-bold uppercase tracking-tight text-[var(--text-primary)] opacity-80 group-hover:opacity-100 transition-opacity">
+                        <div key={label} className="group/metric">
+                          <div className="flex justify-between items-end mb-4">
+                            <span className="text-xs font-bold uppercase tracking-widest text-[#718096] group-hover/metric:text-[#2D3748] transition-colors">
                               {label}
                             </span>
-                            <span className="text-sm font-bold font-mono text-[var(--text-primary)]">
-                              {val}
-                              <span className="opacity-40 text-xs">/10</span>
+                            <span className="text-lg font-bold text-[#2D3748] tabular-nums">
+                              {val}{" "}
+                              <span className="text-xs text-[#A0AEC0] font-medium ml-1">
+                                / 10
+                              </span>
                             </span>
                           </div>
-                          <div className="h-2.5 rounded-none overflow-hidden bg-[#111] border border-[var(--border)]">
+                          <div className="h-2.5 rounded-full overflow-hidden bg-white/40 border border-white/60 shadow-inner">
                             <div
-                              className="h-full rounded-none transition-all duration-1000 ease-out"
+                              className="h-full rounded-full transition-all duration-1000 ease-out shadow-glass"
                               style={{
                                 width: `${val * 10}%`,
                                 background:
                                   val >= 8
-                                    ? "var(--emerald)"
+                                    ? "#98C9A3"
                                     : val >= 5
-                                      ? "var(--cyan)"
-                                      : "var(--pink)",
+                                      ? "#7C9ADD"
+                                      : "#F28C8C",
                               }}
                             />
                           </div>
@@ -374,102 +374,90 @@ export default function InterviewPanel({
                     </div>
                   </div>
 
-                  {/* Right Column: Strengths, Improvements & Coaching */}
-                  <div className="lg:col-span-8 flex flex-col gap-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 border-2 border-[var(--emerald)] bg-[var(--emerald)]/5 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--emerald)]/10 transition-transform group-hover:scale-110" />
-                        <div className="flex items-center gap-2 mb-5 relative z-10">
-                          <div className="w-2.5 h-2.5 rounded-none bg-[var(--emerald)]" />
-                          <div className="font-mono font-bold text-sm tracking-widest uppercase text-[var(--emerald)]">
-                            Key Strengths
+                  {/* Right Column: Strengths & Improvements */}
+                  <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="p-10 rounded-[32px] bg-[#98C9A3]/5 border border-[#98C9A3]/10 group/s">
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="p-3 rounded-2xl bg-[#98C9A3] text-white shadow-lg shadow-[#98C9A3]/30 group-hover/s:scale-110 transition-transform">
+                            <CheckCircle size={20} />
                           </div>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#98C9A3]">
+                            Strengths
+                          </span>
                         </div>
-                        <div className="flex flex-col gap-4 relative z-10">
+                        <ul className="space-y-6">
                           {feedback.strengths.map((s: string, i: number) => (
-                            <div key={i} className="flex items-start gap-3">
-                              <span className="text-[var(--emerald)] font-bold mt-0.5">
+                            <li
+                              key={i}
+                              className="flex gap-4 text-[15px] font-medium text-[#4A5568] leading-relaxed"
+                            >
+                              <span className="text-[#98C9A3] font-bold">
                                 ✓
                               </span>
-                              <p className="text-sm leading-relaxed font-mono font-medium text-[var(--text-primary)]">
-                                {s}
-                              </p>
-                            </div>
+                              {s}
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
 
-                      <div className="p-6 border-2 border-[var(--pink)] bg-[var(--pink)]/5 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--pink)]/10 transition-transform group-hover:scale-110" />
-                        <div className="flex items-center gap-2 mb-5 relative z-10">
-                          <div className="w-2.5 h-2.5 rounded-none bg-[var(--pink)]" />
-                          <div className="font-mono font-bold text-sm tracking-widest uppercase text-[var(--pink)]">
-                            Areas to Improve
+                      <div className="p-10 rounded-[32px] bg-[#E6B17E]/5 border border-[#E6B17E]/10 group/i">
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="p-3 rounded-2xl bg-[#E6B17E] text-white shadow-lg shadow-[#E6B17E]/30 group-hover/i:scale-110 transition-transform">
+                            <TrendingUp size={20} />
                           </div>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#E6B17E]">
+                            Focus Areas
+                          </span>
                         </div>
-                        <div className="flex flex-col gap-4 relative z-10">
+                        <ul className="space-y-6">
                           {feedback.improvements.map((s: string, i: number) => (
-                            <div key={i} className="flex items-start gap-3">
-                              <span className="text-[var(--pink)] font-bold mt-0.5">
+                            <li
+                              key={i}
+                              className="flex gap-4 text-[15px] font-medium text-[#4A5568] leading-relaxed"
+                            >
+                              <span className="text-[#E6B17E] font-bold">
                                 →
                               </span>
-                              <p className="text-sm leading-relaxed font-mono font-medium text-[var(--text-primary)]">
-                                {s}
-                              </p>
-                            </div>
+                              {s}
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-5">
-                      <div className="p-6 relative border-2 border-[var(--violet)] bg-[var(--violet)]/5">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-[var(--violet)]">
-                            Actionable Coaching Tip
-                          </span>
-                        </div>
-                        <p className="text-sm font-mono font-bold leading-relaxed text-[var(--text-primary)]">
-                          {feedback.coaching_tip}
+                    <div className="flex flex-col gap-8">
+                      <div className="p-10 rounded-[32px] bg-[#7C9ADD]/5 border border-[#7C9ADD]/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#7C9ADD]/10 blur-[50px] pointer-events-none" />
+                        <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-[#7C9ADD] block mb-4">
+                          Coaching Insight
+                        </span>
+                        <p className="font-display font-bold text-xl leading-relaxed text-[#2D3748] italic">
+                          &quot;{feedback.coaching_tip}&quot;
                         </p>
                       </div>
 
-                      <div className="p-6 border-2 border-[var(--border)] bg-[#111]">
-                        <span className="text-[11px] font-mono font-bold uppercase tracking-widest mb-3 block text-[var(--text-muted)]">
-                          Model Answer Pattern
-                        </span>
-                        <p className="text-sm leading-relaxed font-mono font-medium text-[var(--text-secondary)] italic">
-                          &quot;{feedback.model_answer}&quot;
-                        </p>
-                      </div>
-
-                      {q.follow_up_prompt && (
-                        <div className="p-6 border-2 border-[var(--indigo)] bg-[var(--indigo)]/5">
-                          <span className="text-[11px] font-mono font-bold uppercase tracking-widest mb-2 block text-[var(--indigo)]">
-                            Follow-up Prompt (Next Step)
-                          </span>
-                          <p className="text-sm font-mono font-bold leading-relaxed text-[var(--text-primary)]">
-                            {q.follow_up_prompt}
-                          </p>
+                      <div className="pt-10 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-white/40 mt-4">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#A0AEC0]">
+                          {isLast
+                            ? "Session Complete"
+                            : "Reviewed · Ready for next"}
                         </div>
-                      )}
-                    </div>
-
-                    <div className="pt-6 flex flex-col md:flex-row justify-between items-center gap-4 border-t-2 border-[var(--border)] mt-4">
-                      <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-secondary)] text-center md:text-left">
-                        {isLast
-                          ? "You've reached the end."
-                          : "Ready to proceed?"}
+                        <button
+                          className="flex items-center justify-center gap-4 px-12 py-5 rounded-[24px] bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/30 hover:bg-[#7C9ADD]/90 hover:shadow-2xl hover:-translate-y-1 transition-all group w-full md:w-auto"
+                          onClick={handleNext}
+                        >
+                          <span className="font-display font-bold text-xl tracking-tight">
+                            {isLast
+                              ? "Finish Studio Session"
+                              : "Next Challenge"}
+                          </span>
+                          <ChevronRight
+                            size={24}
+                            className="group-hover:translate-x-1 transition-transform"
+                          />
+                        </button>
                       </div>
-                      <button
-                        className="btn-primary flex items-center justify-center gap-2 px-8 py-4 w-full md:w-auto"
-                        onClick={handleNext}
-                      >
-                        <span className="font-display font-black tracking-tight uppercase">
-                          {isLast ? "View Final Report" : "Next Question"}
-                        </span>
-                        <ChevronRight size={18} strokeWidth={3} />
-                      </button>
                     </div>
                   </div>
                 </div>

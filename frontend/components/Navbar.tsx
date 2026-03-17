@@ -13,40 +13,49 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav
-      className="fixed top-0 w-full z-50 border-b"
-      style={{
-        borderColor: "var(--border)",
-        background: "rgba(10,10,15,0.85)",
-        backdropFilter: "blur(16px)",
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <Brain size={22} style={{ color: "var(--indigo)" }} />
-          <span className="font-display font-bold text-lg gradient-text">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+      <div
+        className="max-w-7xl mx-auto h-20 px-8 rounded-[24px] border border-(--border) flex items-center justify-between shadow-glass transition-all duration-500"
+        style={{
+          background: "var(--bg-glass)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
+      >
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl bg-[#7C9ADD]/10 flex items-center justify-center transition-transform group-hover:scale-110">
+            <Brain size={22} className="text-[#7C9ADD]" />
+          </div>
+          <span className="font-display font-bold text-xl tracking-tight text-[#2D3748]">
             Hirenix
           </span>
         </Link>
-        <div className="flex items-center gap-6">
+
+        <div className="hidden md:flex items-center gap-10">
           {links.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="text-sm font-medium transition-colors"
-              style={{
-                color:
-                  pathname === href ? "var(--indigo)" : "var(--text-secondary)",
-              }}
+              className={`text-sm font-semibold transition-colors hover:text-[#7C9ADD] ${
+                pathname === href ? "text-[#7C9ADD]" : "text-[#4A5568]"
+              }`}
             >
               {label}
             </Link>
           ))}
-          <Link href="/dashboard">
-            <button className="btn-ghost text-sm">Dashboard</button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="hidden sm:block">
+            <button className="text-sm font-bold text-[#4A5568] hover:text-[#7C9ADD] transition-colors px-4">
+              Dashboard
+            </button>
           </Link>
-          <Link href="/auth/login">
-            <button className="btn-primary text-sm">Sign In</button>
+          <Link
+            href="/dashboard"
+            className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-sm font-bold shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+          >
+            Start Studio
           </Link>
         </div>
       </div>

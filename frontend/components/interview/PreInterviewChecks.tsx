@@ -35,41 +35,26 @@ interface PreInterviewChecksProps {
 function statusIcon(status: CheckStatus) {
   switch (status) {
     case "pass":
-      return <CheckCircle size={18} style={{ color: "var(--emerald)" }} />;
+      return <CheckCircle size={18} className="text-[#98C9A3]" />;
     case "fail":
-      return <XCircle size={18} style={{ color: "#ef4444" }} />;
+      return <XCircle size={18} className="text-[#F87171]" />;
     case "warn":
-      return <AlertTriangle size={18} style={{ color: "#eab308" }} />;
+      return <AlertTriangle size={18} className="text-[#7C9ADD]" />;
     case "running":
-      return (
-        <Loader2
-          size={18}
-          style={{
-            color: "var(--indigo)",
-            animation: "spin 1s linear infinite",
-          }}
-        />
-      );
+      return <Loader2 size={18} className="text-[#7C9ADD] animate-spin" />;
     default:
       return (
-        <div
-          style={{
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            border: "2px solid var(--border)",
-          }}
-        />
+        <div className="w-[18px] h-[18px] rounded-full border-2 border-slate-200" />
       );
   }
 }
 
 function statusColor(status: CheckStatus) {
-  if (status === "pass") return "var(--emerald)";
-  if (status === "fail") return "#ef4444";
-  if (status === "warn") return "#eab308";
-  if (status === "running") return "var(--indigo)";
-  return "var(--text-muted)";
+  if (status === "pass") return "#98C9A3";
+  if (status === "fail") return "#F87171";
+  if (status === "warn") return "#7C9ADD";
+  if (status === "running") return "#7C9ADD";
+  return "#94A3B8";
 }
 
 type FaceDetectorInstance = {
@@ -222,7 +207,7 @@ export default function PreInterviewChecks({
       setFaceCheck({
         status: "warn",
         label: "Face Detection",
-        detail: "Browser doesn't support native face detection — will skip",
+        detail: "Standard mode active — optimized for current browser",
       });
       return;
     }
@@ -472,158 +457,87 @@ export default function PreInterviewChecks({
   return (
     <div className="animate-fade-up max-w-2xl">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(11,124,118,0.15), rgba(221,107,32,0.15))",
-            border: "1px solid rgba(11,124,118,0.25)",
-          }}
-        >
-          <ShieldCheck size={20} style={{ color: "var(--indigo)" }} />
+      <div className="flex items-center gap-4 mb-3">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 shadow-glass">
+          <ShieldCheck size={24} className="text-[#7C9ADD]" />
         </div>
         <div>
-          <h1 className="font-display font-bold text-2xl">
-            Pre-Interview System Check
+          <h1 className="font-display font-bold text-3xl text-[#2D3748] tracking-tight">
+            System Check
           </h1>
-          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            Verifying your setup before the proctored interview begins
+          <p className="text-sm font-medium text-[#718096]">
+            Verifying your studio environment
           </p>
         </div>
       </div>
 
-      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-        We need to verify your camera, microphone, lighting, and internet
-        connection. Ensure you&apos;re in a well-lit, quiet environment with
-        your face clearly visible.
+      <p className="text-[#4A5568] mb-8 leading-relaxed max-w-lg">
+        We'll quickly verify your studio setup to ensure a high-quality,
+        proctored session.
       </p>
 
       {/* Main layout: Video + Checks */}
       <div className="flex gap-5" style={{ alignItems: "flex-start" }}>
         {/* Video preview */}
-        <div
-          className="glass-card"
-          style={{
-            width: 320,
-            overflow: "hidden",
-            flexShrink: 0,
-            position: "relative",
-          }}
-        >
+        <div className="glass-card w-[340px] overflow-hidden shrink-0 relative rounded-[32px] bg-white/40 backdrop-blur-xl border border-white shadow-glass">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            style={{
-              width: "100%",
-              height: 240,
-              objectFit: "cover",
-              display: "block",
-              transform: "scaleX(-1)",
-              background: "#1a1a1a",
-            }}
+            className="w-full h-[240px] object-cover block scale-x-[-1] bg-[#1a1a1a]"
           />
           {/* Face alignment guide overlay */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: 240,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <div
-              style={{
-                width: 120,
-                height: 160,
-                border: "2px dashed rgba(11,124,118,0.4)",
-                borderRadius: "50%",
-              }}
-            />
+          <div className="absolute inset-0 h-[240px] flex items-center justify-center pointer-events-none">
+            <div className="w-[140px] h-[180px] border-2 border-dashed border-[#7C9ADD]/30 rounded-full" />
           </div>
 
           {/* Camera status badge */}
           <div
-            style={{
-              padding: "8px 12px",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background:
-                camera.status === "pass"
-                  ? "rgba(21,128,61,0.08)"
-                  : "rgba(239,68,68,0.08)",
-            }}
+            className={`px-4 py-3 flex items-center gap-2 ${
+              camera.status === "pass" ? "bg-[#98C9A3]/10" : "bg-red-500/5"
+            }`}
           >
             {camera.status === "pass" ? (
-              <Camera size={12} style={{ color: "var(--emerald)" }} />
+              <Camera size={14} className="text-[#98C9A3]" />
             ) : (
-              <CameraOff size={12} style={{ color: "#ef4444" }} />
+              <CameraOff size={14} className="text-[#F87171]" />
             )}
             <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: camera.status === "pass" ? "var(--emerald)" : "#ef4444",
-              }}
+              className={`text-xs font-bold leading-none ${
+                camera.status === "pass" ? "text-[#98C9A3]" : "text-[#F87171]"
+              }`}
             >
               {camera.status === "pass" ? "Camera Active" : "Camera Pending"}
             </span>
           </div>
 
           {/* Mic level bar */}
-          <div
-            style={{
-              padding: "8px 12px",
-              borderTop: "1px solid rgba(0,0,0,0.06)",
-            }}
-          >
-            <div
-              className="flex items-center gap-2"
-              style={{ marginBottom: 4 }}
-            >
-              {microphone.status === "pass" ? (
-                <Mic size={12} style={{ color: "var(--indigo)" }} />
-              ) : (
-                <MicOff size={12} style={{ color: "var(--text-muted)" }} />
-              )}
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "var(--text-secondary)",
-                }}
-              >
-                Microphone Level
+          <div className="px-4 py-3 border-t border-[#7C9ADD]/10">
+            <div className="flex items-center gap-2 mb-2">
+              <Mic
+                size={14}
+                className={
+                  microphone.status === "pass"
+                    ? "text-[#7C9ADD]"
+                    : "text-slate-300"
+                }
+              />
+              <span className="text-xs font-bold text-[#718096]">
+                Audio Feedback
               </span>
             </div>
-            <div
-              style={{
-                height: 4,
-                borderRadius: 4,
-                background: "var(--bg-elevated)",
-                overflow: "hidden",
-              }}
-            >
+            <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
               <div
+                className="h-full rounded-full transition-all duration-100"
                 style={{
-                  height: "100%",
                   width: `${micLevel * 100}%`,
-                  borderRadius: 4,
                   background:
                     micLevel > 0.6
-                      ? "#ef4444"
+                      ? "#F87171"
                       : micLevel > 0.3
-                        ? "#eab308"
-                        : "var(--emerald)",
-                  transition: "width 0.1s ease",
+                        ? "#FBBF24"
+                        : "#98C9A3",
                 }}
               />
             </div>
@@ -638,71 +552,34 @@ export default function PreInterviewChecks({
           {checks.map((check, i) => {
             const icons = [Camera, Mic, Users, Sun, Wifi];
             const Icon = icons[i];
+            const color = statusColor(check.status);
             return (
               <div
                 key={check.label}
-                className="glass-card"
-                style={{
-                  padding: "12px 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  borderColor:
-                    check.status === "pass"
-                      ? "rgba(21,128,61,0.2)"
-                      : check.status === "fail"
-                        ? "rgba(239,68,68,0.2)"
-                        : check.status === "warn"
-                          ? "rgba(234,179,8,0.2)"
-                          : "var(--border)",
-                  animation:
-                    check.status !== "pending"
-                      ? "fadeUp 0.3s ease both"
-                      : "none",
-                  animationDelay: `${i * 100}ms`,
-                }}
+                className={`glass-card p-4 flex items-center gap-4 rounded-[24px] bg-white/60 border border-white/60 shadow-glass transition-all duration-300 ${
+                  check.status === "running"
+                    ? "ring-2 ring-[#7C9ADD]/20 scale-[1.02]"
+                    : ""
+                }`}
               >
                 <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 10,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: `${statusColor(check.status)}12`,
-                    flexShrink: 0,
-                  }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: `${color}15` }}
                 >
-                  <Icon
-                    size={16}
-                    style={{ color: statusColor(check.status) }}
-                  />
+                  <Icon size={18} style={{ color: color }} />
                 </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    className="flex items-center justify-between"
-                    style={{ marginBottom: 2 }}
-                  >
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: "var(--text-primary)",
-                      }}
-                    >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-sm font-bold text-[#2D3748]">
                       {check.label}
                     </span>
                     {statusIcon(check.status)}
                   </div>
                   {check.detail && (
                     <span
-                      style={{
-                        fontSize: 11,
-                        color: statusColor(check.status),
-                        fontWeight: 500,
-                      }}
+                      className="text-[11px] font-medium block truncate"
+                      style={{ color: color }}
                     >
                       {check.detail}
                     </span>
@@ -715,34 +592,31 @@ export default function PreInterviewChecks({
       </div>
 
       {/* Action buttons */}
-      <div
-        className="flex items-center gap-3 mt-6"
-        style={{ justifyContent: "space-between" }}
-      >
-        <button className="btn-ghost" onClick={onBack}>
-          ← Back to Setup
+      <div className="flex items-center justify-between gap-4 mt-10">
+        <button
+          className="px-8 py-3.5 rounded-full text-sm font-bold text-[#718096] hover:bg-slate-100 transition-all active:scale-95"
+          onClick={onBack}
+        >
+          Return to Setup
         </button>
 
         <button
-          className="btn-primary flex items-center gap-2"
+          className={`px-10 py-3.5 rounded-full flex items-center gap-2 text-sm font-bold transition-all active:scale-95 ${
+            canProceed
+              ? "bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-0.5"
+              : "bg-slate-200 text-slate-400 cursor-not-allowed"
+          }`}
           onClick={handleProceed}
           disabled={!canProceed}
-          style={{
-            opacity: canProceed ? 1 : 0.5,
-            cursor: canProceed ? "pointer" : "not-allowed",
-          }}
         >
           {allChecksRun ? (
             <>
-              Enter Proctored Interview <ChevronRight size={14} />
+              Enter Studio <ChevronRight size={16} />
             </>
           ) : (
             <>
-              <Loader2
-                size={14}
-                style={{ animation: "spin 1s linear infinite" }}
-              />
-              Running checks…
+              <Loader2 size={16} className="animate-spin" />
+              Running Studio Setup…
             </>
           )}
         </button>
@@ -750,36 +624,15 @@ export default function PreInterviewChecks({
 
       {/* Warning if checks failed */}
       {allChecksRun && !mandatoryPassed && (
-        <div
-          className="glass-card p-4 mt-4 flex items-start gap-3"
-          style={{
-            borderColor: "rgba(239,68,68,0.25)",
-            background: "rgba(239,68,68,0.04)",
-          }}
-        >
-          <AlertTriangle
-            size={18}
-            style={{ color: "#ef4444", flexShrink: 0, marginTop: 2 }}
-          />
+        <div className="glass-card p-5 mt-6 flex items-start gap-4 rounded-[24px] border-[#F87171]/20 bg-[#F87171]/5">
+          <AlertTriangle size={20} className="text-[#F87171] shrink-0 mt-0.5" />
           <div>
-            <p
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "#ef4444",
-                marginBottom: 4,
-              }}
-            >
-              Some checks failed
+            <p className="text-sm font-bold text-[#F87171] mb-1">
+              Configuration required
             </p>
-            <p
-              style={{
-                fontSize: 12,
-                color: "var(--text-secondary)",
-              }}
-            >
-              Fix the issues above before starting your interview. Camera access
-              is mandatory.
+            <p className="text-xs text-[#718096] leading-relaxed">
+              Please fix the issues highlighted above. A stable camera
+              connection is required for proctored sessions.
             </p>
           </div>
         </div>

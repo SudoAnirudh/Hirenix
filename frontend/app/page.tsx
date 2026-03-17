@@ -82,204 +82,208 @@ const glitchItem = {
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen relative text-[color:var(--text-primary)] overflow-hidden">
-      <nav className="fixed top-0 w-full z-50 border-b-2 border-[color:var(--border)] bg-[#050505]/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <motion.span
+    <main className="min-h-screen relative bg-white overflow-hidden selection:bg-[#7C9ADD]/30 selection:text-[#2D3748]">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#7C9ADD]/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#98C9A3]/10 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#B8C1EC]/5 blur-[100px] rounded-full" />
+      </div>
+
+      <nav className="fixed top-6 inset-x-0 w-full z-50 px-6">
+        <div className="max-w-7xl mx-auto h-20 rounded-[32px] bg-white/40 backdrop-blur-xl border border-white/60 shadow-glass flex items-center justify-between px-10">
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="font-display font-bold text-3xl text-[color:var(--border-accent)] animate-glitch"
-            data-text="HIRENIX"
+            className="flex items-center gap-3"
           >
-            HIRENIX
-          </motion.span>
+            <div className="w-10 h-10 rounded-2xl bg-[#7C9ADD] flex items-center justify-center shadow-lg shadow-[#7C9ADD]/20">
+              <Brain className="text-white" size={24} />
+            </div>
+            <span className="font-display font-black text-2xl text-[#2D3748] tracking-tighter">
+              HIRENIX
+            </span>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-6"
+            className="flex items-center gap-8"
           >
-            <Link href="/auth/login">
-              <Button
-                variant="ghost"
-                className="hidden sm:inline-flex rounded-none border-2 border-[var(--border)] text-sm px-6"
-              >
-                SYSTEM LOGIN
-              </Button>
+            <Link
+              href="/auth/login"
+              className="text-sm font-bold text-[#718096] hover:text-[#2D3748] transition-colors"
+            >
+              Login
             </Link>
             <Link href="/auth/register">
-              <Button variant="primary" className="rounded-none border-2 px-6">
-                INITIALIZE
+              <Button className="rounded-2xl bg-[#7C9ADD] text-white px-8 h-12 font-bold shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 transition-all active:scale-95">
+                Join Now
               </Button>
             </Link>
           </motion.div>
         </div>
       </nav>
 
-      <section className="relative z-10 pt-48 pb-20 px-6 text-center">
+      <section className="relative z-10 pt-56 pb-32 px-6 text-center">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="show"
-          className="max-w-6xl mx-auto"
+          className="max-w-5xl mx-auto"
         >
           <motion.div
             variants={glitchItem}
-            className="flex justify-center mb-8"
+            className="flex justify-center mb-10"
           >
-            <div className="inline-flex items-center gap-2 px-6 py-2 border-2 border-[var(--emerald)] bg-[#050505] text-[var(--emerald)] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_var(--emerald)]">
-              <Zap
-                size={16}
-                className="text-[var(--emerald)] animate-pulse-glow"
-              />
-              AI Career Studio :: v2.0
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/40 backdrop-blur-md border border-white/60 text-[#7C9ADD] font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
+              <Zap size={14} className="animate-pulse" />
+              Next-Gen AI Career Studio
             </div>
           </motion.div>
 
           <motion.h1
             variants={glitchItem}
-            className="font-display font-bold text-5xl md:text-7xl lg:text-8xl mb-8 tracking-tighter leading-[1] uppercase"
+            className="font-display font-bold text-6xl md:text-8xl mb-10 tracking-tighter leading-[0.9] text-[#2D3748]"
           >
-            BUILD AN <span className="text-[var(--cyan)]">OFFER-READY</span>{" "}
-            PROFILE
-            <br />
-            <span className="text-[var(--indigo)] underline decoration-4 underline-offset-8">
-              FASTER & SMARTER
+            Design your{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#7C9ADD] to-[#98C9A3]">
+              dream career
             </span>
+            <br />
+            with AI intelligence.
           </motion.h1>
 
           <motion.p
             variants={glitchItem}
-            className="text-lg md:text-xl text-[color:var(--text-secondary)] mb-12 max-w-2xl mx-auto leading-relaxed border-l-4 border-[var(--violet)] pl-6 text-left"
+            className="text-xl md:text-2xl text-[#718096] mb-16 max-w-2xl mx-auto leading-relaxed font-medium"
           >
-            &gt; Resume diagnostics_
-            <br />
-            &gt; GitHub signal scoring_
-            <br />
-            &gt; Job-fit breakdowns_
-            <br />
-            &gt; Structured mock interviews in one focused workflow_
+            The all-in-one studio for high-fidelity resume engineering, smart
+            job matching, and immersive interview practice.
           </motion.p>
 
           <motion.div
             variants={glitchItem}
-            className="flex flex-col sm:flex-row gap-8 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           >
             <Link href="/auth/register">
               <Button
                 size="lg"
-                variant="primary"
-                className="w-full sm:w-auto text-lg group rounded-none border-2"
+                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-[#7C9ADD] text-white text-lg font-bold shadow-xl shadow-[#7C9ADD]/20 group transition-all"
               >
-                EXECUTE_ANALYSIS
+                Get Started
                 <ArrowRight
                   size={20}
                   className="ml-3 group-hover:translate-x-1 transition-transform"
                 />
               </Button>
             </Link>
-            <div className="flex items-center gap-2 text-sm text-[color:var(--text-secondary)] font-mono uppercase tracking-widest">
-              <CheckCircle2 size={18} className="text-[color:var(--emerald)]" />
-              Free Tier Available
+            <div className="flex items-center gap-3 text-sm text-[#A0AEC0] font-bold uppercase tracking-widest">
+              <CheckCircle2 size={20} className="text-[#98C9A3]" />
+              Enterprise-Grade AI
             </div>
           </motion.div>
         </motion.div>
       </section>
 
-      <section className="relative z-10 py-32 px-6 border-t-[1px] border-[var(--border)] bg-[#080808]">
+      <section className="relative z-10 py-32 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-20 max-w-4xl border-b-2 border-[var(--border)] pb-8"
+            className="text-center mb-24"
           >
-            <h2 className="font-display font-bold text-4xl md:text-5xl mb-4 uppercase text-[var(--pink)]">
-              &gt; CAREER GROWTH SYSTEM
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 tracking-tighter text-[#2D3748]">
+              The Full-Stack Career Engine
             </h2>
-            <p className="text-xl text-[color:var(--text-secondary)] font-mono">
-              [ BUILT FOR TACTICAL EXECUTION ]
+            <p className="text-lg text-[#718096] font-medium max-w-xl mx-auto">
+              Replace messy spreadsheets and anxious job hunting with a
+              streamlined, AI-optimized workflow.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {features.map(({ icon: Icon, title, desc }, idx) => (
-              <Card
+              <motion.div
                 key={title}
-                className="glass-card rounded-none border-2 group relative overflow-hidden"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="glass-card p-10 rounded-[48px] border border-white/80 bg-white/60 shadow-glass group hover:-translate-y-2 transition-all duration-500"
               >
-                <div className="absolute top-0 right-0 p-2 font-mono text-xs text-[var(--border)] font-bold">
-                  0{idx + 1}
+                <div className="w-16 h-16 rounded-3xl bg-white shadow-sm border border-white/80 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                  <Icon
+                    size={28}
+                    className="text-[#7C9ADD] group-hover:text-[#98C9A3] transition-colors"
+                  />
                 </div>
-                <CardHeader className="pb-4">
-                  <div className="w-14 h-14 border-2 border-[var(--border)] bg-[#111] flex items-center justify-center mb-6 group-hover:border-[var(--emerald)] group-hover:bg-[#050505] transition-colors shadow-[4px_4px_0px_var(--border)] group-hover:shadow-[4px_4px_0px_var(--emerald)]">
-                    <Icon
-                      size={26}
-                      className="text-[var(--text-primary)] group-hover:text-[var(--emerald)] transition-colors"
-                    />
-                  </div>
-                  <CardTitle className="text-2xl font-display uppercase tracking-tight">
-                    {title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base leading-relaxed font-mono mt-2 text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors">
-                    {desc}
-                  </CardDescription>
-                </CardContent>
-              </Card>
+                <h3 className="text-2xl font-display font-bold mb-4 text-[#2D3748] tracking-tight">
+                  {title}
+                </h3>
+                <p className="text-base leading-relaxed font-medium text-[#718096]">
+                  {desc}
+                </p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 py-32 px-6">
+      <section className="relative z-10 py-32 px-6 overflow-hidden">
         <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-5xl mx-auto relative group"
+          className="max-w-6xl mx-auto relative"
         >
-          {/* Cyberpunk background offset box */}
-          <div className="absolute inset-0 bg-[var(--indigo)] translate-x-4 translate-y-4 shadow-[0_0_20px_var(--indigo)]" />
-
-          <div className="relative p-12 md:p-20 border-4 border-white bg-[#050505]">
-            <div className="absolute top-0 right-0 w-16 h-16 border-l-4 border-b-4 border-white bg-[#050505] translate-x-1 -translate-y-1" />
-
-            <Shield size={56} className="text-[color:var(--emerald)] mb-8" />
-            <h2 className="font-display font-bold text-5xl md:text-6xl mb-6 text-white uppercase tracking-tighter">
-              START FREE, UPGRADE WHEN NEEDED.
+          <div className="absolute inset-0 bg-gradient-to-br from-[#7C9ADD]/20 to-[#98C9A3]/20 blur-[100px] -z-10" />
+          <div className="relative p-16 md:p-24 rounded-[64px] bg-white/40 border border-white/60 backdrop-blur-2xl shadow-glass text-center">
+            <div className="w-20 h-20 rounded-[28px] bg-white shadow-lg flex items-center justify-center mx-auto mb-10">
+              <TrendingUp className="text-[#98C9A3]" size={32} />
+            </div>
+            <h2 className="font-display font-bold text-5xl md:text-7xl mb-8 text-[#2D3748] tracking-tighter">
+              Launch your career trajectory today.
             </h2>
-            <p className="text-lg md:text-xl text-[color:var(--text-secondary)] mb-12 max-w-2xl font-mono">
-              [ NO CARD REQUIRED ] Move from messy resume drafts to structured,
-              data-backed job applications in the terminal.
+            <p className="text-xl md:text-2xl text-[#718096] mb-16 max-w-2xl mx-auto font-medium">
+              Join thousands of professionals using AI to craft irresistible
+              resumes and ace complex interviews.
             </p>
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="btn-primary rounded-none text-xl px-12 py-8 uppercase tracking-widest border-4 shadow-none hover:-translate-y-1"
+                className="h-20 px-16 rounded-[32px] bg-[#2D3748] text-white text-xl font-bold hover:bg-[#7C9ADD] transition-all shadow-xl active:scale-95"
               >
-                CREATE SECURE ACCOUNT
+                Initialize Free Access
               </Button>
             </Link>
           </div>
         </motion.div>
       </section>
 
-      <footer className="relative z-10 py-12 px-6 border-t-2 border-[color:var(--border)] bg-[#050505]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sm font-mono text-[color:var(--text-muted)] uppercase tracking-widest">
-            (C) {new Date().getFullYear()} HIRENIX_SYS
+      <footer className="relative z-10 py-20 px-6 mt-20 border-t border-[#E2E8F0] bg-white/40 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+          <div className="flex flex-col gap-2 items-center md:items-start">
+            <span className="font-display font-bold text-2xl text-[#2D3748]">
+              HIRENIX
+            </span>
+            <p className="text-sm font-medium text-[#A0AEC0]">
+              The Modern AI Career OS
+            </p>
+          </div>
+          <p className="text-sm font-bold text-[#A0AEC0] uppercase tracking-[0.2em]">
+            © {new Date().getFullYear()} HIRENIX STUDIO. ALL RIGHTS RESERVED.
           </p>
           <div className="flex gap-4">
-            <span className="text-xs font-mono px-3 py-1 border border-[var(--border)] text-[var(--border)]">
-              SYS.NEXT.JS
-            </span>
-            <span className="text-xs font-mono px-3 py-1 border border-[var(--border)] text-[var(--border)]">
-              DB.SUPABASE
-            </span>
-            <span className="text-xs font-mono px-3 py-1 border border-[var(--border)] text-[var(--border)]">
-              API.FASTAPI
-            </span>
+            {["Next.js", "Supabase", "FastAPI"].map((tech) => (
+              <span
+                key={tech}
+                className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200"
+              >
+                {tech}
+              </span>
+            ))}
           </div>
         </div>
       </footer>

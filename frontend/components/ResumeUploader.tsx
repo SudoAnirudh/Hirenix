@@ -69,38 +69,49 @@ export default function ResumeUploader({ onResult }: Props) {
     maxSize: MAX_FILE_BYTES,
   });
 
-  const borderColor = isDragActive
-    ? "var(--indigo)"
-    : status === "success"
-      ? "var(--emerald)"
-      : status === "error"
-        ? "#ef4444"
-        : "var(--border)";
+  const activeBorderColor = "#7C9ADD";
+  const borderColorDefault = "rgba(124, 154, 221, 0.3)";
+  const errorBorderColor = "#F28C8C"; // Soft red
+  const successBorderColor = "#98C9A3"; // Soft emerald
 
   return (
     <div
       {...getRootProps()}
       id="resume-dropzone"
-      className={`glass-card p-10 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-none ${isDragActive ? "bg-(--indigo)/5 border-(--indigo) translate-y-[-2px] translate-x-[-2px] shadow-[8px_8px_0px_var(--indigo)]" : ""}`}
+      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-[32px] bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group ${
+        isDragActive
+          ? "bg-[#7C9ADD]/5 border-[#7C9ADD] scale-[0.99] shadow-inner"
+          : "hover:bg-white/60 hover:border-[#7C9ADD]/40 hover:shadow-xl hover:-translate-y-1"
+      }`}
       style={{
-        borderColor: isDragActive ? "var(--indigo)" : borderColor,
-        minHeight: "240px",
+        borderColor: isDragActive
+          ? activeBorderColor
+          : status === "success"
+            ? successBorderColor
+            : status === "error"
+              ? errorBorderColor
+              : borderColorDefault,
+        minHeight: "280px",
       }}
     >
       <input {...getInputProps()} id="resume-file-input" />
 
       {status === "idle" && (
         <>
-          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--indigo) bg-(--indigo)/10 text-(--indigo) shadow-[4px_4px_0px_var(--indigo)]">
-            <Upload size={28} strokeWidth={2.5} />
+          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#7C9ADD]/10 text-[#7C9ADD] transition-transform group-hover:scale-110">
+            <Upload size={32} strokeWidth={1.5} />
           </div>
-          <div className="text-center">
-            <p className="font-display font-black text-lg uppercase tracking-tight mb-1">
+          <div className="text-center space-y-3">
+            <p className="font-display font-bold text-2xl text-[#2D3748] tracking-tight">
               {isDragActive ? "Drop it here!" : "Upload your resume"}
             </p>
-            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
-              or <span className="text-(--indigo) underline">browse files</span>{" "}
-              · PDF · Max 10MB
+            <p className="text-sm font-medium text-[#718096]">
+              or{" "}
+              <span className="text-[#7C9ADD] font-bold cursor-pointer hover:underline">
+                browse files
+              </span>{" "}
+              <span className="mx-2 opacity-30">|</span> PDF{" "}
+              <span className="mx-2 opacity-30">|</span> Max 10MB
             </p>
           </div>
         </>
@@ -108,30 +119,35 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "uploading" && (
         <>
-          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--indigo) bg-(--indigo)/10 text-(--indigo) shadow-[4px_4px_0px_var(--indigo)] animate-pulse">
-            <FileText size={28} strokeWidth={2.5} />
+          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#7C9ADD]/10 text-[#7C9ADD] animate-pulse">
+            <FileText size={32} strokeWidth={1.5} />
           </div>
-          <div className="text-center">
-            <p className="font-display font-black text-lg uppercase tracking-tight mb-1">
-              Analysing <span className="text-(--indigo)">{fileName}</span>
+          <div className="text-center space-y-3">
+            <p className="font-display font-bold text-2xl text-[#2D3748] tracking-tight">
+              Analyzing <span className="text-[#7C9ADD]">{fileName}</span>
             </p>
-            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
-              Extracting text · Computing ATS score…
-            </p>
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-sm font-medium text-[#718096]">
+                Extracting text · Computing ATS score…
+              </p>
+              <div className="w-64 h-2 bg-white/50 rounded-full overflow-hidden border border-white/40">
+                <div className="h-full bg-[#7C9ADD] animate-[loading_2s_ease-in-out_infinite]" />
+              </div>
+            </div>
           </div>
         </>
       )}
 
       {status === "success" && (
         <>
-          <div className="w-16 h-16 flex items-center justify-center border-2 border-(--emerald) bg-(--emerald)/10 text-(--emerald) shadow-[4px_4px_0px_var(--emerald)]">
-            <CheckCircle size={32} strokeWidth={2.5} />
+          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#98C9A3]/10 text-[#98C9A3]">
+            <CheckCircle size={36} strokeWidth={1.5} />
           </div>
-          <div className="text-center">
-            <p className="font-display font-black text-lg uppercase tracking-tight mb-1 text-(--emerald)">
+          <div className="text-center space-y-3">
+            <p className="font-display font-bold text-2xl text-[#98C9A3] tracking-tight">
               Analysis complete!
             </p>
-            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
+            <p className="text-sm font-medium text-[#718096]">
               {fileName} · Results ready
             </p>
           </div>
@@ -140,16 +156,14 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "error" && (
         <>
-          <div className="w-16 h-16 flex items-center justify-center border-2 border-red-500 bg-red-500/10 text-red-500 shadow-[4px_4px_0px_#ef4444]">
-            <AlertCircle size={32} strokeWidth={2.5} />
+          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#F28C8C]/10 text-[#F28C8C]">
+            <AlertCircle size={36} strokeWidth={1.5} />
           </div>
-          <div className="text-center">
-            <p className="font-display font-black text-lg uppercase tracking-tight mb-1 text-red-500">
+          <div className="text-center space-y-3">
+            <p className="font-display font-bold text-2xl text-[#F28C8C] tracking-tight">
               Upload failed
             </p>
-            <p className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-secondary)">
-              {errorMsg}
-            </p>
+            <p className="text-sm font-medium text-[#718096]">{errorMsg}</p>
           </div>
         </>
       )}
