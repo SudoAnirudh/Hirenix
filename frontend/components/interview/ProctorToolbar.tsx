@@ -71,7 +71,7 @@ export default function ProctorToolbar() {
         </span>
       </div>
 
-      <div className="w-[1px] h-6 bg-[#E2E8F0]" />
+      <div className="w-px h-6 bg-[#E2E8F0]" />
 
       {/* Trust Score */}
       <div className="flex items-center gap-3">
@@ -79,7 +79,7 @@ export default function ProctorToolbar() {
           <ScoreIcon size={16} style={{ color: scoreColor }} />
         </div>
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#A0AEC0]">
             Trust Score
           </span>
           <span
@@ -91,7 +91,7 @@ export default function ProctorToolbar() {
         </div>
       </div>
 
-      <div className="w-[1px] h-6 bg-[#E2E8F0]" />
+      <div className="w-px h-6 bg-[#E2E8F0]" />
 
       {/* Violations */}
       <div className="flex items-center gap-2 group">
@@ -100,7 +100,7 @@ export default function ProctorToolbar() {
           className={`transition-colors ${violations.length > 0 ? "text-[#F28C8C]" : "text-[#A0AEC0]"}`}
         />
         <span
-          className={`text-[10px] font-bold uppercase tracking-[0.1em] ${violations.length > 0 ? "text-[#F28C8C]" : "text-[#A0AEC0]"}`}
+          className={`text-[10px] font-bold uppercase tracking-widest ${violations.length > 0 ? "text-[#F28C8C]" : "text-[#A0AEC0]"}`}
         >
           {violations.length} violation{violations.length !== 1 ? "s" : ""}
         </span>
@@ -117,7 +117,7 @@ export default function ProctorToolbar() {
               }
             />
             <span
-              className={`text-[10px] font-bold uppercase tracking-[0.1em] ${cameraStatus === "active" ? "text-[#7C9ADD]" : "text-[#F28C8C]"}`}
+              className={`text-[10px] font-bold uppercase tracking-widest ${cameraStatus === "active" ? "text-[#7C9ADD]" : "text-[#F28C8C]"}`}
             >
               {cameraStatus === "active" ? "Active" : "Offline"}
             </span>
@@ -125,7 +125,7 @@ export default function ProctorToolbar() {
           <div className="flex items-center gap-2">
             <Users size={14} style={{ color: faceColor }} />
             <span
-              className="text-[10px] font-bold uppercase tracking-[0.1em]"
+              className="text-[10px] font-bold uppercase tracking-widest"
               style={{ color: faceColor }}
             >
               {faceStatus === "single_face" ? "Verified" : faceLabel}

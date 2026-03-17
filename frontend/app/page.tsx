@@ -279,7 +279,7 @@ export default function LandingPage() {
             {["Next.js", "Supabase", "FastAPI"].map((tech) => (
               <span
                 key={tech}
-                className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 border border-slate-200"
+                className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-white/40 text-[#718096] border border-white/60 backdrop-blur-sm"
               >
                 {tech}
               </span>
