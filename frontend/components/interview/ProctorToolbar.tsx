@@ -62,219 +62,95 @@ export default function ProctorToolbar() {
         : "#ef4444";
 
   return (
-    <div
-      className="glass-card"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
-        padding: "10px 18px",
-        borderRadius: "var(--radius-md)",
-        marginBottom: 16,
-        flexWrap: "wrap",
-      }}
-    >
+    <div className="glass-card flex items-center gap-6 px-6 py-3 rounded-[24px] mb-6 flex-wrap bg-white/40 border-white/60 shadow-glass backdrop-blur-xl">
       {/* Timer */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <Clock size={14} style={{ color: "var(--text-muted)" }} />
-        <span
-          style={{
-            fontSize: 13,
-            fontWeight: 700,
-            fontFamily: "monospace",
-            color: "var(--text-primary)",
-          }}
-        >
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 border border-white/80 shrink-0">
+        <Clock size={14} className="text-[#7C9ADD]" />
+        <span className="text-sm font-bold font-mono text-[#2D3748] tracking-tight">
           {formatTime(elapsed)}
         </span>
       </div>
 
-      {/* Divider */}
-      <div
-        style={{
-          width: 1,
-          height: 20,
-          background: "var(--border)",
-        }}
-      />
+      <div className="w-[1px] h-6 bg-[#E2E8F0]" />
 
       {/* Trust Score */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <ScoreIcon size={14} style={{ color: scoreColor }} />
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: scoreColor,
-          }}
-        >
-          Trust Score
-        </span>
-        <span
-          style={{
-            fontSize: 13,
-            fontWeight: 800,
-            color: scoreColor,
-            background: `${scoreColor}1a`,
-            padding: "2px 10px",
-            borderRadius: 20,
-            border: `1px solid ${scoreColor}33`,
-          }}
-        >
-          {trustScore}
-        </span>
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 rounded-lg bg-white shadow-sm border border-white/80">
+          <ScoreIcon size={16} style={{ color: scoreColor }} />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#A0AEC0]">
+            Trust Score
+          </span>
+          <span
+            className="text-lg font-display font-bold leading-none"
+            style={{ color: scoreColor }}
+          >
+            {trustScore}
+          </span>
+        </div>
       </div>
 
-      {/* Divider */}
-      <div
-        style={{
-          width: 1,
-          height: 20,
-          background: "var(--border)",
-        }}
-      />
+      <div className="w-[1px] h-6 bg-[#E2E8F0]" />
 
       {/* Violations */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="flex items-center gap-2 group">
         <AlertTriangle
-          size={14}
-          style={{
-            color: violations.length > 0 ? "#ef4444" : "var(--text-muted)",
-          }}
+          size={16}
+          className={`transition-colors ${violations.length > 0 ? "text-[#F28C8C]" : "text-[#A0AEC0]"}`}
         />
         <span
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: violations.length > 0 ? "#ef4444" : "var(--text-muted)",
-          }}
+          className={`text-[10px] font-bold uppercase tracking-[0.1em] ${violations.length > 0 ? "text-[#F28C8C]" : "text-[#A0AEC0]"}`}
         >
           {violations.length} violation{violations.length !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {/* Divider */}
-      <div
-        style={{
-          width: 1,
-          height: 20,
-          background: "var(--border)",
-        }}
-      />
+      <div className="ml-auto flex items-center gap-6">
+        {/* Status Indicators */}
+        <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Eye
+              size={14}
+              className={
+                cameraStatus === "active" ? "text-[#7C9ADD]" : "text-[#F28C8C]"
+              }
+            />
+            <span
+              className={`text-[10px] font-bold uppercase tracking-[0.1em] ${cameraStatus === "active" ? "text-[#7C9ADD]" : "text-[#F28C8C]"}`}
+            >
+              {cameraStatus === "active" ? "Active" : "Offline"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users size={14} style={{ color: faceColor }} />
+            <span
+              className="text-[10px] font-bold uppercase tracking-[0.1em]"
+              style={{ color: faceColor }}
+            >
+              {faceStatus === "single_face" ? "Verified" : faceLabel}
+            </span>
+          </div>
+        </div>
 
-      {/* Webcam status */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <Eye
-          size={14}
-          style={{
-            color: cameraStatus === "active" ? "var(--indigo)" : "#ef4444",
-          }}
-        />
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: cameraStatus === "active" ? "var(--indigo)" : "#ef4444",
-          }}
-        >
-          {cameraStatus === "active" ? "Monitored" : "No Camera"}
-        </span>
-      </div>
+        {!fullscreenActive && (
+          <button
+            type="button"
+            onClick={() => void requestFullscreen()}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 text-[#7C9ADD] text-[10px] font-bold uppercase tracking-widest hover:bg-[#7C9ADD]/20 transition-all active:scale-95"
+          >
+            <Expand size={12} />
+            Secure Fullscreen
+          </button>
+        )}
 
-      <div
-        style={{
-          width: 1,
-          height: 20,
-          background: "var(--border)",
-        }}
-      />
-
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <Users size={14} style={{ color: faceColor }} />
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: faceColor,
-          }}
-        >
-          {faceLabel}
-        </span>
-      </div>
-
-      <div
-        style={{
-          width: 1,
-          height: 20,
-          background: "var(--border)",
-        }}
-      />
-
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <AlertTriangle size={14} style={{ color: riskColor }} />
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: riskColor,
-            textTransform: "uppercase",
-          }}
-        >
-          {sessionRisk} risk
-        </span>
-      </div>
-
-      {!fullscreenActive && (
-        <button
-          type="button"
-          onClick={() => void requestFullscreen()}
-          className="inline-flex items-center gap-2"
-          style={{
-            marginLeft: "auto",
-            borderRadius: 999,
-            border: "1px solid rgba(11,124,118,0.24)",
-            background: "rgba(11,124,118,0.1)",
-            color: "var(--indigo)",
-            padding: "6px 10px",
-            fontSize: 11,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          <Expand size={12} />
-          Secure fullscreen
-        </button>
-      )}
-
-      {/* Live indicator */}
-      <div
-        style={{
-          marginLeft: fullscreenActive ? "auto" : 0,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-      >
-        <div
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: "#ef4444",
-            animation: "pulse-glow 1.5s ease-in-out infinite",
-          }}
-        />
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 1,
-            color: "#ef4444",
-            textTransform: "uppercase",
-          }}
-        >
-          Live
-        </span>
+        {/* Live Indicator */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F28C8C]/5 border border-[#F28C8C]/10 shrink-0">
+          <div className="w-2 h-2 rounded-full bg-[#F28C8C] animate-pulse shadow-[0_0_8px_rgba(242,140,140,0.5)]" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F28C8C]">
+            Live
+          </span>
+        </div>
       </div>
     </div>
   );

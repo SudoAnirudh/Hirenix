@@ -3,6 +3,16 @@ import { useState } from "react";
 import { matchJob, matchJobWithUpload, scrapeJobs } from "@/lib/api";
 import ScoreCard from "@/components/ScoreCard";
 import SkillGapList from "@/components/SkillGapList";
+import {
+  CheckCircle,
+  AlertCircle,
+  ChevronRight,
+  Search,
+  MapPin,
+  Globe,
+  ExternalLink,
+  Sparkles,
+} from "lucide-react";
 
 const ROLES = [
   "Software Engineer",
@@ -121,34 +131,35 @@ export default function JobMatchPage() {
   return (
     <div className="flex flex-col gap-8 animate-fade-up max-w-5xl mx-auto w-full pb-20">
       <div>
-        <h1 className="font-display font-black text-3xl md:text-4xl tracking-tight uppercase mb-2 text-(--text-primary)">
-          Job Description Matching
+        <h1 className="font-display font-bold text-3xl md:text-5xl tracking-tight text-[#2D3748] mb-3">
+          Job Description <span className="text-[#7C9ADD]">Matching</span>
         </h1>
-        <p className="font-mono text-sm font-bold uppercase tracking-widest text-(--text-muted)">
-          Benchmarking your profile against market requirements.
+        <p className="text-sm font-medium text-[#718096]">
+          Benchmarking your profile against market requirements with AI-driven
+          precision.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Input Controls */}
         <div className="lg:col-span-12">
-          <div className="glass-card p-8 md:p-10 rounded-none bg-(--bg-surface) border-2 border-(--border) shadow-[8px_8px_0px_var(--border)] relative overflow-hidden group">
-            <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] bg-(--indigo)/10 pointer-events-none group-hover:opacity-20 transition-opacity" />
+          <div className="glass-card p-10 rounded-[40px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-glass relative overflow-hidden">
+            <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] bg-[#7C9ADD]/10 pointer-events-none" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-              <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+              <div className="space-y-8">
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                  <label className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em] mb-4 block">
                     Professional Credentials
                   </label>
-                  <div className="flex flex-col gap-4">
-                    <div className="p-4 border-2 border-(--border) bg-black/40">
-                      <span className="text-[10px] font-mono font-medium uppercase text-(--text-muted) block mb-2">
+                  <div className="flex flex-col gap-6">
+                    <div className="p-8 rounded-3xl bg-white/50 border border-white focus-within:border-[#7C9ADD]/40 group/upload transition-all shadow-sm">
+                      <span className="text-[10px] font-bold uppercase text-[#A0AEC0] tracking-widest block mb-4">
                         Upload Resume (PDF)
                       </span>
                       <input
                         id="jm-resume-file"
-                        className="w-full text-xs font-mono text-(--text-primary) file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-2 file:border-(--indigo) file:bg-(--indigo)/10 file:text-(--indigo) file:text-xs file:font-bold file:uppercase cursor-pointer"
+                        className="w-full text-xs text-[#4A5568] file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:bg-[#7C9ADD] file:text-white file:text-[10px] file:font-bold file:uppercase file:tracking-widest cursor-pointer transition-all hover:file:bg-[#7C9ADD]/90"
                         type="file"
                         accept=".pdf,application/pdf"
                         onChange={(e) =>
@@ -156,54 +167,61 @@ export default function JobMatchPage() {
                         }
                       />
                     </div>
-                    <input
-                      id="jm-resume-id"
-                      className="input-base"
-                      placeholder="OR ENTER RESUME ID FROM ANALYSIS..."
-                      value={resumeId}
-                      onChange={(e) => setResumeId(e.target.value)}
-                    />
+                    <div className="relative">
+                      <input
+                        id="jm-resume-id"
+                        className="input-base bg-white! shadow-none! border-slate-200! focus:border-indigo-500!"
+                        placeholder="Or enter Resume ID from analysis..."
+                        value={resumeId}
+                        onChange={(e) => setResumeId(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                  <label className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em] mb-4 block">
                     Target Industry Role
                   </label>
-                  <select
-                    id="jm-role"
-                    className="input-base appearance-none cursor-pointer"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r} value={r}>
-                        {r.toUpperCase()}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative group/select">
+                    <select
+                      id="jm-role"
+                      className="w-full appearance-none bg-white/50 border border-white focus:border-[#7C9ADD]/40 rounded-3xl px-8 h-16 outline-none transition-all cursor-pointer font-display font-bold text-xl text-[#2D3748] shadow-sm"
+                      value={role}
+                      onChange={(e) => setRole(e.target.value)}
+                    >
+                      {ROLES.map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none text-[#7C9ADD] transition-transform group-hover/select:translate-x-1">
+                      <ChevronRight size={20} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                  <label className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em] mb-4 block">
                     Benchmark Criteria
                   </label>
                   <textarea
                     id="jm-jd-text"
-                    className="input-base min-h-[160px] resize-y"
-                    placeholder="PASTE FULL JOB DESCRIPTION FOR DEEP CORRELATION ANALYSIS..."
+                    className="w-full bg-white/50 border border-white focus:border-[#7C9ADD]/40 rounded-[32px] p-8 min-h-[220px] resize-none outline-none transition-all font-body font-medium text-sm text-[#4A5568] placeholder:text-[#A0AEC0] shadow-sm leading-relaxed"
+                    placeholder="Paste the full job description here for deep AI correlation analysis..."
                     value={jdText}
                     onChange={(e) => setJdText(e.target.value)}
                   />
-                  <div className="mt-4 p-4 border-2 border-(--border) bg-black/40">
-                    <span className="text-[10px] font-mono font-medium uppercase text-(--text-muted) block mb-2">
+                  <div className="mt-8 p-8 rounded-3xl bg-white/50 border border-white focus-within:border-[#7C9ADD]/40 group transition-all shadow-sm">
+                    <span className="text-[10px] font-bold uppercase text-[#A0AEC0] tracking-widest block mb-4">
                       Attached JD (Optional)
                     </span>
                     <input
                       id="jm-jd-file"
-                      className="w-full text-xs font-mono text-(--text-primary) file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-2 file:border-(--violet) file:bg-(--violet)/10 file:text-(--violet) file:text-xs file:font-bold file:uppercase cursor-pointer"
+                      className="w-full text-xs text-[#4A5568] file:mr-4 file:py-2.5 file:px-6 file:rounded-full file:border-0 file:bg-white/80 file:text-[#4A5568] file:text-[10px] file:font-bold file:uppercase file:tracking-widest cursor-pointer transition-all hover:file:bg-white shadow-sm"
                       type="file"
                       accept=".pdf,.txt,.md,application/pdf,text/plain"
                       onChange={(e) => setJdFile(e.target.files?.[0] ?? null)}
@@ -214,33 +232,27 @@ export default function JobMatchPage() {
             </div>
 
             {error && (
-              <div className="mt-6 p-4 border-2 border-red-500 bg-red-500/5 text-red-500 font-mono text-xs font-bold uppercase animate-pulse">
-                ERR_MATCH_FAILED: {error}
+              <div className="mt-8 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">
+                Analysis failed: {error}
               </div>
             )}
 
-            <div className="mt-10 pt-8 border-t-2 border-(--border) flex flex-wrap gap-4 relative z-10">
+            <div className="mt-12 pt-8 border-t border-white/40 flex flex-wrap gap-6 relative z-10">
               <button
                 id="jm-match-btn"
-                className="btn-primary"
+                className="px-8 py-4 rounded-full bg-[#7C9ADD] text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
                 onClick={handleMatch}
                 disabled={loading || !resumeId || !jdText}
               >
-                <span className="flex items-center gap-2">
-                  {loading ? "MATCHING..." : "ANALYSE BY ID"}
-                  {!loading && <div className="w-1.5 h-1.5 bg-black" />}
-                </span>
+                {loading ? "Matching..." : "Analyse by ID"}
               </button>
               <button
                 id="jm-match-upload-btn"
-                className="btn-primary"
+                className="px-8 py-4 rounded-full bg-[#2D3748] text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#2D3748]/10 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
                 onClick={handleMatchUpload}
                 disabled={loading || !resumeFile || (!jdText.trim() && !jdFile)}
               >
-                <span className="flex items-center gap-2">
-                  {loading ? "PROCESSING..." : "PROCESS FILES"}
-                  {!loading && <div className="w-1.5 h-1.5 bg-black" />}
-                </span>
+                {loading ? "Processing..." : "Process Files"}
               </button>
             </div>
           </div>
@@ -248,120 +260,143 @@ export default function JobMatchPage() {
 
         {/* Scraper Section */}
         <div className="lg:col-span-12">
-          <div className="glass-card p-8 md:p-10 rounded-none bg-(--bg-surface) border-2 border-(--border) shadow-[8px_8px_0px_var(--border)] relative group">
-            <h3 className="font-display font-black text-2xl tracking-tight uppercase mb-6 text-(--text-primary)">
+          <div className="glass-card p-10 rounded-[40px] bg-white/60 border border-white/60 shadow-glass backdrop-blur-xl">
+            <h3 className="font-display font-bold text-2xl text-[#2D3748] mb-8 flex items-center gap-3">
+              <Sparkles className="text-[#7C9ADD]" size={24} />
               Correlated Opportunities
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+              <div className="space-y-8">
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
-                    Search Parameters (Primary Skills)
+                  <label className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em] mb-4 block">
+                    Search Parameters
                   </label>
-                  <input
-                    className="input-base"
-                    placeholder="E.G. FRONTEND, REACT, TYPESCRIPT..."
-                    value={fieldInput}
-                    onChange={(e) => setFieldInput(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      className="w-full bg-white/50 border border-white focus:border-[#7C9ADD]/40 rounded-3xl px-8 h-14 outline-none transition-all font-body font-medium text-sm text-[#4A5568] shadow-sm"
+                      placeholder="e.g. Frontend, React, TypeScript..."
+                      value={fieldInput}
+                      onChange={(e) => setFieldInput(e.target.value)}
+                    />
+                    <Search
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-[#7C9ADD]/40"
+                      size={18}
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="text-[10px] font-mono font-bold uppercase tracking-widest mb-2 block text-(--text-secondary)">
+                  <label className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em] mb-4 block">
                     Geographic Focus
                   </label>
-                  <input
-                    className="input-base"
-                    placeholder="E.G. NEW YORK, REMOTE, GLOBAL..."
-                    value={jobLocation}
-                    onChange={(e) => setJobLocation(e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      className="w-full bg-white/50 border border-white focus:border-[#7C9ADD]/40 rounded-3xl px-8 h-14 outline-none transition-all font-body font-medium text-sm text-[#4A5568] shadow-sm"
+                      placeholder="e.g. New York, Remote, Global..."
+                      value={jobLocation}
+                      onChange={(e) => setJobLocation(e.target.value)}
+                    />
+                    <MapPin
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-[#7C9ADD]/40"
+                      size={18}
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="flex flex-col justify-between items-start">
-                <div className="flex items-center gap-4 p-4 border-2 border-(--border) w-full bg-black/40">
-                  <input
-                    type="checkbox"
-                    id="remote-only"
-                    className="w-5 h-5 accent-(--indigo) cursor-pointer"
-                    checked={remoteOnly}
-                    onChange={(e) => setRemoteOnly(e.target.checked)}
-                  />
+                <div className="flex items-center gap-4 p-6 rounded-3xl bg-white/50 border border-white w-full group transition-all shadow-sm">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      id="remote-only"
+                      className="peer w-6 h-6 rounded-lg border-2 border-[#E2E8F0] checked:bg-[#7C9ADD] checked:border-[#7C9ADD] appearance-none cursor-pointer transition-all"
+                      checked={remoteOnly}
+                      onChange={(e) => setRemoteOnly(e.target.checked)}
+                    />
+                    <CheckCircle
+                      size={14}
+                      className="absolute left-1 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                    />
+                  </div>
                   <label
                     htmlFor="remote-only"
-                    className="text-xs font-mono font-bold uppercase tracking-widest text-(--text-primary) cursor-pointer"
+                    className="text-sm font-bold text-[#4A5568] cursor-pointer select-none"
                   >
-                    Enforce Remote Protocol
+                    Priority Remote Search
                   </label>
                 </div>
 
                 {jobsError && (
-                  <div className="mt-4 p-4 border-2 border-red-500 bg-red-500/5 text-red-500 font-mono text-xs font-bold uppercase">
-                    SCRAPER_ERR: {jobsError}
+                  <div className="mt-4 p-4 rounded-2xl bg-[#F28C8C]/5 border border-[#F28C8C]/10 text-[#F28C8C] text-xs font-bold uppercase tracking-wider">
+                    Search error: {jobsError}
                   </div>
                 )}
 
                 <button
-                  className="btn-primary mt-6"
+                  className="px-8 py-4 mt-8 w-full md:w-auto rounded-full bg-[#7C9ADD] text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0"
                   onClick={handleScrapeJobs}
                   disabled={jobsLoading || !fieldInput.trim()}
                 >
-                  <span className="flex items-center gap-2">
-                    {jobsLoading ? "SCRAPING..." : "EXECUTE SCRAPING"}
-                    {!jobsLoading && <div className="w-1.5 h-1.5 bg-black" />}
-                  </span>
+                  {jobsLoading ? "Searching..." : "Execute Search"}
                 </button>
               </div>
             </div>
 
             {jobs.length > 0 && (
-              <div className="space-y-6 pt-10 border-t-2 border-(--border) animate-fade-up">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-display font-black text-xl tracking-tight uppercase text-(--indigo)">
-                    Scraped Signals ({jobs.length})
+              <div className="space-y-8 pt-10 border-t border-white/40">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-display font-bold text-xl text-[#7C9ADD]">
+                    Results{" "}
+                    <span className="text-[#A0AEC0] ml-2">({jobs.length})</span>
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {jobs.map((job) => (
                     <div
                       key={`${job.apply_url}-${job.title}`}
-                      className="p-6 border-2 border-(--border) bg-black/40 hover:border-(--indigo) transition-all group/item"
+                      className="p-8 rounded-[32px] bg-white/50 border border-white hover:border-[#7C9ADD]/40 hover:shadow-glass transition-all group/card"
                     >
-                      <div className="flex flex-col h-full justify-between gap-4">
+                      <div className="flex flex-col h-full justify-between gap-6">
                         <div>
-                          <h5 className="font-display font-black text-lg uppercase tracking-tight text-(--text-primary) mb-1 group-hover/item:text-(--indigo)">
+                          <h5 className="font-display font-bold text-lg text-[#2D3748] mb-4 group-hover/card:text-[#7C9ADD] transition-colors leading-tight">
                             {job.title}
                           </h5>
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-3">
-                            <span className="text-[10px] font-mono font-bold uppercase text-(--text-muted)">
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            <span className="px-3 py-1 rounded-full bg-white/80 border border-white text-[10px] font-bold text-[#718096] uppercase tracking-wider shadow-sm">
                               {job.company}
                             </span>
-                            <span className="text-[10px] font-mono font-bold uppercase text-(--indigo)">
+                            <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#7C9ADD]/10 text-[#7C9ADD] text-[10px] font-bold uppercase tracking-wider border border-[#7C9ADD]/20">
+                              <MapPin size={10} />
                               {job.location}
-                            </span>
+                            </div>
                             {job.remote && (
-                              <span className="text-[10px] font-mono font-bold uppercase text-(--emerald)">
-                                [REMOTE]
-                              </span>
+                              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#98C9A3]/10 text-[#98C9A3] text-[10px] font-bold uppercase tracking-wider border border-[#98C9A3]/20">
+                                <Globe size={10} />
+                                Remote
+                              </div>
                             )}
                           </div>
-                          <p className="text-xs font-mono text-(--text-secondary) line-clamp-2 leading-relaxed">
+                          <p className="text-sm font-medium text-[#718096] line-clamp-3 leading-relaxed">
                             {job.description_snippet}
                           </p>
                         </div>
-                        <div className="flex items-center justify-between pt-4 border-t border-(--border)">
-                          <span className="text-[9px] font-mono text-(--text-muted) uppercase">
-                            SOURCE: {job.source.substring(0, 10)}...
+                        <div className="flex items-center justify-between pt-6 border-t border-white/40">
+                          <span className="text-[9px] font-bold text-[#A0AEC0] uppercase tracking-[0.2em]">
+                            Via {job.source}
                           </span>
                           <a
                             href={job.apply_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs font-mono font-black uppercase text-(--indigo) hover:underline flex items-center gap-1"
+                            className="text-[10px] font-bold text-[#7C9ADD] uppercase tracking-widest hover:text-[#7C9ADD]/80 transition-all flex items-center gap-2 group/link"
                           >
-                            APPLY_NOW →
+                            Apply
+                            <ExternalLink
+                              size={12}
+                              className="transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
+                            />
                           </a>
                         </div>
                       </div>
@@ -390,52 +425,79 @@ export default function JobMatchPage() {
           </div>
           <SkillGapList skillGap={result.skill_gap} />
           {result.fit_verdict && (
-            <div className="glass-card p-6">
-              <h3 className="font-semibold text-sm mb-2">Fit Verdict</h3>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                {result.fit_verdict}
+            <div className="glass-card p-10 rounded-[40px] bg-white/60 shadow-glass border border-white/60 backdrop-blur-xl">
+              <h3 className="font-display font-bold text-xl text-[#2D3748] mb-6 flex items-center gap-3">
+                <CheckCircle className="text-[#98C9A3]" size={20} />
+                Fit Verdict
+              </h3>
+              <p className="text-md font-medium text-[#4A5568] leading-relaxed italic">
+                "{result.fit_verdict}"
               </p>
             </div>
           )}
-          {!!result.pros?.length && (
-            <div className="glass-card p-6">
-              <h3 className="font-semibold text-sm mb-3">Pros</h3>
-              {result.pros.map((item: string, i: number) => (
-                <p
-                  key={i}
-                  className="text-sm mb-2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  + {item}
-                </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {!!result.pros?.length && (
+              <div className="glass-card p-10 rounded-[40px] bg-[#98C9A3]/5 border border-[#98C9A3]/20 shadow-glass backdrop-blur-xl">
+                <h3 className="font-display font-bold text-xl text-[#2D3748] mb-8 flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#98C9A3] shadow-[0_0_10px_rgba(152,201,163,0.5)]" />
+                  Key Strengths
+                </h3>
+                <div className="space-y-5">
+                  {result.pros.map((item: string, i: number) => (
+                    <div key={i} className="flex gap-4 items-start group">
+                      <div className="w-6 h-6 rounded-full bg-white border border-[#98C9A3]/20 text-[#98C9A3] flex items-center justify-center shrink-0 mt-0.5 shadow-sm group-hover:scale-110 transition-transform">
+                        <CheckCircle size={12} strokeWidth={3} />
+                      </div>
+                      <p className="text-sm text-[#4A5568] font-bold leading-relaxed">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!!result.cons?.length && (
+              <div className="glass-card p-10 rounded-[40px] bg-[#F28C8C]/5 border border-[#F28C8C]/20 shadow-glass backdrop-blur-xl">
+                <h3 className="font-display font-bold text-xl text-[#2D3748] mb-8 flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#F28C8C] shadow-[0_0_10px_rgba(242,140,140,0.5)]" />
+                  Identified Gaps
+                </h3>
+                <div className="space-y-5">
+                  {result.cons.map((item: string, i: number) => (
+                    <div key={i} className="flex gap-4 items-start group">
+                      <div className="w-6 h-6 rounded-full bg-white border border-[#F28C8C]/20 text-[#F28C8C] flex items-center justify-center shrink-0 mt-0.5 shadow-sm group-hover:scale-110 transition-transform">
+                        <AlertCircle size={12} strokeWidth={3} />
+                      </div>
+                      <p className="text-sm text-[#4A5568] font-bold leading-relaxed">
+                        {item}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="glass-card p-12 rounded-[48px] bg-[#2D3748] text-white shadow-2xl shadow-[#2D3748]/20 border border-[#2D3748] overflow-hidden relative group/rec">
+            <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[100px] bg-[#7C9ADD]/10 pointer-events-none group-hover/rec:bg-[#7C9ADD]/20 transition-all duration-1000" />
+            <h3 className="font-display font-bold text-2xl text-[#7C9ADD] mb-10 flex items-center gap-4 relative z-10">
+              <div className="w-3 h-3 rounded-full bg-[#7C9ADD] shadow-[0_0_15px_#7C9ADD]" />
+              Strategic Recommendations
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10 relative z-10">
+              {result.recommendations.map((r: string, i: number) => (
+                <div key={i} className="flex gap-6 items-start group/item">
+                  <div className="text-[#7C9ADD] font-display font-black text-2xl h-10 w-10 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 shrink-0 group-hover/item:bg-[#7C9ADD] group-hover/item:text-white transition-all duration-300">
+                    {i + 1}
+                  </div>
+                  <p className="text-md text-[#A0AEC0] font-medium leading-[1.6] group-hover/item:text-white transition-colors duration-300 pt-1">
+                    {r}
+                  </p>
+                </div>
               ))}
             </div>
-          )}
-          {!!result.cons?.length && (
-            <div className="glass-card p-6">
-              <h3 className="font-semibold text-sm mb-3">Cons</h3>
-              {result.cons.map((item: string, i: number) => (
-                <p
-                  key={i}
-                  className="text-sm mb-2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  - {item}
-                </p>
-              ))}
-            </div>
-          )}
-          <div className="glass-card p-6">
-            <h3 className="font-semibold text-sm mb-3">Recommendations</h3>
-            {result.recommendations.map((r: string, i: number) => (
-              <p
-                key={i}
-                className="text-sm mb-2"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                → {r}
-              </p>
-            ))}
           </div>
         </div>
       )}

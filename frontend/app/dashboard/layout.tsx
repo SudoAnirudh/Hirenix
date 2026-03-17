@@ -111,66 +111,84 @@ export default function DashboardLayout({
 
   return (
     <div
-      className="flex h-screen overflow-hidden"
+      className="flex h-screen overflow-hidden p-4 md:p-6"
       style={{ background: "var(--bg-base)" }}
     >
       <aside
-        className="w-60 flex-shrink-0 flex flex-col border-r"
+        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-[var(--border)] overflow-hidden z-20 relative"
         style={{
           background: "var(--bg-surface)",
-          borderColor: "var(--border)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
         }}
       >
-        <div
-          className="h-16 flex items-center px-5 gap-2 border-b"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <Brain size={22} style={{ color: "var(--indigo)" }} />
-          <span className="font-display font-bold text-lg gradient-text">
+        <div className="h-24 flex items-center px-8 gap-3 relative z-10">
+          <div className="p-2.5 rounded-2xl bg-[#7C9ADD]/10 flex items-center justify-center">
+            <Brain size={22} className="text-[#7C9ADD]" />
+          </div>
+          <span className="font-display font-bold text-xl tracking-tight text-[#2D3748]">
             Hirenix
           </span>
         </div>
 
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-2 flex flex-col gap-2 overflow-y-auto">
+          <div className="px-4 mb-3">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#7C9ADD]/70 uppercase px-1">
+              Main Menu
+            </span>
+          </div>
           {nav.map(({ href, icon: Icon, label }) => (
             <Link
               key={href}
               href={href}
               className={`sidebar-link ${pathname === href ? "active" : ""}`}
             >
-              <Icon size={16} />
+              <Icon size={18} strokeWidth={pathname === href ? 2.5 : 2} />
               {label}
             </Link>
           ))}
         </nav>
 
-        <div
-          className="px-3 py-4 border-t flex flex-col gap-1"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <Link href="/pricing" className="sidebar-link">
-            <CreditCard size={16} /> Upgrade Plan
-          </Link>
+        <div className="p-4 mt-auto">
+          <div className="p-5 rounded-3xl bg-white/40 border border-white/60 mb-6 group/plan">
+            <div className="text-[11px] font-bold text-[#2D3748] mb-1 uppercase tracking-wider">
+              Standard Plan
+            </div>
+            <div className="text-[10px] text-[#718096] mb-4 leading-relaxed">
+              Unlock advanced AI analysis and interview insights.
+            </div>
+            <Link
+              href="/pricing"
+              className="px-4 py-2 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-bold text-center transition-all hover:bg-[#7C9ADD]/90 hover:shadow-lg hover:shadow-[#7C9ADD]/20"
+            >
+              Upgrade Now
+            </Link>
+          </div>
+
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="sidebar-link w-full text-left"
+            className="sidebar-link w-full text-left bg-transparent! hover:text-red-500! group transition-colors"
             style={{ color: "var(--text-muted)" }}
           >
-            <LogOut size={16} /> {loggingOut ? "Signing out..." : "Sign Out"}
+            <LogOut
+              size={18}
+              className="group-hover:translate-x-1 transition-transform"
+            />
+            {loggingOut ? "Signing out..." : "Sign Out"}
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="min-h-full w-full px-6 py-8 md:px-8">
-          <div className="flex w-full flex-col items-center">
+      <main className="flex-1 overflow-y-auto scroll-smooth">
+        <div className="min-h-full w-full px-6 py-6 md:px-12 md:py-10">
+          <div className="max-w-[1600px] mx-auto">
             {error && (
-              <div className="mb-4 w-full max-w-5xl rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <div className="mb-6 w-full rounded-2xl border border-red-100 bg-red-50/50 p-4 text-sm text-red-700 animate-fade-up">
                 {error}
               </div>
             )}
-            <div className="w-full flex flex-col items-center">{children}</div>
+            <div className="w-full flex flex-col">{children}</div>
           </div>
         </div>
       </main>

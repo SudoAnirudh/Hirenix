@@ -32,50 +32,63 @@ export default function ScoreCard({ title, score, subtitle }: Props) {
   const progress = CIRC - (score / 100) * CIRC;
 
   return (
-    <div className="glass-card p-8 flex flex-col items-center text-center gap-4 rounded-none bg-(--bg-surface) border-2 border-(--border) shadow-[6px_6px_0px_var(--border)]">
-      <div className="relative flex items-center justify-center">
-        <svg width="140" height="140" className="transform -rotate-90">
+    <div className="glass-card p-8 flex flex-col items-center text-center gap-7 rounded-[40px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-glass relative overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl">
+      <div className="relative flex items-center justify-center group/score">
+        <div
+          className="absolute inset-0 rounded-full scale-125 blur-3xl opacity-20 transition-all duration-500 group-hover/score:opacity-30"
+          style={{ background: stroke }}
+        />
+        <svg
+          width="150"
+          height="150"
+          className="transform -rotate-90 relative z-10 drop-shadow-[0_0_12px_rgba(0,0,0,0.05)]"
+        >
           {/* Track */}
           <circle
-            cx="70"
-            cy="70"
+            cx="75"
+            cy="75"
             r={R}
             fill="none"
-            stroke="rgba(255,255,255,0.05)"
-            strokeWidth="12"
+            stroke="rgba(0,0,0,0.02)"
+            strokeWidth="10"
           />
           {/* Progress */}
           <circle
-            cx="70"
-            cy="70"
+            cx="75"
+            cy="75"
             r={R}
             fill="none"
             stroke={stroke}
             strokeWidth="12"
-            strokeLinecap="butt"
+            strokeLinecap="round"
             strokeDasharray={CIRC}
             strokeDashoffset={progress}
-            style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
+            className="transition-all duration-1000 ease-out"
+            style={{ filter: `drop-shadow(0 0 10px ${stroke}66)` }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display font-black text-4xl tracking-tighter text-(--text-primary)">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pt-1">
+          <span className="font-display font-bold text-5xl tracking-tight text-[#2D3748]">
             {Math.round(score)}
           </span>
-          <span
-            className="text-[10px] font-mono font-bold uppercase tracking-widest"
-            style={{ color: stroke }}
+          <div
+            className="mt-1 text-[10px] font-bold uppercase tracking-[0.15em] px-3 py-1 rounded-full border shadow-sm"
+            style={{
+              backgroundColor: `${stroke}10`,
+              color: stroke,
+              borderColor: `${stroke}20`,
+            }}
           >
             {label}
-          </span>
+          </div>
         </div>
       </div>
-      <div>
-        <div className="font-display font-black text-sm uppercase tracking-tight text-(--text-primary)">
+      <div className="relative z-10">
+        <div className="font-display font-bold text-[15px] text-[#2D3748] tracking-tight mb-2">
           {title}
         </div>
         {subtitle && (
-          <div className="text-[10px] font-mono font-bold uppercase tracking-widest mt-1 text-(--text-muted)">
+          <div className="text-[11px] font-medium text-[#718096] uppercase tracking-widest bg-white/40 px-3 py-1.5 rounded-full border border-white/60 inline-block shadow-xs">
             {subtitle}
           </div>
         )}

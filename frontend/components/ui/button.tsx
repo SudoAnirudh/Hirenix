@@ -38,13 +38,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-[var(--border-accent)] text-black border-[var(--border-accent)] shadow-[4px_4px_0px_#000] hover:bg-black hover:text-[var(--border-accent)] hover:shadow-[6px_6px_0px_var(--indigo)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
+        "bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 hover:shadow-xl hover:-translate-y-0.5",
       ghost:
-        "bg-transparent text-[var(--text-primary)] border-[var(--border)] shadow-[4px_4px_0px_var(--border)] hover:bg-[rgba(57,255,20,0.1)] hover:border-[var(--emerald)] hover:text-[var(--emerald)] hover:shadow-[6px_6px_0px_var(--emerald)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
+        "bg-transparent text-[#2D3748] hover:bg-[#7C9ADD]/10 hover:text-[#7C9ADD]",
       outline:
-        "bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-white/10 shadow-[4px_4px_0px_var(--border)] hover:-translate-y-1 hover:-translate-x-1 active:translate-y-0 active:translate-x-0 active:shadow-none",
+        "bg-transparent text-[#2D3748] border border-[#rgba(255,255,255,0.8)] hover:bg-white/50 hover:border-[#7C9ADD]/50",
       shine:
-        "relative overflow-hidden bg-[#050505] text-[var(--indigo)] border-[var(--indigo)] shadow-[4px_4px_0px_var(--indigo)] before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-[var(--indigo)]/20 before:to-transparent hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0px_var(--border-accent)] hover:border-[var(--border-accent)] hover:text-[var(--border-accent)] active:translate-y-0 active:translate-x-0 active:shadow-[0px_0px_0px]",
+        "relative overflow-hidden bg-[#2D3748] text-white shadow-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/10 before:to-transparent hover:-translate-y-0.5",
     };
 
     const sizes = {

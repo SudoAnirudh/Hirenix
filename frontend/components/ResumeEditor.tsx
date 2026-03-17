@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 const toolbarBtn =
-  "p-2 rounded-none transition-all disabled:opacity-50 disabled:pointer-events-none border-2 border-transparent hover:border-(--indigo) hover:bg-(--indigo)/5";
+  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568]";
 
 const MenuBar = ({
   editor,
@@ -50,13 +50,12 @@ const MenuBar = ({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
-  const activeClass =
-    "bg-(--indigo)/20 border-(--indigo) text-(--indigo) shadow-[2px_2px_0px_var(--indigo)] -translate-x-0.5 -translate-y-0.5";
-  const idleClass = "text-(--text-secondary) border-transparent";
+  const activeClass = "bg-[#7C9ADD]/10 text-[#7C9ADD] shadow-sm";
+  const idleClass = "text-[#718096] hover:text-[#7C9ADD]";
 
   return (
-    <div className="flex flex-wrap items-center gap-2 p-3 sticky top-0 z-10 border-b-2 border-(--border) bg-(--bg-elevated)">
-      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r-2 border-(--border)">
+    <div className="flex flex-wrap items-center gap-1.5 p-3 sticky top-0 z-10 border-b border-white/60 bg-white/60 backdrop-blur-xl">
+      <div className="flex items-center gap-1 pr-2 mr-1 border-r border-[#7C9ADD]/10">
         <button
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().chain().focus().undo().run()}
@@ -75,11 +74,11 @@ const MenuBar = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r-2 border-(--border)">
+      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r border-[#7C9ADD]/10">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`${toolbarBtn} ${editor.isActive("bold") ? activeClass : idleClass}`}
+          className={`${toolbarBtn} ${editor.isActive("bold") ? "bg-[#7C9ADD]/10 text-[#7C9ADD] shadow-sm" : "text-[#718096] hover:text-[#7C9ADD]"}`}
           title="Bold"
         >
           <Bold className="w-4 h-4" />
@@ -102,7 +101,7 @@ const MenuBar = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r-2 border-(--border)">
+      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r border-[#7C9ADD]/10">
         <button
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -123,7 +122,7 @@ const MenuBar = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r-2 border-(--border)">
+      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r border-[#7C9ADD]/10">
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`${toolbarBtn} ${editor.isActive("bulletList") ? activeClass : idleClass}`}
@@ -140,7 +139,7 @@ const MenuBar = ({
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r-2 border-(--border)">
+      <div className="flex items-center gap-1.5 pr-2 mr-1 border-r border-[#7C9ADD]/10">
         <button
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           className={`${toolbarBtn} ${editor.isActive({ textAlign: "left" }) ? activeClass : idleClass}`}
@@ -202,7 +201,7 @@ export function ResumeEditor({ content, onChange }: ResumeEditorProps) {
         openOnClick: false,
         HTMLAttributes: {
           class: "underline cursor-pointer font-bold",
-          style: "color: var(--indigo)",
+          style: "color: #7C9ADD",
         },
       }),
     ],
@@ -213,18 +212,18 @@ export function ResumeEditor({ content, onChange }: ResumeEditorProps) {
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[800px] p-10 font-mono",
+          "prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[800px] p-12 font-sans",
       },
     },
   });
 
   return (
-    <div className="flex flex-col h-full bg-(--bg-surface) border-2 border-(--border) shadow-[8px_8px_0px_var(--border)] overflow-hidden">
+    <div className="flex flex-col h-full bg-white/40 border border-white/60 rounded-[32px] shadow-glass backdrop-blur-sm overflow-hidden">
       <div className="print:hidden">
         <MenuBar editor={editor} />
       </div>
-      <div className="flex-1 overflow-y-auto p-6 sm:p-12 print:p-0 bg-(--bg-elevated) flex justify-center">
-        <div className="bg-white text-black w-full max-w-[210mm] min-h-[297mm] print:ring-0 print:m-0 shrink-0 border-2 border-[#e8dccb] shadow-[12px_12px_0px_rgba(0,0,0,0.1)]">
+      <div className="flex-1 overflow-y-auto p-12 sm:p-20 print:p-0 bg-transparent flex justify-center">
+        <div className="bg-white text-[#2D3748] w-full max-w-[210mm] min-h-[297mm] print:ring-0 print:m-0 shrink-0 border border-white/60 shadow-glass rounded-xl overflow-hidden ring-1 ring-black/5">
           <EditorContent editor={editor} />
         </div>
       </div>

@@ -13,7 +13,7 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        "rounded-none border-2 border-[var(--border)] bg-[#050505] shadow-[6px_6px_0px_var(--border)] backdrop-blur-sm overflow-hidden relative transition-all duration-200",
+        "rounded-3xl border border-(--border) bg-(--surface) backdrop-blur-md shadow-glass overflow-hidden relative transition-all duration-300",
         className,
       )}
       {...props}
@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-display font-bold text-xl uppercase tracking-tight text-[var(--text-primary)]",
+      "font-display font-bold text-xl tracking-tight text-(--text)",
       className,
     )}
     {...props}
@@ -53,11 +53,7 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm font-mono text-[var(--text-secondary)]", className)}
-    {...props}
-  />
+  <p ref={ref} className={cn("text-sm text-(--muted)", className)} {...props} />
 ));
 CardDescription.displayName = "CardDescription";
 
@@ -67,7 +63,7 @@ const CardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("p-6 pt-0 font-mono text-[var(--text-secondary)]", className)}
+    className={cn("p-6 pt-0 text-(--text)/80 leading-relaxed", className)}
     {...props}
   />
 ));
@@ -80,7 +76,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center p-6 pt-0 border-t-2 border-[var(--border)] mt-4 bg-[#111]",
+      "flex items-center p-6 pt-6 border-t border-(--border) mt-4",
       className,
     )}
     {...props}
