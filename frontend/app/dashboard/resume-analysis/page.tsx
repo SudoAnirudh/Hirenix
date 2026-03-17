@@ -99,9 +99,9 @@ export default function ResumeAnalysisPage() {
               Sections Detected ({result.sections?.length ?? 0})
             </h3>
             <div className="flex flex-wrap gap-2">
-              {result.sections?.map((s: Section) => (
+              {result.sections?.map((s: Section, i: number) => (
                 <span
-                  key={s.section_type}
+                  key={`${s.section_type}-${i}`}
                   className="px-2 py-1 rounded text-xs font-medium"
                   style={{
                     background: "rgba(99,102,241,0.15)",
