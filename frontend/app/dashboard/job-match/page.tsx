@@ -170,7 +170,7 @@ export default function JobMatchPage() {
                     <div className="relative">
                       <input
                         id="jm-resume-id"
-                        className="input-base bg-white! shadow-none! border-slate-200! focus:border-indigo-500!"
+                        className="input-base bg-white! shadow-none! border-[#7C9ADD]/20! focus:border-[#7C9ADD]/50!"
                         placeholder="Or enter Resume ID from analysis..."
                         value={resumeId}
                         onChange={(e) => setResumeId(e.target.value)}
