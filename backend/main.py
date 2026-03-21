@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import auth, resume, github, job_match, interview, analytics, payments
+from routers import auth, resume, github, job_match, interview, analytics, payments, roadmap
 
 app = FastAPI(
     title="Hirenix API",
@@ -30,6 +30,7 @@ app.include_router(job_match.router, prefix="/jobs", tags=["Job Matching"])
 app.include_router(interview.router, prefix="/interview", tags=["Mock Interview"])
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 app.include_router(payments.router, prefix="/payments", tags=["Payments"])
+app.include_router(roadmap.router, prefix="/roadmap", tags=["Roadmap"])
 
 
 @app.get("/health", tags=["Health"])

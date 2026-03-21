@@ -12,6 +12,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
+  Map,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 
@@ -45,6 +46,12 @@ const modules = [
     label: "Progress Tracker",
     href: "/dashboard/progress-tracker",
     desc: "Track your evolution score",
+  },
+  {
+    icon: Map,
+    label: "Career Roadmap",
+    href: "/dashboard/roadmap",
+    desc: "Visualize your path to success",
   },
 ];
 

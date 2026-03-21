@@ -126,11 +126,11 @@ export default function InterviewPanel({
   return (
     <div className="flex flex-col gap-10 animate-fade-up max-w-5xl mx-auto w-full pb-20">
       {/* Header / Progress Area */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 px-4">
         <div className="flex-1">
-          <h2 className="font-display font-bold text-4xl tracking-tight text-[#2D3748] mb-4">
+          <h2 className="font-display font-bold text-3xl tracking-tight text-[#2D3748] mb-2">
             Question {currentIdx + 1}
-            <span className="text-xl font-medium ml-3 text-[#A0AEC0]">
+            <span className="text-lg font-medium ml-3 text-[#A0AEC0]">
               / {session.questions.length}
             </span>
           </h2>
@@ -168,42 +168,42 @@ export default function InterviewPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-10 px-4">
+      <div className="flex flex-col gap-6 px-4">
         {/* Main Question Card */}
-        <div className="flex flex-col gap-6">
-          <div className="glass-card p-12 md:p-16 relative overflow-hidden group rounded-[40px] shadow-glass bg-white/50 border border-white/60">
+        <div className="flex flex-col gap-4">
+          <div className="glass-card p-10 md:p-12 relative overflow-hidden group rounded-[40px] shadow-glass bg-white/50 border border-white/60">
             {/* Decorative Glow */}
             <div
               className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-[100px] opacity-10 pointer-events-none transition-opacity duration-1000 group-hover:opacity-20"
               style={{ background: categoryColor }}
             />
 
-            <div className="flex flex-wrap items-center gap-3 mb-10 relative z-10 transition-transform duration-500">
+            <div className="flex flex-wrap items-center gap-3 mb-6 relative z-10 transition-transform duration-500">
               <span
-                className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40"
+                className="px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40"
                 style={{ color: categoryColor }}
               >
                 {q.category.replace("_", " ")}
               </span>
-              <span className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40 text-[#718096]">
+              <span className="px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded-full bg-white/80 backdrop-blur-sm shadow-sm border border-white/40 text-[#718096]">
                 {q.difficulty}
               </span>
             </div>
 
-            <h3 className="font-display font-bold text-3xl md:text-5xl leading-[1.1] mb-12 relative z-10 text-[#2D3748] tracking-tighter text-balance">
+            <h3 className="font-display font-bold text-2xl md:text-4xl leading-[1.1] mb-8 relative z-10 text-[#2D3748] tracking-tighter text-balance">
               {q.question}
             </h3>
 
             {q.expected_topics.length > 0 && (
-              <div className="mb-12 relative z-10">
-                <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-4 block text-[#A0AEC0]">
+              <div className="mb-8 relative z-10">
+                <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3 block text-[#A0AEC0]">
                   Target Topics
                 </span>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {q.expected_topics.map((topic) => (
                     <span
                       key={topic}
-                      className="px-5 py-2.5 rounded-2xl bg-white/40 text-[13px] font-semibold text-[#4A5568] border border-white/60 hover:bg-white/80 hover:shadow-glass hover:-translate-y-0.5 transition-all cursor-default"
+                      className="px-4 py-2 rounded-xl bg-white/40 text-[12px] font-semibold text-[#4A5568] border border-white/60 hover:bg-white/80 hover:shadow-glass hover:-translate-y-0.5 transition-all cursor-default"
                     >
                       {topic}
                     </span>
@@ -212,16 +212,16 @@ export default function InterviewPanel({
               </div>
             )}
 
-            <div className="p-10 rounded-[32px] relative z-10 bg-[#7C9ADD]/5 border border-[#7C9ADD]/10 backdrop-blur-sm shadow-inner group/tip">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 group-hover/tip:scale-110 transition-transform">
-                  <Brain size={20} />
+            <div className="p-6 rounded-[24px] relative z-10 bg-[#7C9ADD]/5 border border-[#7C9ADD]/10 backdrop-blur-sm shadow-inner group/tip">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-lg bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 group-hover/tip:scale-110 transition-transform">
+                  <Brain size={16} />
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#7C9ADD]">
                   Strategy Guide
                 </span>
               </div>
-              <p className="text-base font-body text-[#4A5568] leading-relaxed">
+              <p className="text-sm font-body text-[#4A5568] leading-relaxed">
                 {q.category === "behavioral"
                   ? "Use the STAR method (Situation, Task, Action, Result). Focus on specific contributions and quantified results."
                   : q.category === "system_design"
@@ -246,7 +246,7 @@ export default function InterviewPanel({
             <div className="relative group">
               <textarea
                 id={`answer-${q.question_id}`}
-                className="w-full rounded-[32px] p-10 text-lg leading-relaxed resize-y min-h-[220px] transition-all duration-500 font-body outline-none bg-white/40 backdrop-blur-md border border-white/60 text-[#2D3748] placeholder:text-[#A0AEC0] shadow-glass focus:bg-white/60 focus:border-[#7C9ADD]/50 focus:shadow-xl focus:shadow-[#7C9ADD]/10"
+                className="w-full rounded-[32px] p-8 text-lg leading-relaxed resize-none min-h-[160px] transition-all duration-500 font-body outline-none bg-white/40 backdrop-blur-md border border-white/60 text-[#2D3748] placeholder:text-[#A0AEC0] shadow-glass focus:bg-white/60 focus:border-[#7C9ADD]/50 focus:shadow-xl focus:shadow-[#7C9ADD]/10"
                 placeholder={
                   session.answer_mode === "text"
                     ? "Draft your response here. Anchor your points with clear examples and technical depth..."
