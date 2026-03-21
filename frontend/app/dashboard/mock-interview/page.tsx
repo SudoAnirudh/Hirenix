@@ -150,10 +150,12 @@ function InterviewView({
   session,
   proctoringEnabled,
   onComplete,
+  onExit,
 }: {
   session: Session;
   proctoringEnabled: boolean;
   onComplete: (scores: AnswerScore[]) => void;
+  onExit: () => void;
 }) {
   const proctor = useProctor();
 
@@ -163,25 +165,34 @@ function InterviewView({
       <ProctorToolbar />
 
       {/* Header */}
-      <div className="flex items-center gap-4 mb-10 p-6 glass-card rounded-[24px]">
-        <div className="w-12 h-12 rounded-2xl bg-[#7C9ADD]/10 flex items-center justify-center border border-[#7C9ADD]/20">
-          <BrainCircuit size={24} className="text-[#7C9ADD]" />
+      <div className="flex items-center justify-between mb-8 p-5 glass-card rounded-[24px]">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#7C9ADD]/10 flex items-center justify-center border border-[#7C9ADD]/20">
+            <BrainCircuit size={20} className="text-[#7C9ADD]" />
+          </div>
+          <div>
+            <h1 className="font-display font-bold text-2xl tracking-tight text-[#2D3748]">
+              Interview Studio
+            </h1>
+            <p className="text-[11px] font-body text-[#718096]">
+              {session.target_role} · {session.interview_type.replace("_", " ")}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display font-bold text-3xl tracking-tight text-[#2D3748]">
-            Interview Studio
-          </h1>
-          <p className="text-sm font-body text-[#718096]">
-            {session.target_role} · {session.interview_type.replace("_", " ")} ·{" "}
-            {session.questions.length} questions
-          </p>
-        </div>
+
+        <button
+          onClick={onExit}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-50 text-red-500 border border-red-100 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-red-200 active:scale-95"
+        >
+          <RotateCcw size={14} />
+          Exit Session
+        </button>
       </div>
 
       {/* Main layout: Questions + Webcam side-by-side */}
       <div className="flex gap-5" style={{ alignItems: "flex-start" }}>
         {/* Questions */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 max-h-[calc(100vh-280px)] overflow-y-auto no-scrollbar pb-10">
           <InterviewPanel
             session={session}
             proctoringEnabled={proctoringEnabled}
@@ -685,8 +696,9 @@ function MockInterviewPageContent() {
         <ProctorSnapshotCapture snapshotRef={proctorSnapshotRef} />
         <InterviewView
           session={session}
-          proctoringEnabled={proctoring}
+          proctoringEnabled={proctoringing}
           onComplete={handleComplete}
+          onExit={handleRestart}
         />
       </ProctorProvider>
     );
