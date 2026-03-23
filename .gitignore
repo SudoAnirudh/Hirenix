@@ -49,3 +49,4 @@ venv/
 # agents
 .agents/
 .gemini/
+AGENTS.md
