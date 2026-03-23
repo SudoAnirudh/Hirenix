@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import ResumeUploader from "@/components/ResumeUploader";
 import ScoreCard from "@/components/ScoreCard";
 
