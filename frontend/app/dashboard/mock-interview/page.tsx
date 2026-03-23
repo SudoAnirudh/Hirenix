@@ -696,7 +696,7 @@ function MockInterviewPageContent() {
         <ProctorSnapshotCapture snapshotRef={proctorSnapshotRef} />
         <InterviewView
           session={session}
-          proctoringEnabled={proctoringing}
+          proctoringEnabled={proctoring}
           onComplete={handleComplete}
           onExit={handleRestart}
         />
