@@ -95,6 +95,15 @@ async function request<T>(
   return res.json();
 }
 
+// ─── Profile ──────────────────────────────────────────────────────────────────
+export async function getProfile() {
+  return request<{
+    user_id: string;
+    email: string;
+    plan: string;
+  }>("/auth/me");
+}
+
 // ─── Resume ───────────────────────────────────────────────────────────────────
 export async function uploadResume(file: File) {
   const token = await getAccessToken();

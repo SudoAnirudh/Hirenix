@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from models.roadmap import Roadmap
 from services.roadmap_engine import roadmap_engine

@@ -15,6 +15,7 @@ import {
   Map,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
+import { getProgress } from "@/lib/api";
 
 const modules = [
   {
@@ -68,19 +69,66 @@ interface UserSession {
 export default function DashboardPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<any>(null);
+  const [progressLoading, setProgressLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSession() {
-      const sess = await getSession();
-      setSession(sess);
-      setLoading(false);
+    async function fetchData() {
+      try {
+        const sess = await getSession();
+        setSession(sess);
+        setLoading(false);
+
+        const prog = await getProgress();
+        setProgress(prog);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setLoading(false);
+        setProgressLoading(false);
+      }
     }
-    fetchSession();
+    fetchData();
   }, []);
 
   const fullName = session?.user?.user_metadata?.full_name || "Guest User";
   const email = session?.user?.email || "Not signed in";
   const plan = session?.user?.user_metadata?.plan || "free";
+
+  const stats = [
+    {
+      label: "Resumes Uploaded",
+      value: progress?.ats_trend?.length?.toString() || "0",
+      icon: FileText,
+      color: "text-[#7C9ADD]",
+      bg: "bg-[#7C9ADD]/5",
+    },
+    {
+      label: "AI ATS Score",
+      value: progress?.resume_evolution_score?.toString() || "-",
+      icon: TrendingUp,
+      color: "text-[#98C9A3]",
+      bg: "bg-[#98C9A3]/5",
+    },
+    {
+      label: "Analyses Done",
+      value: (
+        (progress?.ats_trend?.length || 0) +
+        (progress?.interview_trend?.length || 0) +
+        (progress?.github_trend?.length || 0)
+      ).toString(),
+      icon: CheckCircle2,
+      color: "text-[#A5B4FC]",
+      bg: "bg-[#A5B4FC]/5",
+    },
+    {
+      label: "Prep Hours",
+      value: "0",
+      icon: Clock,
+      color: "text-[#FBCFE8]",
+      bg: "bg-[#FBCFE8]/5",
+    },
+  ];
 
   return (
     <div className="animate-fade-up max-w-6xl mx-auto space-y-12 pb-20 relative">
@@ -103,7 +151,7 @@ export default function DashboardPage() {
         {loading ? (
           <div
             className="h-16 w-64 rounded-xl animate-pulse"
-            style={{ background: "var(--bg-elevated)" }}
+            style={{ background: "rgba(255, 255, 255, 0.4)" }}
           />
         ) : (
           <div className="glass-card flex items-center gap-4 p-3 lg:p-4 rounded-2xl">
@@ -130,44 +178,19 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative z-10">
-        {[
-          {
-            label: "Resumes Uploaded",
-            value: "0",
-            icon: FileText,
-            color: "text-[#7C9ADD]",
-            bg: "bg-[#7C9ADD]/5",
-          },
-          {
-            label: "AI ATS Score",
-            value: "-",
-            icon: TrendingUp,
-            color: "text-[#98C9A3]",
-            bg: "bg-[#98C9A3]/5",
-          },
-          {
-            label: "Analyses Done",
-            value: "0",
-            icon: CheckCircle2,
-            color: "text-[#A5B4FC]",
-            bg: "bg-[#A5B4FC]/5",
-          },
-          {
-            label: "Prep Hours",
-            value: "0",
-            icon: Clock,
-            color: "text-[#FBCFE8]",
-            bg: "bg-[#FBCFE8]/5",
-          },
-        ].map(({ label, value, icon: Icon, color, bg }) => (
+        {stats.map(({ label, value, icon: Icon, color, bg }) => (
           <div
             key={label}
             className="glass-card p-8 rounded-[32px] bg-white/60 border border-white/60 backdrop-blur-xl shadow-glass group relative hover:bg-white/90 hover:translate-y-[-4px] transition-all"
           >
             <div className="flex justify-between items-start mb-6">
-              <div className="text-4xl font-bold font-display text-[#2D3748] tracking-tight">
-                {value}
-              </div>
+              {progressLoading ? (
+                <div className="h-10 w-16 bg-slate-100 rounded-lg animate-pulse" />
+              ) : (
+                <div className="text-4xl font-bold font-display text-[#2D3748] tracking-tight">
+                  {value}
+                </div>
+              )}
               <div
                 className={`p-3 rounded-2xl ${bg} border border-white shrink-0 shadow-sm ${color}`}
               >
@@ -183,12 +206,15 @@ export default function DashboardPage() {
 
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <Sparkles style={{ color: "var(--indigo)" }} size={18} />
+          <Sparkles style={{ color: "#7C9ADD" }} size={18} />
           <h2 className="text-lg font-semibold">Workspace</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <Link href="/upload" className="block outline-none rounded-3xl">
+          <Link
+            href="/dashboard/resume-analysis"
+            className="block outline-none rounded-3xl"
+          >
             <div className="h-full p-8 rounded-[24px] transition-all group flex flex-col justify-between gap-10 cursor-pointer bg-gradient-to-br from-[#7C9ADD] to-[#93C5FD] text-white shadow-xl shadow-[#7C9ADD]/20 hover:shadow-2xl hover:shadow-[#7C9ADD]/30 hover:-translate-y-1">
               <div className="flex items-center justify-between">
                 <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-md border border-white/30">
