@@ -1,0 +1,51 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/job-match/page.tsx
+  434:17  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  434:38  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/layout.tsx
+  13:3  warning  'CreditCard' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/mock-interview/page.tsx
+   16:3   warning  'Sparkles' is defined but never used        @typescript-eslint/no-unused-vars
+  237:10  warning  'error' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/page.tsx
+  72:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/roadmap/page.tsx
+    7:3   warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+   11:3   warning  'Brain' is defined but never used         @typescript-eslint/no-unused-vars
+   72:16  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  185:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/page.tsx
+  13:3  warning  'Shield' is defined but never used           @typescript-eslint/no-unused-vars
+  18:3  warning  'Card' is defined but never used             @typescript-eslint/no-unused-vars
+  19:3  warning  'CardHeader' is defined but never used       @typescript-eslint/no-unused-vars
+  20:3  warning  'CardTitle' is defined but never used        @typescript-eslint/no-unused-vars
+  21:3  warning  'CardDescription' is defined but never used  @typescript-eslint/no-unused-vars
+  22:3  warning  'CardContent' is defined but never used      @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/InterviewPanel.tsx
+  53:3  warning  'proctoringEnabled' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/PreInterviewChecks.tsx
+    7:3   warning  'MicOff' is defined but never used                               @typescript-eslint/no-unused-vars
+  475:11  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/ProctorToolbar.tsx
+  57:9  warning  'riskColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/WebcamMonitor.tsx
+  39:9  warning  'riskColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/ui/button.tsx
+  18:6  warning  'MotionButtonProps' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 22 problems (4 errors, 18 warnings)
+

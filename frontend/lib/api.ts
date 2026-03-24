@@ -210,6 +210,15 @@ export async function analyzeGithub(username: string) {
   });
 }
 
+// ─── LinkedIn ─────────────────────────────────────────────────────────────────
+export async function analyzeLinkedin(url: string) {
+  return request("/linkedin/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ linkedin_url: url }),
+  });
+}
+
 // ─── Interview ────────────────────────────────────────────────────────────────
 export async function startInterview(
   resumeId: string | null,

@@ -110,6 +110,24 @@ create index on public.github_analyses (user_id);
 
 
 -- ============================================================
+-- LINKEDIN ANALYSIS
+-- ============================================================
+create table if not exists public.linkedin_analyses (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references public.profiles(id) on delete cascade,
+  linkedin_url    text not null,
+  lpi_score       numeric(5,2),
+  metrics         jsonb,
+  strengths       jsonb default '[]'::jsonb,
+  recommendations jsonb default '[]'::jsonb,
+  raw_data        jsonb,
+  created_at      timestamptz not null default now()
+);
+
+create index on public.linkedin_analyses (user_id);
+
+
+-- ============================================================
 -- INTERVIEWS (sessions)
 -- ============================================================
 create table if not exists public.interview_sessions (
@@ -158,6 +176,7 @@ alter table public.resumes           enable row level security;
 alter table public.resume_sections   enable row level security;
 alter table public.job_matches       enable row level security;
 alter table public.github_analyses   enable row level security;
+alter table public.linkedin_analyses enable row level security;
 alter table public.interview_sessions enable row level security;
 alter table public.interview_answers enable row level security;
 
@@ -167,6 +186,7 @@ create policy "own resumes"   on public.resumes            for all using (auth.u
 create policy "own sections"  on public.resume_sections   for all using (exists (select 1 from public.resumes r where r.id = resume_id and r.user_id = auth.uid()));
 create policy "own matches"   on public.job_matches        for all using (auth.uid() = user_id);
 create policy "own github"    on public.github_analyses    for all using (auth.uid() = user_id);
+create policy "own linkedin"  on public.linkedin_analyses  for all using (auth.uid() = user_id);
 create policy "own sessions"  on public.interview_sessions for all using (auth.uid() = user_id);
 create policy "own answers"   on public.interview_answers  for all using (exists (select 1 from public.interview_sessions s where s.id = session_id and s.user_id = auth.uid()));
 

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     stripe_secret_key: Optional[str] = None
     stripe_webhook_secret: Optional[str] = None
 
+    # Proxycurl (LinkedIn Analysis)
+    proxycurl_api_key: Optional[str] = None
+
     # App
     app_env: str = "development"
     allowed_origins: str = (

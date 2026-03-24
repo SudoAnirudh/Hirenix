@@ -69,6 +69,7 @@ interface UserSession {
 export default function DashboardPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [progress, setProgress] = useState<any>(null);
   const [progressLoading, setProgressLoading] = useState(true);
 

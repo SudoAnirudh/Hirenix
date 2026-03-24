@@ -431,7 +431,7 @@ export default function JobMatchPage() {
                 Fit Verdict
               </h3>
               <p className="text-md font-medium text-[#4A5568] leading-relaxed italic">
-                "{result.fit_verdict}"
+                &quot;{result.fit_verdict}&quot;
               </p>
             </div>
           )}

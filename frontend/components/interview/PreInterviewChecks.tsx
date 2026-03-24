@@ -472,7 +472,7 @@ export default function PreInterviewChecks({
       </div>
 
       <p className="text-[#4A5568] mb-8 leading-relaxed max-w-lg">
-        We'll quickly verify your studio setup to ensure a high-quality,
+        We&apos;ll quickly verify your studio setup to ensure a high-quality,
         proctored session.
       </p>
 

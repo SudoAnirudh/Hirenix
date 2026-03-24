@@ -12,6 +12,7 @@ import {
   LogOut,
   CreditCard,
   Map,
+  Linkedin,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,11 @@ const nav = [
     href: "/dashboard/github-analysis",
     icon: Github,
     label: "GitHub Intelligence",
+  },
+  {
+    href: "/dashboard/linkedin-analysis",
+    icon: Linkedin,
+    label: "LinkedIn Analysis",
   },
   { href: "/dashboard/job-match", icon: Briefcase, label: "Job Matching" },
   { href: "/dashboard/mock-interview", icon: Mic, label: "Mock Interview" },
