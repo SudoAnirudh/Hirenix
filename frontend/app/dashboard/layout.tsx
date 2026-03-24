@@ -62,12 +62,10 @@ export default function DashboardLayout({
       const session = await getSession();
       if (!mounted) return;
 
-      /*
       if (!session) {
         router.replace("/");
         return;
       }
-*/
 
       setCheckingSession(false);
     }

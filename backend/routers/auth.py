@@ -28,6 +28,12 @@ async def register(payload: RegisterRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/me")
+async def get_me(user: dict = Depends(get_current_user)):
+    """Return the current authenticated user's profile information."""
+    return user
+
+
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest):
     """Authenticate user and return JWT."""
