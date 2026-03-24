@@ -31,7 +31,7 @@ async def get_roadmap(username: str, target_role: str, resume_text: str, user: d
             resume_text=resume_text,
             github_username=username,
             target_role=target_role,
-            user_id=str(user["id"])
+            user_id=user["user_id"]
         )
         return roadmap
     except Exception as e:

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from dependencies import get_current_user
 from supabase import create_client
 from config import settings
 from models.user import RegisterRequest, LoginRequest, TokenResponse
