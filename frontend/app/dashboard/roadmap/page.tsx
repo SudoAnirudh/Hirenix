@@ -4,16 +4,9 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-  ExternalLink,
   Map as MapIcon,
   ChevronRight,
-  TrendingUp,
-  Brain,
-  Video,
-  BookOpen,
-  GraduationCap,
   Sparkles,
-  ArrowRight,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
@@ -69,7 +62,7 @@ export default function RoadmapPage() {
             "DevOps Engineer",
           ]);
         }
-      } catch (err) {
+      } catch {
         setRoles([
           "Frontend Engineer",
           "Backend Engineer",
@@ -182,7 +175,7 @@ export default function RoadmapPage() {
       // Simulating network delay
       await new Promise((resolve) => setTimeout(resolve, 800));
       setData(mockData);
-    } catch (err) {
+    } catch {
       setError("Failed to load roadmap. Please try again later.");
     } finally {
       setLoading(false);
@@ -292,188 +285,133 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      {/* AI Next Step */}
-      <div className="bg-linear-to-r from-[#EBF1FF] to-[#F5F8FF] border border-[#7C9ADD]/20 rounded-[32px] p-8 flex items-start gap-6 shadow-xs">
-        <div className="p-3 bg-[#7C9ADD] rounded-2xl text-white shadow-lg shadow-[#7C9ADD]/30">
-          <Sparkles size={24} />
-        </div>
-        <div className="space-y-1">
-          <div className="text-sm font-bold text-[#2D3748] uppercase tracking-wider opacity-60">
-            AI Strategist Recommendation
+      {/* AI Next Step & Main Content with Coming Soon Overlay */}
+      <div className="relative min-h-[600px] rounded-[48px] overflow-hidden">
+        <div className="space-y-10 opacity-40 blur-sm pointer-events-none select-none">
+          {/* AI Next Step */}
+          <div className="bg-linear-to-r from-[#EBF1FF] to-[#F5F8FF] border border-[#7C9ADD]/20 rounded-[32px] p-8 flex items-start gap-6 shadow-xs">
+            <div className="p-3 bg-[#7C9ADD] rounded-2xl text-white shadow-lg shadow-[#7C9ADD]/30">
+              <Sparkles size={24} />
+            </div>
+            <div className="space-y-1">
+              <div className="text-sm font-bold text-[#2D3748] uppercase tracking-wider opacity-60">
+                AI Strategist Recommendation
+              </div>
+              <div className="text-lg font-semibold text-[#4A5568] leading-relaxed">
+                {data.next_step}
+              </div>
+            </div>
           </div>
-          <div className="text-lg font-semibold text-[#4A5568] leading-relaxed">
-            {data.next_step}
-          </div>
-        </div>
-      </div>
 
-      {/* Roadmap Content */}
-      <div className="relative">
-        <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-[#7C9ADD] via-[#CBD5E0] to-transparent hidden md:block opacity-30" />
+          {/* Roadmap Content */}
+          <div className="relative">
+            <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-[#7C9ADD] via-[#CBD5E0] to-transparent hidden md:block opacity-30" />
 
-        <div className="space-y-12 relative z-10">
-          {data.skills.map((skill, index) => (
-            <div
-              key={index}
-              className={`flex flex-col md:flex-row gap-8 group transition-all ${generating ? "opacity-50 grayscale" : ""}`}
-            >
-              <div className="hidden md:flex flex-col items-center">
+            <div className="space-y-12 relative z-10">
+              {data.skills.map((skill, index) => (
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center border-4 transition-all shadow-md ${
-                    skill.status === "completed"
-                      ? "bg-[#98C9A3] border-white text-white"
-                      : skill.status === "in_progress"
-                        ? "bg-[#7C9ADD] border-white text-white shadow-lg shadow-[#7C9ADD]/30 animate-pulse"
-                        : "bg-white border-[#EDF2F7] text-[#CBD5E0]"
-                  }`}
+                  key={index}
+                  className={`flex flex-col md:flex-row gap-8 group transition-all ${generating ? "opacity-50 grayscale" : ""}`}
                 >
-                  {skill.status === "completed" ? (
-                    <CheckCircle2 size={24} />
-                  ) : skill.status === "in_progress" ? (
-                    <Clock size={24} />
-                  ) : (
-                    <Circle size={24} />
-                  )}
+                  <div className="hidden md:flex flex-col items-center">
+                    <div
+                      className={`w-12 h-12 rounded-2xl flex items-center justify-center border-4 transition-all shadow-md ${
+                        skill.status === "completed"
+                          ? "bg-[#98C9A3] border-white text-white"
+                          : skill.status === "in_progress"
+                            ? "bg-[#7C9ADD] border-white text-white shadow-lg shadow-[#7C9ADD]/30"
+                            : "bg-white border-[#EDF2F7] text-[#CBD5E0]"
+                      }`}
+                    >
+                      {skill.status === "completed" ? (
+                        <CheckCircle2 size={24} />
+                      ) : skill.status === "in_progress" ? (
+                        <Clock size={24} />
+                      ) : (
+                        <Circle size={24} />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <Card
+                      className={`p-8 rounded-[32px] border border-white/80 shadow-glass ${
+                        skill.status === "in_progress"
+                          ? "bg-white ring-8 ring-[#7C9ADD]/5"
+                          : "bg-white/60"
+                      }`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-2xl font-bold text-[#2D3748] font-display">
+                              {skill.name}
+                            </h3>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
 
-              <div className="flex-1">
-                <Card
-                  className={`p-8 rounded-[32px] border border-white/80 shadow-glass group-hover:shadow-2xl transition-all duration-300 ${
-                    skill.status === "in_progress"
-                      ? "bg-white ring-8 ring-[#7C9ADD]/5"
-                      : "bg-white/60"
-                  }`}
-                >
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-2xl font-bold text-[#2D3748] font-display">
-                          {skill.name}
-                        </h3>
-                        <span
-                          className={`text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest border ${
-                            skill.priority === "high"
-                              ? "bg-red-50 text-red-600 border-red-100"
-                              : skill.priority === "medium"
-                                ? "bg-orange-50 text-orange-600 border-orange-100"
-                                : "bg-blue-50 text-blue-600 border-blue-100"
-                          }`}
-                        >
-                          {skill.priority} Priority
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-5 text-xs text-[#718096] font-bold">
-                        <span className="flex items-center gap-1.5">
-                          <TrendingUp size={14} className="text-[#A0AEC0]" />{" "}
-                          {skill.difficulty}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <Clock size={14} className="text-[#A0AEC0]" />{" "}
-                          {skill.estimated_time}
-                        </span>
-                      </div>
-                    </div>
-
-                    {skill.status === "to_learn" && (
-                      <button className="whitespace-nowrap px-6 py-3 rounded-2xl bg-[#7C9ADD] text-white font-bold text-sm shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2 group-hover:bg-[#6B8ACD]">
-                        Unlock Track <ArrowRight size={18} />
-                      </button>
-                    )}
+          {/* Future Opportunities Section */}
+          <div className="pt-10">
+            <div className="glass-card p-10 rounded-[40px] border border-white/60 bg-white/40 shadow-2xl space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data.future_opportunities.map((opp, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-4 p-5 rounded-2xl bg-white/80 border border-white"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-[#7C9ADD]" />
+                    <span className="text-slate-700 font-semibold">{opp}</span>
                   </div>
-
-                  <div className="space-y-5">
-                    <div className="text-[11px] font-bold text-[#A0AEC0] uppercase tracking-widest flex items-center gap-2">
-                      <BookOpen size={14} /> Smart Learning resources
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {skill.resources.map((res, ridx) => (
-                        <a
-                          key={ridx}
-                          href={res.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex flex-col p-4 rounded-2xl bg-white border border-[#EDF2F7] hover:border-[#7C9ADD] hover:shadow-lg transition-all group/res"
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 rounded-lg bg-slate-50 group-hover/res:bg-[#7C9ADD]/10 text-slate-400 group-hover/res:text-[#7C9ADD] transition-colors">
-                              {res.type === "video" ? (
-                                <Video size={16} />
-                              ) : res.type === "course" ? (
-                                <GraduationCap size={16} />
-                              ) : (
-                                <BookOpen size={16} />
-                              )}
-                            </div>
-                            <span
-                              className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${
-                                res.is_free
-                                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                                  : "bg-amber-50 text-amber-600 border border-amber-100"
-                              }`}
-                            >
-                              {res.is_free ? "Free" : "Premium"}
-                            </span>
-                          </div>
-                          <div className="text-[13px] font-bold text-[#4A5568] group-hover/res:text-[#2D3748] line-clamp-1">
-                            {res.title}
-                          </div>
-                          <div className="text-[10px] text-[#A0AEC0] mt-1 capitalize">
-                            {res.type} Resource
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
+                ))}
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Future Opportunities Section */}
-      <div className="pt-10">
-        <div className="glass-card p-10 rounded-[40px] border border-white/60 bg-white/40 shadow-2xl space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="text-[#7C9ADD] font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                <TrendingUp size={16} /> Global Market Outlook
-              </div>
-              <h2 className="text-3xl font-bold text-[#2D3748] font-display">
-                Future Opportunities
-              </h2>
-            </div>
-            <div className="px-6 py-2 rounded-full border border-[#7C9ADD]/20 bg-[#7C9ADD]/5 text-[#7C9ADD] text-sm font-bold">
-              Market Sentiment: Bullish 📈
+        {/* Coming Soon Overlay */}
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-8 text-center backdrop-blur-xl bg-white/30 rounded-[48px] border-2 border-white/50 shadow-2xl animate-fade-in">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-blue-400 blur-3xl opacity-20 animate-pulse rounded-full" />
+            <div className="relative bg-linear-to-br from-[#7C9ADD] to-[#4A5568] p-6 rounded-[32px] shadow-2xl shadow-blue-500/20 text-white transform hover:scale-105 transition-transform duration-500">
+              <Sparkles size={48} className="animate-bounce" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data.future_opportunities.map((opp, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-4 p-5 rounded-2xl bg-white/80 border border-white hover:border-[#7C9ADD]/20 transition-all hover:translate-x-1 group"
-              >
-                <div className="w-2 h-2 rounded-full bg-[#7C9ADD] group-hover:scale-150 transition-transform" />
-                <span className="text-slate-700 font-semibold">{opp}</span>
-              </div>
-            ))}
-          </div>
+          <div className="max-w-md space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 text-[#7C9ADD] text-xs font-black uppercase tracking-[0.2em]">
+              Feature Pipeline
+            </div>
 
-          <div className="p-6 rounded-3xl bg-[#2D3748] text-white flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <div className="text-xl font-bold mb-1">
-                Scale Your Career with Premium Insights
+            <h2 className="text-5xl md:text-6xl font-black text-[#2D3748] font-display tracking-tight leading-tight">
+              Roadmap <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#7C9ADD] to-[#4A5568]">
+                Coming Soon
+              </span>
+            </h2>
+
+            <p className="text-[#718096] text-lg font-medium leading-relaxed">
+              We&apos;re fine-tuning your AI career strategist to give you the
+              most accurate path forward. Get ready for a game-changing
+              experience.
+            </p>
+
+            <div className="pt-4 flex flex-wrap justify-center gap-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#718096]">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />
+                AI Model Training
               </div>
-              <div className="text-slate-400 text-sm">
-                Get real-time salary data and personalized job matching for this
-                role.
+              <div className="flex items-center gap-2 text-sm font-bold text-[#718096]">
+                <div className="w-2 h-2 rounded-full bg-[#7C9ADD] shadow-lg shadow-blue-500/50 animate-pulse" />
+                Market Analysis
               </div>
             </div>
-            <button className="px-8 py-3 rounded-2xl bg-[#7C9ADD] text-white font-bold hover:bg-[#6B8ACD] transition-all whitespace-nowrap shadow-lg shadow-[#7C9ADD]/20">
-              Unlock Pro Insights
-            </button>
           </div>
         </div>
       </div>
