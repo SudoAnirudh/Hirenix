@@ -536,6 +536,7 @@ export default function JobMatchPage() {
                 size={16}
               />
               <input
+                id="keywordInput"
                 className="bg-transparent border-none focus:ring-0 px-10 py-2 text-sm font-bold text-[#4A5568] placeholder:text-[#CBD5E0] min-w-[200px]"
                 placeholder="Keywords..."
                 value={fieldInput}
@@ -549,13 +550,28 @@ export default function JobMatchPage() {
                 size={16}
               />
               <input
+                id="locationInput"
                 className="bg-transparent border-none focus:ring-0 px-10 py-2 text-sm font-bold text-[#4A5568] placeholder:text-[#CBD5E0] min-w-[160px]"
                 placeholder="Location..."
                 value={jobLocation}
                 onChange={(e) => setJobLocation(e.target.value)}
               />
             </div>
+            <div className="w-px h-6 bg-gray-200 self-center" />
             <button
+              id="remoteModeToggle"
+              onClick={() => setRemoteOnly(!remoteOnly)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider ${
+                remoteOnly
+                  ? "bg-[#7C9ADD]/10 text-[#7C9ADD] border border-[#7C9ADD]/20"
+                  : "bg-gray-100 text-gray-400 border border-gray-200"
+              }`}
+            >
+              <Globe size={14} />
+              {remoteOnly ? "Remote Selected" : "Any Mode"}
+            </button>
+            <button
+              id="pulseSearchBtn"
               onClick={handleScrapeJobs}
               disabled={jobsLoading}
               className="px-8 h-12 rounded-2xl bg-[#2D3748] text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#2D3748]/10 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50"
@@ -651,6 +667,95 @@ export default function JobMatchPage() {
           </div>
         )}
       </div>
+
+      {/* Deep Search Radar */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="space-y-8"
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h3 className="font-display font-black text-3xl text-[#2D3748] tracking-tight flex items-center gap-3">
+              <Globe className="text-[#9F7AEA]" size={32} />
+              Deep Search <span className="text-[#9F7AEA]">Radar</span>
+            </h3>
+            <p className="text-sm font-medium text-[#718096]">
+              Direct deep-links to industry leaders with pre-filled AI context.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              name: "LinkedIn",
+              icon: "ln",
+              color: "#0077B5",
+              bg: "bg-[#0077B5]/10",
+              url: `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(fieldInput)}&location=${encodeURIComponent(jobLocation)}`,
+            },
+            {
+              name: "Indeed",
+              icon: "in",
+              color: "#2164f3",
+              bg: "bg-[#2164f3]/10",
+              url: `https://www.indeed.com/jobs?q=${encodeURIComponent(fieldInput)}&l=${encodeURIComponent(jobLocation)}`,
+            },
+            {
+              name: "Naukri",
+              icon: "nk",
+              color: "#ff7555",
+              bg: "bg-[#ff7555]/10",
+              url: `https://www.naukri.com/${encodeURIComponent(fieldInput.replace(/,/g, "-"))}-jobs-in-${encodeURIComponent(jobLocation || "india")}`,
+            },
+            {
+              name: "Glassdoor",
+              icon: "gd",
+              color: "#0caa41",
+              bg: "bg-[#0caa41]/10",
+              url: `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${encodeURIComponent(fieldInput)}&locT=C&locId=${encodeURIComponent(jobLocation)}`,
+            },
+          ].map((portal, idx) => (
+            <motion.a
+              key={portal.name}
+              href={portal.url}
+              target="_blank"
+              rel="noreferrer"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              viewport={{ once: true }}
+              className="p-8 rounded-[2.5rem] bg-white border border-white hover:border-[#7C9ADD]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-6 relative overflow-hidden"
+            >
+              <div
+                className={`w-16 h-16 rounded-2xl ${portal.bg} flex items-center justify-center transition-transform group-hover:scale-110`}
+              >
+                <Search size={24} style={{ color: portal.color }} />
+              </div>
+              <div>
+                <h6 className="font-display font-black text-lg text-[#2D3748]">
+                  {portal.name}
+                </h6>
+                <p className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-widest mt-1">
+                  External Search
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-[10px] font-black text-[#7C9ADD] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                Deploy Radar <ExternalLink size={12} />
+              </div>
+              {/* Subtle Gradient Hover */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity"
+                style={{
+                  background: `radial-gradient(circle at center, ${portal.color}, transparent)`,
+                }}
+              />
+            </motion.a>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
