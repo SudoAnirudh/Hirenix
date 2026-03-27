@@ -31,22 +31,22 @@ export default function WebcamMonitor() {
                 : "Unavailable",
     color:
       faceStatus === "single_face"
-        ? "var(--emerald)"
+        ? "#98C9A3"
         : faceStatus === "unsupported" || faceStatus === "checking"
-          ? "var(--text-muted)"
-          : "#ef4444",
+          ? "#A0AEC0"
+          : "#F28C8C",
   };
   const riskColor =
     sessionRisk === "low"
-      ? "var(--emerald)"
+      ? "#98C9A3"
       : sessionRisk === "medium"
-        ? "#eab308"
-        : "#ef4444";
+        ? "#EAB308"
+        : "#F28C8C";
 
   return (
-    <div className="w-[240px] rounded-[32px] overflow-hidden border-2 transition-all duration-500 relative flex-shrink-0 bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group">
+    <div className="w-[240px] rounded-[32px] overflow-hidden border-2 transition-all duration-500 relative shrink-0 bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group">
       {/* Video feed or fallback */}
-      <div className="relative aspect-video overflow-hidden rounded-[24px] m-2 shadow-inner border-[#7C9ADD]/10/20">
+      <div className="relative aspect-video overflow-hidden rounded-[24px] m-2 shadow-inner border border-[#7C9ADD]/10">
         {cameraStatus === "active" ? (
           <video
             ref={videoRef}

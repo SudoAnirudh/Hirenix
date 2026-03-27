@@ -29,11 +29,7 @@ export default function ProctorToolbar() {
   } = useProctor();
 
   const scoreColor =
-    trustScore >= 80
-      ? "var(--emerald)"
-      : trustScore >= 50
-        ? "#eab308"
-        : "#ef4444";
+    trustScore >= 80 ? "#98C9A3" : trustScore >= 50 ? "#EAB308" : "#F28C8C";
 
   const ScoreIcon = trustScore >= 80 ? Shield : ShieldAlert;
   const faceLabel =
@@ -50,16 +46,16 @@ export default function ProctorToolbar() {
               : "Face check unavailable";
   const faceColor =
     faceStatus === "single_face"
-      ? "var(--emerald)"
+      ? "#98C9A3"
       : faceStatus === "unsupported" || faceStatus === "checking"
-        ? "var(--text-muted)"
-        : "#ef4444";
+        ? "#A0AEC0"
+        : "#F28C8C";
   const riskColor =
     sessionRisk === "low"
-      ? "var(--emerald)"
+      ? "#98C9A3"
       : sessionRisk === "medium"
-        ? "#eab308"
-        : "#ef4444";
+        ? "#EAB308"
+        : "#F28C8C";
 
   return (
     <div className="glass-card flex items-center gap-6 px-6 py-3 rounded-[24px] mb-6 flex-wrap bg-white/40 border-white/60 shadow-glass backdrop-blur-xl">
