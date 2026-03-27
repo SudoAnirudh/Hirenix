@@ -1,6 +1,6 @@
-import re
-from typing import List
 import httpx
+import feedparser
+from typing import List, Optional
 
 from models.analysis import JobListing
 
@@ -117,26 +117,88 @@ async def _fetch_arbeitnow(
     return jobs
 
 
+async def _fetch_rss_jobs(
+    url: str, source_name: str, keywords: List[str], limit: int
+) -> List[JobListing]:
+    # Use feedparser to get jobs from RSS feeds
+    try:
+        # feedparser.parse is blocking, but for small feeds it's usually fine.
+        # In a high-perf app, we'd run this in a threadpool.
+        feed = feedparser.parse(url)
+    except Exception:
+        return []
+
+    keyword_list = [k.lower() for k in keywords]
+    jobs: List[JobListing] = []
+
+    for entry in feed.entries:
+        title = getattr(entry, "title", "").lower()
+        summary = getattr(entry, "summary", "").lower()
+        company = getattr(entry, "company", "Unknown")
+        
+        haystack = f"{title} {summary} {company}"
+        if keyword_list and not all(k in haystack for k in keyword_list):
+            continue
+
+        # WWR specific mapping
+        location = getattr(entry, "location", "Remote")
+        
+        jobs.append(
+            JobListing(
+                title=getattr(entry, "title", "Untitled Role"),
+                company=company,
+                location=location,
+                remote=True, # WWR and Jobspresso are remote-first
+                job_type="Full-time", # Default for these feeds
+                tags=[],
+                apply_url=getattr(entry, "link", ""),
+                source=source_name,
+                posted_at=getattr(entry, "published", ""),
+                description_snippet=_snippet(_strip_html(summary)),
+            )
+        )
+
+        if len(jobs) >= limit:
+            break
+
+    return jobs
+
+
+async def _fetch_wwr(keywords: List[str], limit: int) -> List[JobListing]:
+    url = "https://weworkremotely.com/remote-jobs.rss"
+    return await _fetch_rss_jobs(url, "We Work Remotely", keywords, limit)
+
+
+async def _fetch_jobspresso(keywords: List[str], limit: int) -> List[JobListing]:
+    url = "https://jobspresso.co/feed/"
+    return await _fetch_rss_jobs(url, "Jobspresso", keywords, limit)
+
+
 async def scrape_jobs(
     fields: List[str], location: str | None, remote_only: bool, limit: int
 ) -> List[JobListing]:
     query_parts = [f.strip() for f in fields if f and f.strip()]
-    if location and location.strip():
-        query_parts.append(location.strip())
     query = " ".join(query_parts).strip()
 
     per_source = max(5, min(50, limit))
+    
+    # Parallelize fetching from all sources
+    tasks = [
+        _fetch_remotive([query], per_source),
+        _fetch_arbeitnow([query], location, per_source, remote_only),
+        _fetch_wwr([query], per_source),
+        _fetch_jobspresso([query], per_source)
+    ]
+    
+    import asyncio
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    
     all_jobs: List[JobListing] = []
-
-    try:
-        all_jobs.extend(await _fetch_remotive(query, per_source))
-    except Exception:
-        pass
-
-    try:
-        all_jobs.extend(await _fetch_arbeitnow(query, per_source, remote_only))
-    except Exception:
-        pass
+    for res in results:
+        if isinstance(res, list):
+            all_jobs.extend(res)
+        elif isinstance(res, Exception):
+            print(f"Scraper error: {res}")
 
     # Keep only jobs with actionable apply links.
     all_jobs = [j for j in all_jobs if j.apply_url]

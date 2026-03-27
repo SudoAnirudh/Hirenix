@@ -33,6 +33,11 @@ app.include_router(payments.router, prefix="/payments", tags=["Payments"])
 app.include_router(roadmap.router, prefix="/roadmap", tags=["Roadmap"])
 
 
+@app.get("/", tags=["Health"])
+async def root():
+    return {"message": "Hirenix API is running", "status": "healthy"}
+
+
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "version": "1.0.0"}
