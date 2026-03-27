@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import { sanitize } from "@/lib/sanitize";
 import {
   Download,
   LayoutTemplate,
@@ -1125,7 +1126,7 @@ export default function ResumeBuilderPage() {
             className="bg-white mx-auto w-full max-w-[210mm] min-h-[297mm]"
             style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.22)" }}
             dangerouslySetInnerHTML={{
-              __html: generateHTML(data, sectionOrder),
+              __html: sanitize(generateHTML(data, sectionOrder)),
             }}
           />
         </div>
