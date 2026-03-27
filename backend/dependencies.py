@@ -160,7 +160,7 @@ async def get_current_user(
             print(f"❌ Supabase network verification failed: {net_e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Could not validate credentials via Supabase. Local: {exc}. Network: {net_e}",
+                detail="Could not validate credentials. Please log in again.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
