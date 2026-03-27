@@ -71,18 +71,18 @@ function getVerdict(trust: number, avgScore: number) {
   if (combined >= 80)
     return {
       text: "Interview Ready",
-      color: "var(--emerald)",
+      color: "#98C9A3", // Emerald
       icon: CheckCircle,
     };
   if (combined >= 55)
     return {
       text: "Needs Improvement",
-      color: "var(--color-violet)",
+      color: "#7C9ADD", // Indigo
       icon: AlertTriangle,
     };
   return {
     text: "Not Ready Yet",
-    color: "var(--color-red)",
+    color: "#E57373", // Red
     icon: ShieldAlert,
   };
 }
@@ -118,17 +118,13 @@ export default function TrustScoreReport({
   );
 
   const scoreColor =
-    trustScore >= 80
-      ? "var(--emerald)"
-      : trustScore >= 50
-        ? "var(--color-violet)"
-        : "var(--color-red)";
+    trustScore >= 80 ? "#98C9A3" : trustScore >= 50 ? "#7C9ADD" : "#E57373";
   const riskColor =
     sessionRisk === "low"
-      ? "var(--emerald)"
+      ? "#98C9A3"
       : sessionRisk === "medium"
-        ? "var(--color-violet)"
-        : "var(--color-red)";
+        ? "#7C9ADD"
+        : "#E57373";
   const flaggedSignals = [
     cameraStatus !== "active" ? "Camera continuity was interrupted." : null,
     faceStatus === "no_face"

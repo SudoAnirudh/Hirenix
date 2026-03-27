@@ -50,11 +50,11 @@ function statusIcon(status: CheckStatus) {
 }
 
 function statusColor(status: CheckStatus) {
-  if (status === "pass") return "var(--color-emerald)";
+  if (status === "pass") return "#98C9A3";
   if (status === "fail") return "rgb(239 68 68)"; // red-500
-  if (status === "warn") return "var(--color-violet)";
-  if (status === "running") return "var(--color-indigo)";
-  return "var(--color-muted)";
+  if (status === "warn") return "#7C9ADD";
+  if (status === "running") return "#7C9ADD";
+  return "#7D8B96"; // muted
 }
 
 type FaceDetectorInstance = {
@@ -590,31 +590,32 @@ export default function PreInterviewChecks({
       </div>
 
       {/* Action buttons */}
-      <div className="flex items-center justify-between gap-4 mt-10">
+      <div className="flex items-center justify-between gap-6 mt-12 bg-white/40 p-3 rounded-[32px] border border-white/60 shadow-inner">
         <button
-          className="px-8 py-3.5 rounded-full text-sm font-bold text-muted hover:bg-slate-100 transition-all active:scale-95"
+          className="px-8 py-4 rounded-[24px] text-xs font-black uppercase tracking-widest text-[#7C9ADD] hover:bg-white/60 transition-all active:scale-95"
           onClick={onBack}
         >
           Return to Setup
         </button>
 
         <button
-          className={`px-10 py-3.5 rounded-full flex items-center gap-2 text-sm font-bold transition-all active:scale-95 ${
+          className={`px-12 py-5 rounded-[24px] flex items-center gap-3 text-lg font-display font-black transition-all active:scale-95 ${
             canProceed
-              ? "bg-indigo text-white shadow-lg shadow-indigo/20 hover:shadow-xl hover:-translate-y-0.5"
-              : "bg-muted/10 text-muted/40 cursor-not-allowed"
+              ? "bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl shadow-[#2D3748]/20 hover:scale-[1.02]"
+              : "bg-[#2D3748]/10 text-[#2D3748]/30 cursor-not-allowed"
           }`}
           onClick={handleProceed}
           disabled={!canProceed}
         >
           {allChecksRun ? (
             <>
-              Enter Studio <ChevronRight size={16} />
+              <span>Initialize Session</span>
+              <ChevronRight size={24} />
             </>
           ) : (
             <>
-              <Loader2 size={16} className="animate-spin" />
-              Running Studio Setup…
+              <Loader2 size={24} className="animate-spin" />
+              <span>Configuring Studio…</span>
             </>
           )}
         </button>
