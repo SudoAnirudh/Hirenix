@@ -105,7 +105,7 @@ export const Testimonials = () => {
               </div>
 
               <p className="text-lg text-white font-medium mb-10 italic leading-relaxed">
-                "{t.content}"
+                &quot;{t.content}&quot;
               </p>
 
               <div className="mt-auto pt-8 border-t border-white/10">

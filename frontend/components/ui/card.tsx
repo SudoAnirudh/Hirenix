@@ -8,12 +8,12 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
   ({ className, ...props }, ref) => (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-30px" }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "rounded-3xl border border-(--border) bg-(--surface) backdrop-blur-md shadow-glass overflow-hidden relative transition-all duration-300",
+        "rounded-[32px] border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass overflow-hidden relative transition-all duration-500 hover:shadow-premium hover:-translate-y-1 group",
         className,
       )}
       {...props}
@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-display font-bold text-xl tracking-tight text-(--text)",
+      "font-heading font-bold text-xl tracking-tight text-(--text) group-hover:text-(--indigo) transition-colors",
       className,
     )}
     {...props}
