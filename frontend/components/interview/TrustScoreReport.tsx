@@ -75,8 +75,16 @@ function getVerdict(trust: number, avgScore: number) {
       icon: CheckCircle,
     };
   if (combined >= 55)
-    return { text: "Needs Improvement", color: "#eab308", icon: AlertTriangle };
-  return { text: "Not Ready Yet", color: "#ef4444", icon: ShieldAlert };
+    return {
+      text: "Needs Improvement",
+      color: "var(--color-violet)",
+      icon: AlertTriangle,
+    };
+  return {
+    text: "Not Ready Yet",
+    color: "var(--color-red)",
+    icon: ShieldAlert,
+  };
 }
 
 /* ─── Component ─── */
@@ -113,14 +121,14 @@ export default function TrustScoreReport({
     trustScore >= 80
       ? "var(--emerald)"
       : trustScore >= 50
-        ? "#eab308"
-        : "#ef4444";
+        ? "var(--color-violet)"
+        : "var(--color-red)";
   const riskColor =
     sessionRisk === "low"
       ? "var(--emerald)"
       : sessionRisk === "medium"
-        ? "#eab308"
-        : "#ef4444";
+        ? "var(--color-violet)"
+        : "var(--color-red)";
   const flaggedSignals = [
     cameraStatus !== "active" ? "Camera continuity was interrupted." : null,
     faceStatus === "no_face"
@@ -349,7 +357,10 @@ export default function TrustScoreReport({
           <AlertTriangle
             size={14}
             style={{
-              color: violations.length > 0 ? "#ef4444" : "var(--text-muted)",
+              color:
+                violations.length > 0
+                  ? "var(--color-red)"
+                  : "var(--text-muted)",
             }}
           />
           Violation Breakdown
@@ -372,27 +383,17 @@ export default function TrustScoreReport({
               return (
                 <div
                   key={type}
-                  className="flex items-center justify-between p-3 rounded-lg"
-                  style={{
-                    background: "rgba(239,68,68,0.06)",
-                    border: "1px solid rgba(239,68,68,0.12)",
-                  }}
+                  className="flex items-center justify-between p-3 rounded-lg bg-red-50 border border-red-100"
                 >
                   <div className="flex items-center gap-3">
-                    <Icon size={14} style={{ color: "#ef4444" }} />
+                    <Icon size={14} className="text-red-600" />
                     <span className="text-sm font-medium">
                       {type
                         .replace(/_/g, " ")
                         .replace(/\b\w/g, (c) => c.toUpperCase())}
                     </span>
                   </div>
-                  <span
-                    className="text-xs font-bold px-2 py-0.5 rounded-full"
-                    style={{
-                      background: "rgba(239,68,68,0.15)",
-                      color: "#ef4444",
-                    }}
-                  >
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600">
                     ×{count}
                   </span>
                 </div>

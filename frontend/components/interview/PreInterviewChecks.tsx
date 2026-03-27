@@ -35,13 +35,13 @@ interface PreInterviewChecksProps {
 function statusIcon(status: CheckStatus) {
   switch (status) {
     case "pass":
-      return <CheckCircle size={18} className="text-[#98C9A3]" />;
+      return <CheckCircle size={18} className="text-emerald" />;
     case "fail":
-      return <XCircle size={18} className="text-[#F87171]" />;
+      return <XCircle size={18} className="text-red-500" />;
     case "warn":
-      return <AlertTriangle size={18} className="text-[#7C9ADD]" />;
+      return <AlertTriangle size={18} className="text-indigo" />;
     case "running":
-      return <Loader2 size={18} className="text-[#7C9ADD] animate-spin" />;
+      return <Loader2 size={18} className="text-indigo animate-spin" />;
     default:
       return (
         <div className="w-[18px] h-[18px] rounded-full border-2 border-slate-200" />
@@ -50,11 +50,11 @@ function statusIcon(status: CheckStatus) {
 }
 
 function statusColor(status: CheckStatus) {
-  if (status === "pass") return "#98C9A3";
-  if (status === "fail") return "#F87171";
-  if (status === "warn") return "#7C9ADD";
-  if (status === "running") return "#7C9ADD";
-  return "#94A3B8";
+  if (status === "pass") return "var(--color-emerald)";
+  if (status === "fail") return "rgb(239 68 68)"; // red-500
+  if (status === "warn") return "var(--color-violet)";
+  if (status === "running") return "var(--color-indigo)";
+  return "var(--color-muted)";
 }
 
 type FaceDetectorInstance = {
@@ -458,22 +458,22 @@ export default function PreInterviewChecks({
     <div className="animate-fade-up max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-3">
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 shadow-glass">
-          <ShieldCheck size={24} className="text-[#7C9ADD]" />
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo/10 border border-indigo/20 shadow-lg">
+          <ShieldCheck size={24} className="text-indigo" />
         </div>
         <div>
-          <h1 className="font-display font-bold text-3xl text-[#2D3748] tracking-tight">
+          <h1 className="font-display font-bold text-3xl text-primary tracking-tight">
             System Check
           </h1>
-          <p className="text-sm font-medium text-[#718096]">
+          <p className="text-sm font-medium text-muted">
             Verifying your studio environment
           </p>
         </div>
       </div>
 
-      <p className="text-[#4A5568] mb-8 leading-relaxed max-w-lg">
-        We'll quickly verify your studio setup to ensure a high-quality,
-        proctored session.
+      <p className="text-secondary mb-8 leading-relaxed max-w-lg">
+        We need to ensure your audio, video, and environment are optimized for
+        the best interview experience.
       </p>
 
       {/* Main layout: Video + Checks */}
@@ -485,27 +485,27 @@ export default function PreInterviewChecks({
             autoPlay
             playsInline
             muted
-            className="w-full h-[240px] object-cover block scale-x-[-1] bg-[#1a1a1a]"
+            className="w-full h-[240px] object-cover block scale-x-[-1] bg-primary"
           />
           {/* Face alignment guide overlay */}
           <div className="absolute inset-0 h-[240px] flex items-center justify-center pointer-events-none">
-            <div className="w-[140px] h-[180px] border-2 border-dashed border-[#7C9ADD]/30 rounded-full" />
+            <div className="w-[140px] h-[180px] border-2 border-dashed border-indigo/30 rounded-full" />
           </div>
 
           {/* Camera status badge */}
           <div
             className={`px-4 py-3 flex items-center gap-2 ${
-              camera.status === "pass" ? "bg-[#98C9A3]/10" : "bg-red-500/5"
+              camera.status === "pass" ? "bg-emerald/10" : "bg-red-500/5"
             }`}
           >
             {camera.status === "pass" ? (
-              <Camera size={14} className="text-[#98C9A3]" />
+              <Camera size={14} className="text-emerald" />
             ) : (
-              <CameraOff size={14} className="text-[#F87171]" />
+              <CameraOff size={14} className="text-red-500" />
             )}
             <span
               className={`text-xs font-bold leading-none ${
-                camera.status === "pass" ? "text-[#98C9A3]" : "text-[#F87171]"
+                camera.status === "pass" ? "text-emerald" : "text-red-500"
               }`}
             >
               {camera.status === "pass" ? "Camera Active" : "Camera Pending"}
@@ -513,17 +513,15 @@ export default function PreInterviewChecks({
           </div>
 
           {/* Mic level bar */}
-          <div className="px-4 py-3 border-t border-[#7C9ADD]/10">
+          <div className="px-4 py-3 border-t border-indigo/10">
             <div className="flex items-center gap-2 mb-2">
               <Mic
                 size={14}
                 className={
-                  microphone.status === "pass"
-                    ? "text-[#7C9ADD]"
-                    : "text-slate-300"
+                  microphone.status === "pass" ? "text-indigo" : "text-muted/30"
                 }
               />
-              <span className="text-xs font-bold text-[#718096]">
+              <span className="text-xs font-bold text-muted">
                 Audio Feedback
               </span>
             </div>
@@ -534,10 +532,10 @@ export default function PreInterviewChecks({
                   width: `${micLevel * 100}%`,
                   background:
                     micLevel > 0.6
-                      ? "#F87171"
+                      ? "rgb(239 68 68)"
                       : micLevel > 0.3
-                        ? "#FBBF24"
-                        : "#98C9A3",
+                        ? "var(--color-violet)"
+                        : "var(--color-emerald)",
                 }}
               />
             </div>
@@ -556,9 +554,9 @@ export default function PreInterviewChecks({
             return (
               <div
                 key={check.label}
-                className={`glass-card p-4 flex items-center gap-4 rounded-[24px] bg-white/60 border border-white/60 shadow-glass transition-all duration-300 ${
+                className={`glass-card p-4 flex items-center gap-4 rounded-[24px] bg-white/60 border border-white/60 shadow-lg transition-all duration-300 ${
                   check.status === "running"
-                    ? "ring-2 ring-[#7C9ADD]/20 scale-[1.02]"
+                    ? "ring-2 ring-indigo/20 scale-[1.02]"
                     : ""
                 }`}
               >
@@ -571,7 +569,7 @@ export default function PreInterviewChecks({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-sm font-bold text-[#2D3748]">
+                    <span className="text-sm font-bold text-primary">
                       {check.label}
                     </span>
                     {statusIcon(check.status)}
@@ -594,7 +592,7 @@ export default function PreInterviewChecks({
       {/* Action buttons */}
       <div className="flex items-center justify-between gap-4 mt-10">
         <button
-          className="px-8 py-3.5 rounded-full text-sm font-bold text-[#718096] hover:bg-slate-100 transition-all active:scale-95"
+          className="px-8 py-3.5 rounded-full text-sm font-bold text-muted hover:bg-slate-100 transition-all active:scale-95"
           onClick={onBack}
         >
           Return to Setup
@@ -603,8 +601,8 @@ export default function PreInterviewChecks({
         <button
           className={`px-10 py-3.5 rounded-full flex items-center gap-2 text-sm font-bold transition-all active:scale-95 ${
             canProceed
-              ? "bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-0.5"
-              : "bg-slate-200 text-slate-400 cursor-not-allowed"
+              ? "bg-indigo text-white shadow-lg shadow-indigo/20 hover:shadow-xl hover:-translate-y-0.5"
+              : "bg-muted/10 text-muted/40 cursor-not-allowed"
           }`}
           onClick={handleProceed}
           disabled={!canProceed}
@@ -624,13 +622,13 @@ export default function PreInterviewChecks({
 
       {/* Warning if checks failed */}
       {allChecksRun && !mandatoryPassed && (
-        <div className="glass-card p-5 mt-6 flex items-start gap-4 rounded-[24px] border-[#F87171]/20 bg-[#F87171]/5">
-          <AlertTriangle size={20} className="text-[#F87171] shrink-0 mt-0.5" />
+        <div className="glass-card p-5 mt-6 flex items-start gap-4 rounded-[24px] border-red-500/20 bg-red-500/5">
+          <AlertTriangle size={20} className="text-red-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-[#F87171] mb-1">
+            <p className="text-sm font-bold text-red-500 mb-1">
               Configuration required
             </p>
-            <p className="text-xs text-[#718096] leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               Please fix the issues highlighted above. A stable camera
               connection is required for proctored sessions.
             </p>
