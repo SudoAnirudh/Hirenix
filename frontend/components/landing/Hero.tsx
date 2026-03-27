@@ -36,7 +36,7 @@ export const Hero = () => {
           className="font-display font-black text-6xl md:text-8xl lg:text-9xl text-white tracking-tighter leading-[0.85] mb-8"
         >
           ENGINEER YOUR <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-hyper-lime via-white to-electric-orchid animate-gradient-x">
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-hyper-lime via-white to-electric-orchid animate-gradient-x">
             DREAM CAREER.
           </span>
         </motion.h1>
@@ -97,7 +97,7 @@ export const Hero = () => {
                 AI AGENT ACTIVE
               </p>
               <p className="text-white font-medium italic">
-                "Analyzing resume for FAANG compatibility..."
+                &quot;Analyzing resume for FAANG compatibility...&quot;
               </p>
             </div>
           </div>

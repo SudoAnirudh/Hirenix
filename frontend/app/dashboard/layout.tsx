@@ -10,12 +10,12 @@ import {
   Mic,
   TrendingUp,
   LogOut,
-  CreditCard,
   Map,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const nav = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -117,51 +117,60 @@ export default function DashboardLayout({
       style={{ background: "var(--bg-base)" }}
     >
       <aside
-        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-[var(--border)] overflow-hidden z-20 relative"
+        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-(--border) overflow-hidden z-20 relative"
         style={{
           background: "var(--bg-surface)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
         }}
       >
-        <div className="h-24 flex items-center px-8 gap-3 relative z-10">
-          <div className="p-2.5 rounded-2xl bg-[#7C9ADD]/10 flex items-center justify-center">
-            <Brain size={22} className="text-[#7C9ADD]" />
+        <div className="h-20 flex items-center px-6 gap-3 relative z-10 mb-6">
+          <div className="p-2 rounded-2xl bg-[#7C9ADD] flex items-center justify-center shadow-lg shadow-[#7C9ADD]/30">
+            <Brain size={20} className="text-white" />
           </div>
-          <span className="font-display font-bold text-xl tracking-tight text-[#2D3748]">
+          <span className="font-heading font-extrabold text-2xl tracking-tight text-[#1E293B]">
             Hirenix
           </span>
         </div>
 
-        <nav className="flex-1 px-4 py-2 flex flex-col gap-2 overflow-y-auto">
-          <div className="px-4 mb-3">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#7C9ADD]/70 uppercase px-1">
+        <nav className="flex-1 px-3 py-2 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar">
+          <div className="px-4 mb-4">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#64748B] uppercase px-1">
               Main Menu
             </span>
           </div>
-          {nav.map(({ href, icon: Icon, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`sidebar-link ${pathname === href ? "active" : ""}`}
-            >
-              <Icon size={18} strokeWidth={pathname === href ? 2.5 : 2} />
-              {label}
-            </Link>
-          ))}
+          <AnimatePresence>
+            {nav.map(({ href, icon: Icon, label }, index) => (
+              <motion.div
+                key={href}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <Link
+                  href={href}
+                  className={`sidebar-link ${pathname === href ? "active" : ""}`}
+                >
+                  <Icon size={18} strokeWidth={pathname === href ? 2.5 : 2} />
+                  <span>{label}</span>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </nav>
 
         <div className="p-4 mt-auto">
-          <div className="p-5 rounded-3xl bg-white/40 border border-white/60 mb-6 group/plan">
-            <div className="text-[11px] font-bold text-[#2D3748] mb-1 uppercase tracking-wider">
+          <div className="p-5 rounded-[24px] bg-white/50 border border-white/80 mb-6 group/plan shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-[#7C9ADD]/10 rounded-full -mr-10 -mt-10 blur-xl group-hover/plan:bg-[#7C9ADD]/20 transition-colors" />
+            <div className="text-[11px] font-bold text-[#1E293B] mb-1 uppercase tracking-wider relative z-10">
               Standard Plan
             </div>
-            <div className="text-[10px] text-[#718096] mb-4 leading-relaxed">
+            <div className="text-[10px] text-[#64748B] mb-4 leading-relaxed relative z-10">
               Unlock advanced AI analysis and interview insights.
             </div>
             <Link
               href="/pricing"
-              className="px-4 py-2 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-bold text-center transition-all hover:bg-[#7C9ADD]/90 hover:shadow-lg hover:shadow-[#7C9ADD]/20"
+              className="block w-full px-4 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-bold text-center transition-all hover:bg-[#6B89CC] hover:shadow-lg hover:shadow-[#7C9ADD]/30 relative z-10"
             >
               Upgrade Now
             </Link>
@@ -170,14 +179,13 @@ export default function DashboardLayout({
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="sidebar-link w-full text-left bg-transparent! hover:text-red-500! group transition-colors"
-            style={{ color: "var(--text-muted)" }}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all group font-heading text-sm font-medium text-[#64748B]"
           >
             <LogOut
               size={18}
-              className="group-hover:translate-x-1 transition-transform"
+              className="group-hover:-translate-x-1 transition-transform"
             />
-            {loggingOut ? "Signing out..." : "Sign Out"}
+            <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
           </button>
         </div>
       </aside>
