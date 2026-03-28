@@ -18,8 +18,7 @@ async def register(payload: RegisterRequest):
             "options": {
                 "data": {
                     "full_name": payload.full_name or "",
-                    "plan": "free",
-                    "newsletter_enabled": payload.newsletter_enabled
+                    "plan": "free"
                 }
             },
         })

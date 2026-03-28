@@ -23,7 +23,6 @@ export async function signUp(
   email: string,
   password: string,
   fullName: string,
-  newsletterEnabled: boolean = true,
 ) {
   const supabase = createClient();
   const emailRedirectTo = getEmailRedirectTo();
@@ -34,7 +33,6 @@ export async function signUp(
       data: {
         full_name: fullName,
         plan: "free",
-        newsletter_enabled: newsletterEnabled,
       },
       ...(emailRedirectTo ? { emailRedirectTo } : {}),
     },
