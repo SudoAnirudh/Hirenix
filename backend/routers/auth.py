@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+import logging
 from dependencies import get_current_user
 from supabase import create_client
 from config import settings
 from models.user import RegisterRequest, LoginRequest, TokenResponse
 
+logger = logging.getLogger("hirenix.auth")
 router = APIRouter()
 
 
@@ -26,7 +28,7 @@ async def register(payload: RegisterRequest):
             raise HTTPException(status_code=400, detail="Registration failed.")
         return {"message": "Registration successful. Please verify your email.", "user_id": result.user.id}
     except Exception as e:
-        print(f"Registration error: {e}")
+        logger.error(f"Registration error: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Registration failed.")
 
 
@@ -55,5 +57,5 @@ async def login(payload: LoginRequest):
             plan=plan,
         )
     except Exception as e:
-        print(f"Login error: {e}")
+        logger.error(f"Login error: {e}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login failed. Please check your credentials.")

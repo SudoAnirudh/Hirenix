@@ -1,8 +1,13 @@
 import httpx
 import feedparser
+import re
+import asyncio
+import logging
 from typing import List, Optional
 
 from models.analysis import JobListing
+
+logger = logging.getLogger("hirenix.job_scraper")
 
 
 def _strip_html(text: str) -> str:
@@ -184,13 +189,12 @@ async def scrape_jobs(
     
     # Parallelize fetching from all sources
     tasks = [
-        _fetch_remotive([query], per_source),
-        _fetch_arbeitnow([query], location, per_source, remote_only),
-        _fetch_wwr([query], per_source),
-        _fetch_jobspresso([query], per_source)
+        _fetch_remotive(query, per_source),
+        _fetch_arbeitnow(query, per_source, remote_only),
+        _fetch_wwr(fields, per_source),
+        _fetch_jobspresso(fields, per_source)
     ]
     
-    import asyncio
     results = await asyncio.gather(*tasks, return_exceptions=True)
     
     all_jobs: List[JobListing] = []
@@ -198,7 +202,7 @@ async def scrape_jobs(
         if isinstance(res, list):
             all_jobs.extend(res)
         elif isinstance(res, Exception):
-            print(f"Scraper error: {res}")
+            logger.error(f"Scraper error: {res}")
 
     # Keep only jobs with actionable apply links.
     all_jobs = [j for j in all_jobs if j.apply_url]
