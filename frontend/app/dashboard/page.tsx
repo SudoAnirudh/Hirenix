@@ -80,37 +80,6 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  const [greeting, setGreeting] = useState("Hello");
-  const [quote, setQuote] = useState(
-    "Your career path is being optimized by Hirenix AI.",
-  );
-
-  const quotes = [
-    "The only way to do great work is to love what you do. — Steve Jobs",
-    "Believe you can and you're halfway there. — Theodore Roosevelt",
-    "The future depends on what you do today. — Mahatma Gandhi",
-    "Hard work beats talent when talent doesn't work hard. — Tim Notke",
-    "Your career is like a garden. It can hold an assortment of life: weeds and flowers.",
-    "Success is not final, failure is not fatal: it is the courage to continue that counts. — Winston Churchill",
-    "Don't watch the clock; do what it does. Keep going. — Sam Levenson",
-    "Dream big and dare to fail. — Norman Vaughan",
-  ];
-
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good Morning");
-    else if (hour < 17) setGreeting("Good Afternoon");
-    else setGreeting("Good Evening");
-
-    // Use current day of the year to pick a consistent daily quote
-    const dayOfYear = Math.floor(
-      (new Date().getTime() -
-        new Date(new Date().getFullYear(), 0, 0).getTime()) /
-        86400000,
-    );
-    setQuote(quotes[dayOfYear % quotes.length]);
-  }, []);
-
   const fullName = session?.user?.user_metadata?.full_name || "Guest User";
   const email = session?.user?.email || "Not signed in";
   const plan = session?.user?.user_metadata?.plan || "free";
@@ -163,11 +132,11 @@ export default function DashboardPage() {
             Career Command Center
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight text-[#1E293B] font-heading">
-            {greeting},{" "}
+            Good Morning,{" "}
             <span className="text-indigo-500">{fullName.split(" ")[0]}</span>
           </h1>
           <p className="text-[#64748B] text-lg max-w-xl leading-relaxed italic">
-            &quot;{quote}&quot;
+            &quot;Your career path is being optimized by Hirenix AI.&quot;
           </p>
         </div>
 
