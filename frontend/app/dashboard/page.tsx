@@ -12,7 +12,7 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
-  Map,
+  Map as MapIcon,
   Zap,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
@@ -143,20 +143,23 @@ export default function DashboardPage() {
         {loading ? (
           <div className="h-20 w-72 rounded-3xl bg-white/40 animate-pulse border border-white/60" />
         ) : (
-          <div className="p-1 px-1.5 rounded-[40px] bg-white/50 border border-white/80 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group hover:bg-white/80 transition-all duration-500">
+          <Link
+            href="/dashboard/account"
+            className="p-1 px-1.5 rounded-[40px] bg-white/50 border border-white/80 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group hover:bg-white/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 cursor-pointer"
+          >
             <div className="h-14 w-14 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white">
               <User size={24} />
             </div>
             <div className="flex flex-col">
               <div className="text-sm font-bold text-[#1E293B] flex items-center gap-2">
                 {fullName}
-                <span className="text-[9px] uppercase font-extrabold tracking-[0.1em] px-2.5 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
+                <span className="text-[9px] uppercase font-extrabold tracking-widest px-2.5 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
                   {plan}
                 </span>
               </div>
               <div className="text-xs text-[#64748B] opacity-70">{email}</div>
             </div>
-          </div>
+          </Link>
         )}
       </div>
 
@@ -316,7 +319,7 @@ export default function DashboardPage() {
               <div className="absolute bottom-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mb-12 -mr-12 blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
               <div className="flex justify-between items-start mb-8">
                 <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-500 border border-violet-100">
-                  <Map size={28} />
+                  <MapIcon size={28} />
                 </div>
               </div>
               <div>
