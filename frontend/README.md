@@ -26,23 +26,28 @@ The frontend of Hirenix is a modern, responsive single-page application built on
 ### Installation
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Set up environment variables:
    Copy `.env.local.example` to `.env.local` and add your Supabase credentials:
+
    ```bash
    cp .env.local.example .env.local
    ```
-   *Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are properly configured. Set `NEXT_PUBLIC_SITE_URL` to the app origin used for auth redirects (`http://localhost:3000` locally, your production domain in deployment).*
+
+   _Note: Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are properly configured. Set `NEXT_PUBLIC_SITE_URL` to the app origin used for auth redirects (`http://localhost:3000` locally, your production domain in deployment)._
 
 4. Run the development server:
+
    ```bash
    npm run dev
    ```

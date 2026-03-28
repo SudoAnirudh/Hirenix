@@ -18,7 +18,7 @@ export const PLANS = {
   },
   enterprise: {
     label: "Enterprise",
-    resumeUploads: -1,  // unlimited
+    resumeUploads: -1, // unlimited
     jobMatches: -1,
     githubAnalysis: true,
     mockInterviews: -1,
