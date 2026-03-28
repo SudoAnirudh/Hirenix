@@ -4,39 +4,59 @@
 
 # 🚀 Hirenix
 
-> **AI-Powered Career Acceleration Platform**  
-> _Analyze your resume, audit your GitHub, prep for interviews — all in one place._
+> **The AI-Powered Career Intelligence Platform**  
+> _Stop guessing, start landing. Professional resume engineering, GitHub auditing, and real-time interview prep — powered by hybrid NLP and LLMs._
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-[![Stack](https://img.shields.io/badge/stack-Next.js_16_|_FastAPI_|_Supabase-purple.svg)](https://github.com/SudoAnirudh/Hirenix)
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-Next.js_16_%2B_React_19-blue?style=for-the-badge&logo=nextdotjs" alt="Next.js">
+  <img src="https://img.shields.io/badge/Backend-FastAPI_%2B_Python_3.11-green?style=for-the-badge&logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Database-Supabase_%2B_pgvector-3ecf8e?style=for-the-badge&logo=supabase" alt="Supabase">
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"></a>
+  <a href="http://makeapullrequest.com"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome"></a>
+  <img src="https://img.shields.io/github/stars/SudoAnirudh/Hirenix?style=flat-square" alt="Stars">
+</p>
 
 ---
 
-## 📖 Overview
+## 🌟 Overview
 
-**Hirenix** is an open-source SaaS platform that helps job seekers land their dream roles faster. It combines NLP, vector embeddings, and LLMs to deliver deep, actionable feedback on your resume, GitHub profile, and interview performance — far beyond simple keyword matching.
+**Hirenix** is not just another resume builder. It's a comprehensive **Career Intelligence SaaS** designed for the modern job market. By combining semantic search via `pgvector`, hybrid ATS scoring engines, and context-aware LLM agents, Hirenix provides the edge needed to outpace automated screening and technical interviews.
+
+### Why Hirenix?
+
+- **Hybrid Scoring**: Beyond keyword stuffing — we use semantic similarity to measure how well your experience _actually_ matches a role.
+- **Deep Code Analysis**: We don't just count GitHub commits; we analyze code quality, architectural depth, and documentation clarity.
+- **Contextual Preparation**: Interviews aren't generic. Our AI generates session-specific questions based on the intersection of your profile and the target role.
+
+---
 
 ## ✨ Features
 
 ### 🧠 AI Resume Intelligence
-- **ATS Scoring**: Analyses impact, context, and quantifiable metrics — not just keywords
-- **Skill Gap Analysis**: Pinpoints exactly what's missing for a specific role
-- **Rewrite Suggestions**: Targeted rewrites to sharpen clarity and impact
+
+- **Hybrid ATS Scoring**: 70% rule-based logic + 30% semantic meaning using `all-MiniLM-L6-v2`.
+- **Quantifiable Impact Audit**: Identifies missing metrics and results-oriented language.
+- **Targeted Skill Gap Analysis**: Visualizes exactly where your profile falls short for specific seniorities.
 
 ### 🐙 GitHub Portfolio Analyzer
-- **Code Quality Metrics**: Reviews actual code, not just contribution graphs
-- **Project Depth Scoring**: Evaluates architecture and best practices
-- **README Audit**: Ensures your projects tell a compelling story
+
+- **Architectural Depth**: Scores projects based on complexity, best practices, and patterns.
+- **Documentation Audit**: Evaluates READMEs and inline documentation for professional clarity.
+- **Real-world Insight**: Distills contribution graphs into a narrative of technical growth.
 
 ### 🎯 Job Matcher & Tailor
-- **Semantic Matching**: Uses `pgvector` to match resume meaning against job descriptions
-- **Custom Cover Letters**: Generates personalized cover letters based on the match
+
+- **Vector Search Matching**: Leverages `pgvector` for deep semantic alignment between resumes and JDs.
+- **Smart Tailoring**: Generates personalized cover letters and summaries that highlight the most relevant 20% of your experience.
 
 ### 🎙️ Mock Interview Engine
-- **Context-Aware Questions**: Questions generated from your own resume and target JD
-- **Real-time Feedback**: Scored on clarity, depth, and relevance
-- **Voice Mode**: _(Coming Soon)_
+
+- **Session-Specific Prep**: Generates questions that probe the specific gaps between your resume and a job.
+- **Performance Feedback**: Scored on clarity, technical depth, and behavioral alignment.
+- **Premium Glassmorphism UI**: A focused, high-stakes environment for maximum prep quality.
 
 ---
 
@@ -47,101 +67,97 @@ graph TD
     Client[Next.js 16 / React 19] -->|REST API| API[FastAPI Backend]
     Client -->|Auth| SupabaseAuth[Supabase Auth]
 
-    subgraph "Backend Services"
-        API -->|NLP| Spacy[spaCy · sentence-transformers]
-        API -->|LLM| OpenAI[OpenAI GPT-4o]
-        API -->|PDF| PDF[pdfplumber · PyMuPDF]
-        API -->|Billing| Stripe[Stripe]
-        API -->|Analysis| GitHubAPI[GitHub REST API]
+    subgraph "Intelligent Backend"
+        API -->|Embeddings| ST[Sentence Transformers]
+        API -->|LLM Tokens| OpenAI[OpenAI GPT-4o]
+        API -->|PDF Context| PDF[pdfplumber · PyMuPDF]
+        API -->|Payments| Stripe[Stripe]
     end
 
-    subgraph "Data Persistence"
+    subgraph "Vectorized Data"
         API -->|read/write| DB[(Supabase Postgres)]
-        DB -->|Vector Search| PgVector[pgvector]
-        DB -->|Storage| S3[Supabase Storage]
+        DB -->|Vector Logic| PgVector[pgvector]
+        DB -->|Binary Assets| S3[Supabase Storage]
     end
 ```
 
+---
+
 ## 🛠️ Tech Stack
 
-| Layer | Technologies |
-|---|---|
-| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS v4, Framer Motion, Tiptap, Recharts, Lucide Icons |
-| **Backend** | FastAPI, Python 3.11, Pydantic v2, Uvicorn |
-| **AI / NLP** | OpenAI GPT-4o, spaCy, sentence-transformers |
-| **PDF** | pdfplumber, PyMuPDF |
-| **Database** | Supabase (PostgreSQL + pgvector), Supabase Storage |
-| **Payments** | Stripe |
-| **Infra** | Vercel (frontend), Render (backend) |
-| **Tooling** | Husky, lint-staged, Prettier, ESLint, concurrently |
+| Component      | Technology                         | Version              |
+| -------------- | ---------------------------------- | -------------------- |
+| **Core UI**    | Next.js, React, TypeScript         | 16.1.6 / 19.2.3      |
+| **Styling**    | Tailwind CSS v4, Framer Motion     | 4.0.0+               |
+| **API Server** | FastAPI, Python, Pydantic v2       | 0.115.0 / 3.11+      |
+| **Database**   | PostgreSQL, pgvector               | Managed via Supabase |
+| **AI/ML**      | sentence-transformers, NLP, OpenAI | 2.7.0 / GPT-4o       |
+| **Parsing**    | pdfplumber, PyMuPDF                | 0.11 / 1.24          |
+| **Payments**   | Stripe                             | 8.3.0                |
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- Node.js 18+
-- Python 3.11
-- Supabase project
-- OpenAI API key
-- GitHub personal access token
+### 1. Unified Setup (Recommended)
 
-### 1. Clone the repository
+The project uses `concurrently` to manage both environments from the root.
+
 ```bash
 git clone https://github.com/SudoAnirudh/Hirenix.git
 cd Hirenix
-```
 
-### 2. Backend setup
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
+# Initialize Backend
+cd backend && python -m venv venv
+source venv/bin/activate # or venv\Scripts\activate
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+cp .env.example .env # Fill with keys
 
-cp .env.example .env
-# Fill in SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, GITHUB_TOKEN, STRIPE_SECRET_KEY
+# Initialize Frontend
+cd ../frontend && npm install
+cp .env.local.example .env.local # Fill with keys
 
-uvicorn main:app --reload
+# Start Shared Dev Server (from root)
+cd .. && npm run dev
 ```
 
-### 3. Frontend setup
-```bash
-cd frontend
-npm install
+### 2. Environment Variables
 
-cp .env.local.example .env.local
-# Fill in NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL
+Ensure the following are configured:
 
-npm run dev
-```
-
-### 4. Run both together (from root)
-```bash
-npm run dev
-```
-
-### 5. Database setup
-Run the SQL in `supabase/schema.sql` via the Supabase SQL Editor to create the schema and enable `pgvector`.
+- **Backend**: `SUPABASE_URL`, `SUPABASE_KEY`, `JWT_SECRET`, `OPENAI_API_KEY`, `GITHUB_TOKEN`, `STRIPE_SECRET_KEY`
+- **Frontend**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`
 
 ---
 
-## 🌍 Contributing
+## 📂 Project Structure
 
-Contributions are greatly appreciated! Please review the community docs first:
+```text
+hirenix/
+├── assets/             # Global visual assets
+├── backend/            # FastAPI application
+│   ├── models/         # Pydantic schemas
+│   ├── routers/        # Feature controllers (auth, resume, github, etc.)
+│   ├── services/       # Core business logic (ATS, matching, interview)
+│   └── utils/          # Weights, cleaners, and constants
+├── frontend/           # Next.js App Router project
+│   ├── app/            # Feature pages & layouts
+│   ├── components/     # UI primitives & design system
+│   └── lib/            # API clients & auth wrappers
+└── supabase/           # SQL schema & migrations
+```
 
-- [Contributing Guidelines](CONTRIBUTING.md)
+---
+
+## 🌍 Community
+
+Contributions drive Hirenix forward! Please see:
+
+- [Contributing](CONTRIBUTING.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
+- [Security](SECURITY.md)
 
-**Quick steps:**
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit: `git commit -m 'feat: add my feature'`
-4. Push: `git push origin feature/my-feature`
-5. Open a Pull Request
+---
 
 ## ✨ Contributors
 
@@ -167,8 +183,6 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
----
-
 <p align="center">
-  Built with ❤️ by <a href="https://github.com/SudoAnirudh">SudoAnirudh</a> and open source contributors.
+  Built with ❤️ by <a href="https://github.com/SudoAnirudh">SudoAnirudh</a> & Contributors.
 </p>

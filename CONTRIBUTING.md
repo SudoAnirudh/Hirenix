@@ -9,6 +9,7 @@ First off, thank you for considering contributing to Hirenix! It's people like y
 Before creating bug reports, please check the issue tracker to see if the problem has already been reported. If it hasn't, feel free to open a new issue.
 
 When reporting a bug, please include:
+
 - A clear and descriptive title.
 - Steps to reproduce the bug.
 - The expected behavior vs. the actual behavior.
@@ -18,6 +19,7 @@ When reporting a bug, please include:
 ### 💡 Suggesting Enhancements
 
 Have an idea for a new feature or improvement? We'd love to hear it! Open an issue on GitHub and provide:
+
 - A clear and descriptive title.
 - A detailed explanation of the proposed feature.
 - Why this feature would be useful to the community.

@@ -26,34 +26,41 @@ The backend of Hirenix manages core business logic, AI operations, and data pers
 ### Installation
 
 1. Navigate to the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. Download the required spaCy model:
+
    ```bash
    python -m spacy download en_core_web_sm
    ```
 
 5. Set up environment variables:
    Copy `.env.example` to `.env` and fill in the required keys:
+
    ```bash
    cp .env.example .env
    ```
-   *Required keys include `SUPABASE_URL`, `SUPABASE_KEY`, `OPENAI_API_KEY`, and `GITHUB_TOKEN`.*
+
+   _Required keys include `SUPABASE_URL`, `SUPABASE_KEY`, `OPENAI_API_KEY`, and `GITHUB_TOKEN`._
 
 6. Run the server:
+
    ```bash
    uvicorn main:app --reload
    ```
