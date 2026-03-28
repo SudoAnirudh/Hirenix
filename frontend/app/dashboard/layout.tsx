@@ -10,7 +10,7 @@ import {
   Mic,
   TrendingUp,
   LogOut,
-  Map,
+  Map as MapIcon,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -41,7 +41,7 @@ const nav = [
     icon: TrendingUp,
     label: "Progress Tracker",
   },
-  { href: "/dashboard/roadmap", icon: Map, label: "Career Roadmap" },
+  { href: "/dashboard/roadmap", icon: MapIcon, label: "Career Roadmap" },
 ];
 
 export default function DashboardLayout({
