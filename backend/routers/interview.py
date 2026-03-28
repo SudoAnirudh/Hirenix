@@ -1,4 +1,5 @@
 import uuid
+import logging
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException
 from dependencies import get_current_user, get_supabase_admin
@@ -13,6 +14,7 @@ from models.interview import (
 )
 import json
 
+logger = logging.getLogger("hirenix.interview")
 router = APIRouter()
 QUESTION_CACHE: Dict[str, List[dict]] = {}
 
@@ -85,7 +87,7 @@ async def start_interview(
                 "overall_score": 0.0,
             }).execute()
         except Exception as legacy_insert_err:
-            print(
+            logger.error(
                 "⚠️  interview_sessions insert failed "
                 f"(minimal={minimal_insert_err}, legacy={legacy_insert_err})"
             )
@@ -212,7 +214,7 @@ async def save_proctor_report(
             "proctor_report": payload.report.model_dump_json()
         }).eq("id", payload.session_id).execute()
     except Exception as db_err:
-        print(f"⚠️  interview_sessions update (proctor_report) failed: {db_err}")
+        logger.error(f"⚠️ interview_sessions update (proctor_report) failed: {db_err}")
         # The schema might not have the column yet, we just print the error and return success
 
     return {"status": "success"}

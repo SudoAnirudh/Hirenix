@@ -1,8 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import sys
 
 from config import settings
 from routers import auth, resume, github, job_match, interview, analytics, payments, roadmap
+
+# Logging setup
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger("hirenix")
+logger.info("Starting Hirenix API...")
 
 app = FastAPI(
     title="Hirenix API",

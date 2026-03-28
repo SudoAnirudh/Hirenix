@@ -22,7 +22,7 @@ class RoadmapEngine:
                 Resource(title="Node.js Official Docs", url="https://nodejs.org/en/docs", type="article", is_free=True)
             ],
             "Docker": [
-                Resource(title="Docker Deep Dive", url="https://hackertyper.net", type="course", is_free=False),
+                Resource(title="Getting Started with Docker", url="https://docs.docker.com/get-started/", type="article", is_free=True),
                 Resource(title="Docker Official Guide", url="https://docs.docker.com/get-started", type="article", is_free=True)
             ],
             "Kubernetes": [
@@ -74,9 +74,8 @@ class RoadmapEngine:
             ],
         }
 
-    def _get_resources(self, skill: str) -> List[Resource]:
         return self.role_resources.get(skill, [
-            Resource(title=f"{skill} Documentation", url="#", type="article", is_free=True),
+            Resource(title=f"{skill} Documentation", url=f"https://www.google.com/search?q={skill.replace(' ', '+')}+documentation", type="article", is_free=True),
             Resource(title=f"Learn {skill} on Coursera", url="https://www.coursera.org", type="course", is_free=False)
         ])
 
