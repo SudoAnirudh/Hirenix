@@ -9,7 +9,6 @@ export default function RegisterPage() {
     name: "",
     email: "",
     password: "",
-    newsletter: true,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,12 +25,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
     try {
-      const { error: err } = await signUp(
-        form.email,
-        form.password,
-        form.name,
-        form.newsletter,
-      );
+      const { error: err } = await signUp(form.email, form.password, form.name);
       if (err) {
         setError(err.message);
         setLoading(false);
@@ -154,34 +148,6 @@ export default function RegisterPage() {
               </div>
             ))}
 
-            <div className="flex items-start space-x-3 pt-1">
-              <div className="flex items-center h-5">
-                <input
-                  id="newsletter"
-                  name="newsletter"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                  checked={form.newsletter}
-                  onChange={update("newsletter")}
-                />
-              </div>
-              <div className="text-sm">
-                <label
-                  htmlFor="newsletter"
-                  className="font-medium"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Receive career tips & updates
-                </label>
-                <p
-                  style={{ color: "var(--text-secondary)" }}
-                  className="text-xs"
-                >
-                  Get the latest job trends and AI career advice (can opt-out
-                  anytime).
-                </p>
-              </div>
-            </div>
             <button
               id="reg-submit"
               type="submit"
