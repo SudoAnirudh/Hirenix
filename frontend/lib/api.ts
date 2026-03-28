@@ -101,7 +101,20 @@ export async function getProfile() {
     user_id: string;
     email: string;
     plan: string;
+    newsletter_enabled: boolean;
   }>("/auth/me");
+}
+
+export async function toggleNewsletter(enabled: boolean) {
+  return request("/newsletter/toggle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ enabled }),
+  });
+}
+
+export async function getNewsletterSubscribers() {
+  return request<any[]>("/newsletter/subscribers");
 }
 
 // ─── Resume ───────────────────────────────────────────────────────────────────

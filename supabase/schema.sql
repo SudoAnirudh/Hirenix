@@ -15,6 +15,7 @@ create table if not exists public.profiles (
   full_name     text,
   avatar_url    text,
   plan          text not null default 'free' check (plan in ('free', 'pro', 'elite')),
+  newsletter_enabled boolean not null default true,
   stripe_id     text,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
@@ -24,8 +25,13 @@ create table if not exists public.profiles (
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, avatar_url)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  insert into public.profiles (id, full_name, avatar_url, newsletter_enabled)
+  values (
+    new.id, 
+    new.raw_user_meta_data->>'full_name', 
+    new.raw_user_meta_data->>'avatar_url',
+    coalesce((new.raw_user_meta_data->>'newsletter_enabled')::boolean, true)
+  );
   return new;
 end;
 $$ language plpgsql security definer;

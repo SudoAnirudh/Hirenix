@@ -20,7 +20,7 @@ import {
   Map as MapPin,
 } from "lucide-react";
 import { getSession, signOut } from "@/lib/auth";
-import { getProfile, getProgress } from "@/lib/api";
+import { getProfile, getProgress, toggleNewsletter } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -41,18 +41,22 @@ interface UserSession {
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [progress, setProgress] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [updatingNewsletter, setUpdatingNewsletter] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [sess, prog] = await Promise.all([
+        const [sess, prog, prof] = await Promise.all([
           getSession(),
           getProgress().catch(() => null),
+          getProfile().catch(() => null),
         ]);
         setSession(sess);
         setProgress(prog);
+        setProfile(prof);
       } catch (error) {
         console.error("Error fetching account data:", error);
       } finally {
@@ -65,6 +69,20 @@ export default function AccountPage() {
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
+  };
+
+  const handleToggleNewsletter = async () => {
+    if (!profile) return;
+    setUpdatingNewsletter(true);
+    try {
+      const newStatus = !profile.newsletter_enabled;
+      await toggleNewsletter(newStatus);
+      setProfile((p: any) => ({ ...p, newsletter_enabled: newStatus }));
+    } catch (error) {
+      console.error("Failed to toggle newsletter:", error);
+    } finally {
+      setUpdatingNewsletter(false);
+    }
   };
 
   if (loading) {
@@ -219,6 +237,28 @@ export default function AccountPage() {
                 </span>
                 <ChevronRight size={16} className="text-slate-300" />
               </Button>
+
+              <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-indigo-700 font-bold text-sm">
+                    <Mail size={16} /> Newsletter
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      disabled={updatingNewsletter}
+                      checked={profile?.newsletter_enabled ?? true}
+                      onChange={handleToggleNewsletter}
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  Get weekly AI resume tips, GitHub trends, and mock interview
+                  drills directly in your inbox.
+                </p>
+              </div>
             </div>
           </Card>
 

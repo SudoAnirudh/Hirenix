@@ -6,6 +6,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     full_name: Optional[str] = None
+    newsletter_enabled: Optional[bool] = True
 
 
 class LoginRequest(BaseModel):

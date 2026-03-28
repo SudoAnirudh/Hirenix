@@ -5,20 +5,33 @@ import { signUp } from "@/lib/auth";
 import { Brain } from "lucide-react";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    newsletter: true,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const update = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((p) => ({ ...p, [k]: e.target.value }));
+    setForm((p) => ({
+      ...p,
+      [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const { error: err } = await signUp(form.email, form.password, form.name);
+      const { error: err } = await signUp(
+        form.email,
+        form.password,
+        form.name,
+        form.newsletter,
+      );
       if (err) {
         setError(err.message);
         setLoading(false);
@@ -134,12 +147,41 @@ export default function RegisterPage() {
                   type={type}
                   className="input-base"
                   placeholder={placeholder}
-                  value={form[key as keyof typeof form]}
+                  value={form[key as keyof typeof form] as string}
                   onChange={update(key)}
                   required
                 />
               </div>
             ))}
+
+            <div className="flex items-start space-x-3 pt-1">
+              <div className="flex items-center h-5">
+                <input
+                  id="newsletter"
+                  name="newsletter"
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  checked={form.newsletter}
+                  onChange={update("newsletter")}
+                />
+              </div>
+              <div className="text-sm">
+                <label
+                  htmlFor="newsletter"
+                  className="font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Receive career tips & updates
+                </label>
+                <p
+                  style={{ color: "var(--text-secondary)" }}
+                  className="text-xs"
+                >
+                  Get the latest job trends and AI career advice (can opt-out
+                  anytime).
+                </p>
+              </div>
+            </div>
             <button
               id="reg-submit"
               type="submit"

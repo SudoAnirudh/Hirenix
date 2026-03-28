@@ -128,6 +128,7 @@ async def get_current_user(
             "user_id": user_id,
             "email": email,
             "plan": metadata.get("plan", "free"),
+            "newsletter_enabled": metadata.get("newsletter_enabled", True)
         }
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -155,6 +156,7 @@ async def get_current_user(
                 "user_id": user.id,
                 "email": user.email,
                 "plan": metadata.get("plan", "free"),
+                "newsletter_enabled": metadata.get("newsletter_enabled", True)
             }
         except Exception as net_e:
             print(f"❌ Supabase network verification failed: {net_e}")
