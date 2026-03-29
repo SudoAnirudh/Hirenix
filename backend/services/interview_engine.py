@@ -358,12 +358,13 @@ async def _evaluate_with_llm(
     """
 
     try:
-        response = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
-        if not response:
+        response_data = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
+        if not response_data:
             return None
         
+        content = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
         # Clean response if LLM added markdown backticks
-        cleaned_response = response.strip().lstrip("```json").rstrip("```").strip()
+        cleaned_response = content.strip().lstrip("```json").rstrip("```").strip()
         data = json.loads(cleaned_response)
         
         # Ensure all required fields are present
@@ -380,6 +381,46 @@ async def _evaluate_with_llm(
     except Exception as e:
         logger.error(f"Error parsing LLM evaluation: {str(e)}")
         return None
+
+
+async def stream_evaluate_answer(
+    question_id: str,
+    question: str,
+    answer: str,
+    category: str,
+    expected_topics: List[str] = None,
+):
+    """
+    Streams the interview evaluation from NVIDIA LLM.
+    """
+    if not settings.nvidia_api_key:
+        yield "Error: NVIDIA_API_KEY is not set. Falling back to static feedback..."
+        return
+
+    expected_str = ", ".join(expected_topics) if expected_topics else "N/A"
+    
+    messages = [
+        {
+            "role": "system",
+            "content": "You are an expert technical interviewer. Evaluate answers accurately and provide constructive feedback."
+        },
+        {
+            "role": "user",
+            "content": f"""
+            Evaluate this interview answer:
+            Question: {question}
+            Category: {category}
+            Expected Topics: {expected_str}
+            User Answer: {answer}
+
+            Return a VALID JSON object with scores (0-10) and detailed feedback.
+            """
+        }
+    ]
+
+    from services.nvidia_client import stream_nvidia_llm
+    async for chunk in stream_nvidia_llm(messages):
+        yield chunk
 
 
 async def evaluate_answer(

@@ -2,8 +2,13 @@ import uuid
 import logging
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from dependencies import get_current_user, get_supabase_admin
-from services.interview_engine import generate_questions, evaluate_answer
+from services.interview_engine import (
+    generate_questions,
+    evaluate_answer,
+    stream_evaluate_answer
+)
 from models.interview import (
     StartInterviewRequest,
     StartInterviewResponse,
@@ -189,6 +194,47 @@ async def submit_answer(
             )
 
     return feedback
+
+
+@router.post("/submit-answer-stream")
+async def submit_answer_stream(
+    payload: SubmitAnswerRequest,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """
+    Evaluate an interview answer and stream the raw LLM response chunks.
+    Note: Performance metrics and DB updates happen after the stream is complete.
+    """
+    session_rows = (
+        db.table("interview_sessions")
+        .select("*")
+        .eq("id", payload.session_id)
+        .eq("user_id", user["user_id"])
+        .limit(1)
+        .execute()
+    )
+    if not (session_rows.data or []):
+        raise HTTPException(status_code=404, detail="Interview session not found.")
+
+    session_data = session_rows.data[0]
+    questions = _get_session_questions(session_data, payload.session_id)
+    question = next((q for q in questions if q["question_id"] == payload.question_id), None)
+    
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found in session.")
+
+    async def event_generator():
+        async for chunk in stream_evaluate_answer(
+            question_id=payload.question_id,
+            question=question["question"],
+            answer=payload.answer,
+            category=question["category"],
+            expected_topics=question.get("expected_topics", []),
+        ):
+            yield f"data: {chunk}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.post("/save-proctor-report")
