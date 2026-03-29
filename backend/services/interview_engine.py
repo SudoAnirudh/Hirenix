@@ -1,7 +1,13 @@
 import uuid
-from typing import Dict, List
+import json
+import logging
+from typing import Dict, List, Optional
 
 from models.interview import AnswerFeedback, InterviewPlan, InterviewQuestion
+from services.nvidia_client import invoke_nvidia_llm
+from config import settings
+
+logger = logging.getLogger(__name__)
 
 
 QUESTION_BANK: Dict[str, Dict[str, List[dict]]] = {
@@ -319,6 +325,63 @@ def _build_coaching_tip(category: str) -> str:
     return "A reliable structure is: definition, key tradeoffs, then a concrete example from practice."
 
 
+async def _evaluate_with_llm(
+    question: str,
+    answer: str,
+    category: str,
+    expected_topics: List[str],
+) -> Optional[dict]:
+    """Uses NVIDIA LLM to evaluate the answer."""
+    prompt = f"""
+    You are an expert technical interviewer and career coach. 
+    Evaluate the following interview answer for a {category} question.
+    
+    Question: {question}
+    Candidate Answer: {answer}
+    Expected Topics to cover: {", ".join(expected_topics)}
+    
+    Provide a detailed evaluation in JSON format with the following fields:
+    - score: Overall score from 0.0 to 10.0
+    - overall_score: Same as score
+    - clarity_score: Score for clarity and structure (0.0 to 10.0)
+    - technical_score: Score for technical accuracy and depth (0.0 to 10.0)
+    - depth_score: Score for how well they explained the "why" (0.0 to 10.0)
+    - communication_score: Score for professional tone and flow (0.0 to 10.0)
+    - problem_solving_score: Score for reasoning and tradeoff analysis (0.0 to 10.0)
+    - strengths: A list of 2-3 specific strengths of the answer.
+    - improvements: A list of 2-3 specific areas for improvement.
+    - model_answer_hint: A short (1 sentence) coaching tip for this type of question.
+    - model_answer: A concise (2-3 sentences) version of what a Great answer would look like.
+    - coaching_tip: A separate specific tip for the candidate to improve their delivery.
+
+    Return ONLY the raw JSON object. No markdown, no preamble.
+    """
+
+    try:
+        response = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
+        if not response:
+            return None
+        
+        # Clean response if LLM added markdown backticks
+        cleaned_response = response.strip().lstrip("```json").rstrip("```").strip()
+        data = json.loads(cleaned_response)
+        
+        # Ensure all required fields are present
+        required_fields = [
+            "score", "overall_score", "clarity_score", "technical_score", 
+            "depth_score", "communication_score", "problem_solving_score",
+            "strengths", "improvements", "model_answer_hint", "model_answer", "coaching_tip"
+        ]
+        if all(field in data for field in required_fields):
+            return data
+        
+        logger.warning(f"LLM response missing fields: {data.keys()}")
+        return None
+    except Exception as e:
+        logger.error(f"Error parsing LLM evaluation: {str(e)}")
+        return None
+
+
 async def evaluate_answer(
     question_id: str,
     question: str,
@@ -327,6 +390,18 @@ async def evaluate_answer(
     expected_topics: List[str],
 ) -> AnswerFeedback:
     """Evaluate an interview answer and return structured coaching feedback."""
+    
+    # Try LLM evaluation first if configured
+    if settings.nvidia_api_key:
+        llm_feedback = await _evaluate_with_llm(question, answer, category, expected_topics)
+        if llm_feedback:
+            return AnswerFeedback(
+                question_id=question_id,
+                **llm_feedback
+            )
+        logger.info("LLM evaluation failed or incomplete, falling back to heuristics.")
+
+    # Fallback to heuristic scoring
     scores = _score_answer(answer, category, expected_topics)
     improvements = _build_improvements(scores, category, expected_topics)
 
