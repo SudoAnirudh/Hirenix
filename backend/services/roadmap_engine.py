@@ -6,6 +6,7 @@ from models.roadmap import Roadmap, RoadmapSkill, Resource
 from services.skill_gap import detect_skill_gap
 from services.github_analyzer import analyze_github_profile
 from services.nvidia_client import invoke_nvidia_llm
+from services.cache_manager import cache_manager
 from config import settings
 
 logger = logging.getLogger(__name__)
@@ -125,16 +126,18 @@ class RoadmapEngine:
         """
         
         try:
-            response = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
-            if not response:
+            response_data = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
+            if not response_data:
                 return None
             
-            cleaned_response = response.strip().lstrip("```json").rstrip("```").strip()
+            content = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            cleaned_response = content.strip().lstrip("```json").rstrip("```").strip()
             return json.loads(cleaned_response)
         except Exception as e:
             logger.error(f"Error getting LLM career advice: {str(e)}")
             return None
 
+    @cache_manager.cache_llm_result(provider="nvidia")
     async def generate_roadmap(self, resume_text: str, github_username: str, target_role: str, user_id: str) -> Roadmap:
         # 1. Get Skill Gaps
         gaps = detect_skill_gap(resume_text, target_role)
