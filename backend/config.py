@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # OpenAI
     openai_api_key: Optional[str] = None
 
+    # NVIDIA
+    nvidia_api_key: Optional[str] = None
+
     # Stripe
     stripe_secret_key: Optional[str] = None
     stripe_webhook_secret: Optional[str] = None

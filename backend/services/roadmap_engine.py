@@ -1,9 +1,14 @@
 import json
 import os
-from typing import List
+import logging
+from typing import List, Optional
 from models.roadmap import Roadmap, RoadmapSkill, Resource
 from services.skill_gap import detect_skill_gap
 from services.github_analyzer import analyze_github_profile
+from services.nvidia_client import invoke_nvidia_llm
+from config import settings
+
+logger = logging.getLogger(__name__)
 
 class RoadmapEngine:
     def __init__(self):
@@ -98,6 +103,38 @@ class RoadmapEngine:
         if skill in medium_skills: return "medium"
         return "easy"
 
+    async def _get_llm_career_advice(
+        self, target_role: str, gaps: dict, github_languages: dict
+    ) -> Optional[dict]:
+        """Uses NVIDIA LLM to provide personalized career advice for the roadmap."""
+        prompt = f"""
+        You are a senior career advisor and engineering manager. 
+        Provide career advice for a candidate aiming to be a {target_role}.
+        
+        Matched Skills: {", ".join(gaps["matched_skills"])}
+        Mandatory Missing Skills: {", ".join(gaps["mandatory_missing"])}
+        Competitive Missing Skills: {", ".join(gaps["competitive_missing"])}
+        GitHub Top Languages: {", ".join(github_languages.keys())}
+        
+        Provide your response in JSON format with the following fields:
+        - next_step: A concrete, actionable next step for their career (1 sentence).
+        - current_level: Estimate their level ('junior', 'mid', or 'senior') based on skills.
+        - future_opportunities: A list of 3-4 future career paths or roles they could grow into.
+        
+        Return ONLY the raw JSON object. No markdown, no preamble.
+        """
+        
+        try:
+            response = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
+            if not response:
+                return None
+            
+            cleaned_response = response.strip().lstrip("```json").rstrip("```").strip()
+            return json.loads(cleaned_response)
+        except Exception as e:
+            logger.error(f"Error getting LLM career advice: {str(e)}")
+            return None
+
     async def generate_roadmap(self, resume_text: str, github_username: str, target_role: str, user_id: str) -> Roadmap:
         # 1. Get Skill Gaps
         gaps = detect_skill_gap(resume_text, target_role)
@@ -148,21 +185,27 @@ class RoadmapEngine:
         completed_skills = len([s for s in roadmap_skills if s.status == "completed"])
         progress = (completed_skills / total_skills * 100) if total_skills > 0 else 0
 
-        # Determine Next Step
-        next_step = "Analyze GitHub more deeply"
-        if gaps["mandatory_missing"]:
-            next_step = f"Focus on mastering {gaps['mandatory_missing'][0]}"
-        elif gaps["competitive_missing"]:
-            next_step = f"Differentiate yourself by learning {gaps['competitive_missing'][0]}"
+        # Heuristic Defaults
+        next_step = f"Focus on mastering {gaps['mandatory_missing'][0]}" if gaps["mandatory_missing"] else "Analyze GitHub more deeply"
+        current_level = "junior"
+        future_opportunities = self._get_opportunities(target_role)
+
+        # 3. Enhance with LLM if available
+        if settings.nvidia_api_key:
+            advice = await self._get_llm_career_advice(target_role, gaps, github_languages)
+            if advice:
+                next_step = advice.get("next_step", next_step)
+                current_level = advice.get("current_level", current_level)
+                future_opportunities = advice.get("future_opportunities", future_opportunities)
 
         return Roadmap(
             user_id=user_id,
             target_role=target_role,
-            current_level="junior", # Heuristic could be added
+            current_level=current_level,
             skills=roadmap_skills,
             next_step=next_step,
             overall_progress=round(progress, 1),
-            future_opportunities=self._get_opportunities(target_role)
+            future_opportunities=future_opportunities
         )
 
 roadmap_engine = RoadmapEngine()
