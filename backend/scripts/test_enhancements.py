@@ -5,9 +5,8 @@ import os
 # Add backend to path
 sys.path.append(os.path.join(os.getcwd(), "backend"))
 
-from services.nvidia_client import invoke_nvidia_llm, stream_nvidia_llm
+from services.nvidia_client import stream_nvidia_llm
 from services.telemetry_service import telemetry
-from services.cache_manager import cache_manager
 from services.roadmap_engine import RoadmapEngine
 
 async def test_telemetry():
