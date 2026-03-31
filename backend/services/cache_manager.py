@@ -2,7 +2,7 @@ import functools
 import logging
 import hashlib
 import json
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 logger = logging.getLogger("hirenix.cache")
 

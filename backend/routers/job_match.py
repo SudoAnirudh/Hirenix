@@ -28,6 +28,7 @@ async def match_job(
         db.table("resumes")
         .select("raw_text")
         .eq("id", payload.resume_id)
+        .eq("user_id", user["user_id"])
         .single()
         .execute()
     )

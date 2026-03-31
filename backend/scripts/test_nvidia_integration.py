@@ -1,4 +1,3 @@
-import asyncio
 import json
 import unittest
 from unittest.mock import patch, AsyncMock, MagicMock
@@ -12,7 +11,7 @@ mock_config.settings = MagicMock()
 sys.modules["config"] = mock_config
 
 # Now import the components to test
-from services.interview_engine import evaluate_answer, _score_answer
+from services.interview_engine import evaluate_answer
 from models.interview import AnswerFeedback
 
 class TestNvidiaIntegration(unittest.IsolatedAsyncioTestCase):

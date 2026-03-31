@@ -1,5 +1,4 @@
 import json
-import os
 import logging
 from typing import List, Optional
 from models.roadmap import Roadmap, RoadmapSkill, Resource

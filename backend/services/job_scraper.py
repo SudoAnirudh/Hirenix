@@ -3,7 +3,7 @@ import feedparser
 import re
 import asyncio
 import logging
-from typing import List, Optional
+from typing import List
 
 from models.analysis import JobListing
 

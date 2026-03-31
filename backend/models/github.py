@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, List, Any, Optional
+from typing import List, Optional
 
 
 class GitHubAnalysisRequest(BaseModel):
