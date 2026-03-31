@@ -14,7 +14,6 @@ from models.interview import (
     StartInterviewResponse,
     SubmitAnswerRequest,
     AnswerFeedback,
-    SessionSummaryResponse,
     SaveProctorReportRequest,
 )
 import json
@@ -51,6 +50,18 @@ async def start_interview(
     # Fetch resume sections for context
     resume_context = ""
     if payload.resume_id:
+        # First verify the resume belongs to the user
+        resume_check = (
+            db.table("resumes")
+            .select("id")
+            .eq("id", payload.resume_id)
+            .eq("user_id", user["user_id"])
+            .single()
+            .execute()
+        )
+        if not resume_check.data:
+            raise HTTPException(status_code=404, detail="Resume not found.")
+
         sections_r = (
             db.table("resume_sections")
             .select("*")

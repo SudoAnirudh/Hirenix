@@ -1,6 +1,6 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
-from dependencies import get_current_user, get_supabase_admin, require_plan
+from dependencies import get_supabase_admin, require_plan
 from services.github_analyzer import analyze_github_profile
 from models.github import GitHubAnalysisRequest, GitHubAnalysisResponse
 

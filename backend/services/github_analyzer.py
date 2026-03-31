@@ -1,6 +1,4 @@
-import re
 import httpx
-from typing import Optional
 from config import settings
 from models.github import GitHubAnalysisResponse, GitHubMetrics, RepoMetric
 from utils.scoring_weights import GPI_WEIGHTS
