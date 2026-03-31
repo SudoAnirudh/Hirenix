@@ -1,6 +1,5 @@
 import json
 import os
-from typing import List
 from utils.text_cleaner import extract_keywords
 
 _MATRIX_PATH = os.path.join(os.path.dirname(__file__), "../utils/role_skill_matrix.json")
