@@ -22,6 +22,11 @@ class TelemetryService:
             "nvidia_fallback_calls": 0,
             "nvidia_total_latency_ms": 0,
             "nvidia_estimated_tokens": 0,
+            "groq_total_calls": 0,
+            "groq_success_calls": 0,
+            "groq_fallback_calls": 0,
+            "groq_total_latency_ms": 0,
+            "groq_estimated_tokens": 0,
         }
         logger.info("TelemetryService initialized.")
 

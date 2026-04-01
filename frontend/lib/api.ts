@@ -287,3 +287,10 @@ export async function saveProctorReport(
 export async function getProgress() {
   return request("/analytics/progress");
 }
+
+export async function getAISummary() {
+  return request<{
+    summary: string;
+    generated_at: number;
+  }>("/analytics/summary", { method: "POST" });
+}
