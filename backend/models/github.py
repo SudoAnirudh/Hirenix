@@ -1,4 +1,9 @@
+from pydantic import BaseModel
 from typing import List, Optional, Dict
+
+class GitHubAnalysisRequest(BaseModel):
+    username: str
+
 
 class RepoMetric(BaseModel):
     name: str
