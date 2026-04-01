@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # NVIDIA
     nvidia_api_key: Optional[str] = None
 
+    # Groq
+    groq_api_key: Optional[str] = None
+
     # Stripe
     stripe_secret_key: Optional[str] = None
     stripe_webhook_secret: Optional[str] = None
