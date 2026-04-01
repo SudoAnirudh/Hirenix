@@ -1,129 +1,136 @@
 "use client";
-
 import Link from "next/link";
-import { Brain, Github, Twitter, Linkedin, Terminal } from "lucide-react";
+import {
+  Brain,
+  Github,
+  Twitter,
+  Linkedin,
+  Heart,
+  ExternalLink,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Footer = () => {
-  return (
-    <footer className="py-20 px-6 bg-obsidian border-t border-white/5 relative overflow-hidden">
-      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-hyper-lime/20 to-transparent" />
+  const currentYear = new Date().getFullYear();
 
+  const footerSections = [
+    {
+      title: "Company",
+      links: [
+        { name: "About Hirenix", href: "/about" },
+        { name: "Blog", href: "#" },
+        { name: "Careers", href: "#" },
+        { name: "Contact", href: "#" },
+      ],
+    },
+    {
+      title: "Product",
+      links: [
+        { name: "Resume Analytics", href: "#" },
+        { name: "GitHub Audit", href: "#" },
+        { name: "Job Matcher", href: "#" },
+        { name: "Mock Interview", href: "#" },
+        { name: "Roadmap", href: "#" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { name: "Privacy Policy", href: "#" },
+        { name: "Terms of Service", href: "#" },
+        { name: "Security", href: "#" },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="relative z-10 py-24 px-6 border-t border-[#E2E8F0] bg-white/40 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
-          <div className="col-span-1 md:col-span-1">
-            <Link href="/" className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <Brain size={22} className="text-hyper-lime" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
+          <div className="lg:col-span-2">
+            <Link href="/" className="flex items-center gap-3 mb-8 group">
+              <div className="w-12 h-12 rounded-2xl bg-[#7C9ADD] flex items-center justify-center shadow-lg shadow-[#7C9ADD]/20 transition-transform group-hover:scale-110">
+                <Brain className="text-white" size={26} />
               </div>
-              <span className="font-display font-black text-2xl text-white tracking-tighter uppercase italic">
+              <span className="font-display font-black text-3xl text-[#2D3748] tracking-tighter uppercase italic">
                 HIRENIX
               </span>
             </Link>
-            <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-xs">
-              The high-fidelity command center for the modern engineer's career
-              trajectory. Built with AI, for developers.
+            <p className="text-[#718096] text-lg font-medium leading-relaxed max-w-sm mb-10">
+              The high-fidelity AI studio for the modern engineer's career
+              trajectory. Engineering your path to elite roles.
             </p>
-          </div>
-
-          <div>
-            <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">
-              Ecosystem
-            </h4>
-            <ul className="flex flex-col gap-4">
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Resume Scoring
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  GitHub Analytics
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Job Matching
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Roadmap
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">
-              Platform
-            </h4>
-            <ul className="flex flex-col gap-4">
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Status
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-slate-500 hover:text-hyper-lime transition-colors text-sm font-bold uppercase tracking-widest"
-                >
-                  Changelog
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-black uppercase tracking-[0.2em] text-xs mb-8">
-              Studio
-            </h4>
-            <div className="flex gap-4 mb-8">
-              {[Github, Twitter, Linkedin, Terminal].map((Icon, i) => (
+            <div className="flex gap-4">
+              {[
+                {
+                  Icon: Github,
+                  href: "https://github.com/SudoAnirudh/Hirenix",
+                },
+                { Icon: Twitter, href: "#" },
+                { Icon: Linkedin, href: "#" },
+              ].map(({ Icon, href }, i) => (
                 <Link
                   key={i}
-                  href="#"
-                  className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-hyper-lime hover:border-hyper-lime/20 transition-all"
+                  href={href}
+                  className="w-12 h-12 rounded-2xl bg-white/60 border border-white/80 flex items-center justify-center text-[#718096] hover:text-[#7C9ADD] hover:border-[#7C9ADD]/30 hover:shadow-lg transition-all"
                 >
-                  <Icon size={18} />
+                  <Icon size={22} />
                 </Link>
               ))}
             </div>
-            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em]">
-              © {new Date().getFullYear()} HIRENIX STUDIO. <br />
-              All rights reserved.
-            </p>
+          </div>
+
+          {footerSections.map((section) => (
+            <div key={section.title}>
+              <h4 className="text-[#2D3748] font-black uppercase tracking-[0.2em] text-sm mb-8">
+                {section.title}
+              </h4>
+              <ul className="flex flex-col gap-5">
+                {section.links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-[#718096] hover:text-[#7C9ADD] transition-colors text-sm font-bold uppercase tracking-widest flex items-center group"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-12 border-t border-[#E2E8F0] flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm font-bold text-[#A0AEC0] uppercase tracking-[0.2em]">
+            <span>© {currentYear} HIRENIX STUDIO.</span>
+            <span className="hidden md:block text-[#E2E8F0]">|</span>
+            <Link
+              href="https://github.com/SudoAnirudh"
+              className="flex items-center gap-2 text-[#7C9ADD] hover:text-[#2D3748] transition-colors group"
+            >
+              Built with{" "}
+              <Heart
+                size={14}
+                className="fill-current text-red-400 group-hover:scale-125 transition-transform"
+              />{" "}
+              by Anirudh S
+              <ExternalLink
+                size={12}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
+              />
+            </Link>
+          </div>
+
+          <div className="flex gap-3">
+            {["Next.js 16", "Supabase", "FastAPI"].map((tech) => (
+              <span
+                key={tech}
+                className="text-[10px] font-black uppercase tracking-widest px-5 py-2 rounded-full bg-white/60 text-[#718096] border border-white/80 backdrop-blur-sm shadow-sm"
+              >
+                {tech}
+              </span>
+            ))}
           </div>
         </div>
       </div>
