@@ -255,6 +255,20 @@ export async function submitAnswer(
   });
 }
 
+export async function evaluateInterviewSession(
+  sessionId: string,
+  answers: Array<{ question_id: string; answer: string }>,
+) {
+  return request("/interview/evaluate-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: sessionId,
+      answers,
+    }),
+  });
+}
+
 export async function saveProctorReport(
   sessionId: string,
   report: Record<string, unknown>,

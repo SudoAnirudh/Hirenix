@@ -49,6 +49,16 @@ class SubmitAnswerRequest(BaseModel):
     answer: str
 
 
+class SessionAnswer(BaseModel):
+    question_id: str
+    answer: str
+
+
+class EvaluateSessionRequest(BaseModel):
+    session_id: str
+    answers: List[SessionAnswer]
+
+
 class AnswerFeedback(BaseModel):
     model_config = {"protected_namespaces": ()}
 
