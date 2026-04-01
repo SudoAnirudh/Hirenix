@@ -120,7 +120,7 @@ export default function AccountPage() {
     }),
   }));
   return (
-    <div className="animate-fade-up max-w-[1200px] mx-auto space-y-10 pb-20 relative">
+    <div className="animate-fade-up w-full mx-auto space-y-10 pb-20 relative">
       {/* Decorative Orbs */}
       <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full blur-[100px] bg-[#7C9ADD]/10 pointer-events-none -z-10" />
       <div className="absolute top-1/2 -right-20 w-96 h-96 rounded-full blur-[120px] bg-[#B8C1EC]/10 pointer-events-none -z-10" />

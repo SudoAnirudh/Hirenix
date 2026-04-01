@@ -6,7 +6,6 @@ import {
   Github,
   Briefcase,
   Mic,
-  TrendingUp,
   ArrowRight,
   User,
   Clock,
@@ -21,22 +20,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-interface UserSession {
-  user?: {
-    email?: string;
-    user_metadata?: {
-      full_name?: string;
-      plan?: string;
-    };
-  };
-}
-
-interface ProgressData {
-  ats_trend?: any[];
-  resume_evolution_score?: number | string;
-  interview_trend?: any[];
-  github_trend?: any[];
-}
+const QUOTES = [
+  "The only way to do great work is to love what you do. — Steve Jobs",
+  "Success is not final, failure is not fatal: it is the courage to continue that counts. — Winston Churchill",
+  "Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work. — Steve Jobs",
+  "Believe you can and you're halfway there. — Theodore Roosevelt",
+  "Expertise is not a destination, it's a journey of continuous improvement.",
+  "The future belongs to those who learn more skills and combine them in creative ways.",
+  "Don't wait for opportunity. Create it.",
+  "Code is like humor. When you have to explain it, it’s bad.",
+  "Infrastructure as Code, Career as an Algorithm.",
+  "Your next big break is just one optimization away.",
+];
 
 interface UserSession {
   user?: {
@@ -49,10 +44,10 @@ interface UserSession {
 }
 
 interface ProgressData {
-  ats_trend?: any[];
+  ats_trend?: Record<string, unknown>[];
   resume_evolution_score?: number | string;
-  interview_trend?: any[];
-  github_trend?: any[];
+  interview_trend?: Record<string, unknown>[];
+  github_trend?: Record<string, unknown>[];
 }
 
 export default function DashboardPage() {
@@ -60,16 +55,20 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [progressLoading, setProgressLoading] = useState(true);
+  const [quote, setQuote] = useState<string>("");
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const sess = await getSession();
+        const [sess, prog] = await Promise.all([
+          getSession(),
+          getProgress().catch(() => null),
+        ]);
         setSession(sess);
-        setLoading(false);
+        setProgress(prog as ProgressData);
 
-        const prog = (await getProgress()) as ProgressData;
-        setProgress(prog);
+        // Set random quote
+        setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
@@ -79,6 +78,14 @@ export default function DashboardPage() {
     }
     fetchData();
   }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good Morning";
+    if (hour >= 12 && hour < 17) return "Good Afternoon";
+    if (hour >= 17 && hour < 21) return "Good Evening";
+    return "Good Night";
+  };
 
   const fullName = session?.user?.user_metadata?.full_name || "Guest User";
   const email = session?.user?.email || "Not signed in";
@@ -132,11 +139,13 @@ export default function DashboardPage() {
             Career Command Center
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight text-[#1E293B] font-heading">
-            Good Morning,{" "}
+            {getGreeting()},{" "}
             <span className="text-indigo-500">{fullName.split(" ")[0]}</span>
           </h1>
-          <p className="text-[#64748B] text-lg max-w-xl leading-relaxed italic">
-            &quot;Your career path is being optimized by Hirenix AI.&quot;
+          <p className="text-[#64748B] text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
+            &quot;
+            {quote || "Your career path is being optimized by Hirenix AI."}
+            &quot;
           </p>
         </div>
 

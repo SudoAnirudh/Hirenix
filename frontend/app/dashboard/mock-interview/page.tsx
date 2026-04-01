@@ -253,7 +253,7 @@ function MockInterviewPageContent() {
           style={{ animationDelay: "-4s" }}
         ></div>
 
-        <main className="relative z-10 pt-32 pb-32 px-6 max-w-5xl mx-auto">
+        <main className="relative z-10 pt-32 pb-32 px-6 w-full mx-auto">
           {/* Setup Header */}
           <div className="text-center mb-20 animate-fade-up">
             <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/60 border border-white shadow-sm mb-8">
@@ -580,7 +580,7 @@ function MockInterviewPageContent() {
           style={{ animationDelay: "-4s" }}
         ></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto w-full">
+        <div className="relative z-10 w-full mx-auto">
           <InterviewView
             session={session}
             onComplete={handleComplete}
@@ -601,7 +601,7 @@ function MockInterviewPageContent() {
         style={{ animationDelay: "-4s" }}
       ></div>
 
-      <div className="relative z-10 max-w-5xl mx-auto">
+      <div className="relative z-10 w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-20">
           <div className="w-24 h-24 rounded-[36px] flex items-center justify-center mx-auto mb-10 bg-[#98C9A3] text-white shadow-2xl shadow-[#98C9A3]/40 transform hover:rotate-6 transition-transform">
