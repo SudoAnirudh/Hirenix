@@ -10,17 +10,11 @@ import {
   Mic,
   TrendingUp,
   Zap,
-  Shield,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { LandingNavbar } from "@/components/landing/LandingNavbar";
+import { Footer } from "@/components/landing/Footer";
 
 const features = [
   {
@@ -90,40 +84,7 @@ export default function LandingPage() {
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#B8C1EC]/5 blur-[100px] rounded-full" />
       </div>
 
-      <nav className="fixed top-6 inset-x-0 w-full z-50 px-6">
-        <div className="max-w-7xl mx-auto h-20 rounded-[32px] bg-white/40 backdrop-blur-xl border border-white/60 shadow-glass flex items-center justify-between px-10">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-[#7C9ADD] flex items-center justify-center shadow-lg shadow-[#7C9ADD]/20">
-              <Brain className="text-white" size={24} />
-            </div>
-            <span className="font-display font-black text-2xl text-[#2D3748] tracking-tighter">
-              HIRENIX
-            </span>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-8"
-          >
-            <Link
-              href="/auth/login"
-              className="text-sm font-bold text-[#718096] hover:text-[#2D3748] transition-colors"
-            >
-              Login
-            </Link>
-            <Link href="/auth/register">
-              <Button className="rounded-2xl bg-[#7C9ADD] text-white px-8 h-12 font-bold shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 transition-all active:scale-95">
-                Join Now
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </nav>
+      <LandingNavbar />
 
       <section className="relative z-10 pt-56 pb-32 px-6 text-center">
         <motion.div
@@ -147,7 +108,7 @@ export default function LandingPage() {
             className="font-display font-bold text-6xl md:text-8xl mb-10 tracking-tighter leading-[0.9] text-[#2D3748]"
           >
             Design your{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#7C9ADD] to-[#98C9A3]">
+            <span className="text-transparent bg-clip-text bg-linear-to-br from-[#7C9ADD] to-[#98C9A3]">
               dream career
             </span>
             <br />
@@ -222,7 +183,7 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-display font-bold mb-4 text-[#2D3748] tracking-tight">
                   {title}
                 </h3>
-                <p className="text-base leading-relaxed font-medium text-[#718096]">
+                <p className="leading-relaxed font-medium text-[#718096]">
                   {desc}
                 </p>
               </motion.div>
@@ -238,7 +199,7 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="max-w-6xl mx-auto relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#7C9ADD]/20 to-[#98C9A3]/20 blur-[100px] -z-10" />
+          <div className="absolute inset-0 bg-linear-to-br from-[#7C9ADD]/20 to-[#98C9A3]/20 blur-[100px] -z-10" />
           <div className="relative p-16 md:p-24 rounded-[64px] bg-white/40 border border-white/60 backdrop-blur-2xl shadow-glass text-center">
             <div className="w-20 h-20 rounded-[28px] bg-white shadow-lg flex items-center justify-center mx-auto mb-10">
               <TrendingUp className="text-[#98C9A3]" size={32} />
@@ -262,31 +223,7 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      <footer className="relative z-10 py-20 px-6 mt-20 border-t border-[#E2E8F0] bg-white/40 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
-          <div className="flex flex-col gap-2 items-center md:items-start">
-            <span className="font-display font-bold text-2xl text-[#2D3748]">
-              HIRENIX
-            </span>
-            <p className="text-sm font-medium text-[#A0AEC0]">
-              The Modern AI Career OS
-            </p>
-          </div>
-          <p className="text-sm font-bold text-[#A0AEC0] uppercase tracking-[0.2em]">
-            © {new Date().getFullYear()} HIRENIX STUDIO. ALL RIGHTS RESERVED.
-          </p>
-          <div className="flex gap-4">
-            {["Next.js", "Supabase", "FastAPI"].map((tech) => (
-              <span
-                key={tech}
-                className="text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full bg-white/40 text-[#718096] border border-white/60 backdrop-blur-sm"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }
