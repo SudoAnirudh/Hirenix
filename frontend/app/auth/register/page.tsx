@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { signUp } from "@/lib/auth";
-import { Brain } from "lucide-react";
+import { Brain, Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -152,9 +152,16 @@ export default function RegisterPage() {
               id="reg-submit"
               type="submit"
               disabled={loading}
-              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm font-medium disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] focus-visible:ring-offset-2"
             >
-              {loading ? "Creating account..." : "Create Free Account"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Free Account"
+              )}
             </button>
           </form>
 
