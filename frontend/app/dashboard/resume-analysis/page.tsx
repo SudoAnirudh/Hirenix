@@ -52,16 +52,19 @@ export default function ResumeAnalysisPage() {
             score={result.ats_score}
             subtitle="Overall ATS compatibility"
           />
-          <div className="glass-card p-8 flex flex-col justify-center rounded-[32px] border border-white/60 bg-white/40 shadow-glass">
-            <h3 className="font-display font-bold text-xs uppercase tracking-widest text-[#A0AEC0] mb-3">
-              Resume ID
-            </h3>
-            <p className="text-sm font-mono font-bold text-[#2D3748] break-all">
-              {result.resume_id ?? "Not available"}
-            </p>
-            <p className="text-xs mt-4 font-medium text-[#718096]">
-              Use this ID for JD matching if you choose the Resume ID workflow.
-            </p>
+          <div className="p-px bg-white/40 rounded-3xl group shadow-premium hover:shadow-premium-hover transition-all duration-700">
+            <div className="bg-linear-to-r from-indigo-500/10 to-violet-500/10 rounded-3xl p-10 backdrop-blur-xl border border-white/60 relative overflow-hidden">
+              <h3 className="font-display font-bold text-xs uppercase tracking-widest text-[#A0AEC0] mb-3">
+                Resume ID
+              </h3>
+              <p className="text-sm font-mono font-bold text-[#2D3748] break-all">
+                {result.resume_id ?? "Not available"}
+              </p>
+              <p className="text-xs mt-4 font-medium text-[#718096]">
+                Use this ID for JD matching if you choose the Resume ID
+                workflow.
+              </p>
+            </div>
           </div>
 
           {/* Breakdown */}
@@ -78,11 +81,11 @@ export default function ResumeAnalysisPage() {
                       <span>{key.replace(/_/g, " ")}</span>
                       <span className="text-[#2D3748]">{Math.round(val)}%</span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden bg-slate-200/50 p-[1px]">
+                    <div className="h-2 rounded-full overflow-hidden bg-slate-200/50 p-px">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${Number(val)}%` }}
-                        className="h-full rounded-full bg-gradient-to-r from-[#7C9ADD] to-[#98C9A3]"
+                        className="h-full rounded-full bg-linear-to-r from-[#7C9ADD] to-[#98C9A3]"
                       />
                     </div>
                   </div>
@@ -117,9 +120,9 @@ export default function ResumeAnalysisPage() {
                   key={i}
                   className="flex gap-4 text-sm font-medium text-[#718096] leading-relaxed group"
                 >
-                  <span className="flex-shrink-0 w-6 h-6 rounded-lg bg-[#7C9ADD]/10 text-[#7C9ADD] flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform">
+                  <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
                     {i + 1}
-                  </span>
+                  </div>
                   {tip}
                 </li>
               ))}

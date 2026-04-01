@@ -56,7 +56,7 @@ export default function GitHubAnalysisPage() {
     : [];
 
   return (
-    <div className="animate-fade-up max-w-4xl">
+    <div className="animate-fade-up w-full">
       <h1 className="font-display font-bold text-3xl mb-2">
         GitHub Intelligence
       </h1>

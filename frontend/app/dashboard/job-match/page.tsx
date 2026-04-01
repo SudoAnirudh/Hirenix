@@ -71,7 +71,6 @@ export default function JobMatchPage() {
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobs, setJobs] = useState<ScrapedJob[]>([]);
   const [error, setError] = useState("");
-  const [jobsError, setJobsError] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdFile, setJdFile] = useState<File | null>(null);
 
@@ -129,7 +128,7 @@ export default function JobMatchPage() {
   }
 
   return (
-    <div className="flex flex-col gap-12 max-w-6xl mx-auto w-full pb-20 px-4 md:px-0">
+    <div className="flex flex-col gap-12 w-full mx-auto pb-20 px-4 md:px-0">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -145,7 +144,7 @@ export default function JobMatchPage() {
           </div>
           <h1 className="font-display font-black text-4xl md:text-6xl tracking-tight text-[#2D3748]">
             Job{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7C9ADD] to-[#9F7AEA]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#7C9ADD] to-[#9F7AEA]">
               Matching
             </span>
           </h1>
@@ -221,7 +220,7 @@ export default function JobMatchPage() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: 10 }}
-                          className="p-8 rounded-[2rem] bg-gradient-to-br from-white to-[#F8FAFC] border border-white/80 shadow-inner group transition-all hover:bg-white"
+                          className="p-8 rounded-4xl bg-linear-to-br from-white to-[#F8FAFC] border border-white/80 shadow-inner group transition-all hover:bg-white"
                         >
                           <span className="text-[10px] font-bold text-[#718096] uppercase tracking-wider block mb-4">
                             Upload Master Resume (PDF)
@@ -342,7 +341,7 @@ export default function JobMatchPage() {
                   id="jm-match-btn"
                   onClick={handleMainAction}
                   disabled={loading}
-                  className="flex-1 h-16 rounded-2xl bg-gradient-to-r from-[#7C9ADD] to-[#6366F1] text-white font-black text-[12px] uppercase tracking-[0.25em] shadow-xl shadow-[#7C9ADD]/20 hover:shadow-2xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 group"
+                  className="flex-1 h-16 rounded-2xl bg-linear-to-r from-[#7C9ADD] to-[#6366F1] text-white font-black text-[12px] uppercase tracking-[0.25em] shadow-xl shadow-[#7C9ADD]/20 hover:shadow-2xl hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3 group"
                 >
                   {loading ? (
                     <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -377,14 +376,14 @@ export default function JobMatchPage() {
               >
                 {/* Primary Scores */}
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="glass-card p-8 rounded-[2.5rem] bg-white/80 border border-white flex flex-col items-center">
+                  <div className="glass-card p-8 rounded-4xl bg-white/80 border border-white flex flex-col items-center">
                     <MatchGauge
                       score={result.match_score}
                       label="Match Score"
                       size={160}
                     />
                   </div>
-                  <div className="glass-card p-8 rounded-[2.5rem] bg-white/80 border border-white flex flex-col items-center">
+                  <div className="glass-card p-8 rounded-4xl bg-white/80 border border-white flex flex-col items-center">
                     <MatchGauge
                       score={result.semantic_similarity}
                       label="Profile Similarity"
@@ -394,7 +393,7 @@ export default function JobMatchPage() {
                 </div>
 
                 {/* Fit Verdict */}
-                <div className="glass-card p-8 rounded-[2.5rem] bg-[#2D3748] text-white overflow-hidden relative group/verdict">
+                <div className="glass-card p-8 rounded-4xl bg-[#2D3748] text-white overflow-hidden relative group/verdict">
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
                     <CheckCircle size={60} />
                   </div>
@@ -409,7 +408,7 @@ export default function JobMatchPage() {
                 </div>
 
                 {/* Quick Strategy */}
-                <div className="glass-card p-8 rounded-[2.5rem] bg-white/80 border border-white">
+                <div className="glass-card p-8 rounded-4xl bg-white/80 border border-white">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#A0AEC0] mb-8 flex items-center gap-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#9F7AEA]" />
                     Strategic Wins
@@ -458,7 +457,7 @@ export default function JobMatchPage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-12"
         >
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent w-full" />
+          <div className="h-px bg-linear-to-r from-transparent via-gray-200 to-transparent w-full" />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <SkillGapList skillGap={result.skill_gap} />
@@ -589,7 +588,7 @@ export default function JobMatchPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.05 }}
                 key={`${job.apply_url}-${idx}`}
-                className="p-8 rounded-[2.5rem] bg-white/70 border border-white/80 hover:border-[#7C9ADD]/40 hover:shadow-2xl transition-all group/card relative overflow-hidden"
+                className="p-8 rounded-4xl bg-white/70 border border-white/80 hover:border-[#7C9ADD]/40 hover:shadow-2xl transition-all group/card relative overflow-hidden"
               >
                 <div className="flex flex-col h-full justify-between gap-8 relative z-10">
                   <div>
@@ -652,7 +651,7 @@ export default function JobMatchPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="p-8 rounded-[2.5rem] bg-gray-100 animate-pulse h-64 border border-gray-200"
+                className="p-8 rounded-4xl bg-gray-100 animate-pulse h-64 border border-gray-200"
               />
             ))}
           </div>
@@ -727,7 +726,7 @@ export default function JobMatchPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
-              className="p-8 rounded-[2.5rem] bg-white border border-white hover:border-[#7C9ADD]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-6 relative overflow-hidden"
+              className="p-8 rounded-4xl bg-white border border-white hover:border-[#7C9ADD]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-6 relative overflow-hidden"
             >
               <div
                 className={`w-16 h-16 rounded-2xl ${portal.bg} flex items-center justify-center transition-transform group-hover:scale-110`}

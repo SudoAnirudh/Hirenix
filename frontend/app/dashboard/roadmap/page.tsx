@@ -203,7 +203,7 @@ export default function RoadmapPage() {
   if (!data) return null;
 
   return (
-    <div className="animate-fade-up max-w-5xl mx-auto space-y-10 pb-20">
+    <div className="animate-fade-up w-full mx-auto space-y-10 pb-20">
       {/* Header & Selection */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-4 flex-1">
