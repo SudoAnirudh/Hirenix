@@ -8,7 +8,7 @@ import {
   signIn,
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Brain } from "lucide-react";
+import { Eye, EyeOff, Brain, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -187,10 +187,17 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleForgotPassword}
                   disabled={resetLoading}
-                  className="text-xs font-medium hover:underline underline-offset-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="text-xs font-medium hover:underline underline-offset-4 disabled:opacity-60 disabled:cursor-not-allowed flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] rounded-sm"
                   style={{ color: "var(--indigo)" }}
                 >
-                  {resetLoading ? "Sending..." : "Forgot password?"}
+                  {resetLoading ? (
+                    <>
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Forgot password?"
+                  )}
                 </button>
               </div>
               <div className="relative">
@@ -206,7 +213,9 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  aria-label={showPass ? "Hide password" : "Show password"}
+                  aria-pressed={showPass}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] rounded-sm"
                   style={{ color: "var(--text-muted)" }}
                 >
                   {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -218,9 +227,16 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] focus-visible:ring-offset-2"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 
