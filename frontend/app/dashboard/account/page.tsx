@@ -20,7 +20,7 @@ import {
   Map as MapPin,
 } from "lucide-react";
 import { getSession, signOut } from "@/lib/auth";
-import { getProfile, getProgress } from "@/lib/api";
+import { getProgress } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -40,22 +40,21 @@ interface UserSession {
 
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(null);
-  const [progress, setProgress] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [progress, setProgress] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [sess, prog, prof] = await Promise.all([
+        const [sess, prog] = await Promise.all([
           getSession(),
           getProgress().catch(() => null),
-          getProfile().catch(() => null),
         ]);
         setSession(sess);
         setProgress(prog);
-        setProfile(prof);
       } catch (error) {
         console.error("Error fetching account data:", error);
       } finally {
@@ -67,7 +66,7 @@ export default function AccountPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/");
+    router.push("/auth/login");
   };
 
   if (loading) {
