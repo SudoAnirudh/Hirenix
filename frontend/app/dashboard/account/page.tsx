@@ -38,11 +38,24 @@ interface UserSession {
   };
 }
 
+interface TrendItem {
+  date: string;
+  score: number;
+  role?: string;
+  username?: string;
+  gpi?: number;
+}
+
+interface ProgressData {
+  ats_trend?: TrendItem[];
+  interview_trend?: TrendItem[];
+  github_trend?: TrendItem[];
+  resume_evolution_score?: number;
+}
+
 export default function AccountPage() {
   const [session, setSession] = useState<UserSession | null>(null);
-  const [progress, setProgress] = useState<Record<string, unknown> | null>(
-    null,
-  );
+  const [progress, setProgress] = useState<ProgressData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -51,12 +64,12 @@ export default function AccountPage() {
       try {
         const [sess, prog] = await Promise.all([
           getSession(),
-          getProgress().catch(() => null),
+          getProgress().catch(() => null) as Promise<ProgressData | null>,
         ]);
         setSession(sess);
         setProgress(prog);
-      } catch (error) {
-        console.error("Error fetching account data:", error);
+      } catch (e: unknown) {
+        console.error("Error fetching account data:", e);
       } finally {
         setLoading(false);
       }
@@ -83,7 +96,7 @@ export default function AccountPage() {
 
   // Sort and combine activity from trends
   const rawActivities = [
-    ...(progress?.ats_trend || []).map((t: any) => ({
+    ...(progress?.ats_trend || []).map((t: TrendItem) => ({
       action: "Resume Analyzed",
       date: t.date,
       score: t.score,
@@ -91,7 +104,7 @@ export default function AccountPage() {
       color: "text-amber-500",
       bg: "bg-amber-50",
     })),
-    ...(progress?.interview_trend || []).map((t: any) => ({
+    ...(progress?.interview_trend || []).map((t: TrendItem) => ({
       action: `Interview: ${t.role}`,
       date: t.date,
       score: t.score,
@@ -99,7 +112,7 @@ export default function AccountPage() {
       color: "text-emerald-500",
       bg: "bg-emerald-50",
     })),
-    ...(progress?.github_trend || []).map((t: any) => ({
+    ...(progress?.github_trend || []).map((t: TrendItem) => ({
       action: `GitHub: ${t.username}`,
       date: t.date,
       score: t.gpi,
