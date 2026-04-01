@@ -29,7 +29,7 @@ export default function ResumeAnalysisPage() {
   });
 
   return (
-    <div className="animate-fade-up max-w-4xl">
+    <div className="animate-fade-up w-full">
       <h1 className="font-display font-bold text-4xl mb-3 text-[#2D3748] tracking-tight">
         Resume Analysis
       </h1>
