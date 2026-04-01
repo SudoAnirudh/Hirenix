@@ -15,6 +15,8 @@ from models.interview import (
     SubmitAnswerRequest,
     AnswerFeedback,
     SaveProctorReportRequest,
+    EvaluateSessionRequest,
+    SessionSummaryResponse,
 )
 import json
 
@@ -205,6 +207,77 @@ async def submit_answer(
             )
 
     return feedback
+
+
+@router.post("/evaluate-session", response_model=SessionSummaryResponse)
+async def evaluate_session(
+    payload: EvaluateSessionRequest,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """
+    Evaluate the full interview session after the candidate completes all questions.
+    Returns per-answer feedback plus an overall summary (no per-question UI required).
+    """
+    session_rows = (
+        db.table("interview_sessions")
+        .select("*")
+        .eq("id", payload.session_id)
+        .eq("user_id", user["user_id"])
+        .limit(1)
+        .execute()
+    )
+    session_data = (session_rows.data or [None])[0]
+    if not session_data:
+        raise HTTPException(status_code=404, detail="Interview session not found.")
+
+    questions = _get_session_questions(session_data, payload.session_id)
+    if not questions:
+        raise HTTPException(status_code=400, detail="No questions found for session.")
+
+    by_id = {q["question_id"]: q for q in questions if "question_id" in q}
+    feedback_items: List[AnswerFeedback] = []
+
+    for item in payload.answers:
+        q = by_id.get(item.question_id)
+        if not q:
+            continue
+        fb = await evaluate_answer(
+            question_id=item.question_id,
+            question=q["question"],
+            answer=item.answer,
+            category=q.get("category", "technical"),
+            expected_topics=q.get("expected_topics", []) or [],
+        )
+        feedback_items.append(fb)
+
+    if not feedback_items:
+        raise HTTPException(status_code=400, detail="No valid answers to evaluate.")
+
+    scores_0_10 = [float(f.score) for f in feedback_items if f.score is not None]
+    overall_score = (sum(scores_0_10) / len(scores_0_10)) * 10 if scores_0_10 else 0.0
+
+    overall_strengths = list({s for f in feedback_items for s in (f.strengths or [])})[:6]
+    overall_improvements = list({s for f in feedback_items for s in (f.improvements or [])})[:6]
+
+    # Best-effort persistence (won't fail request if schema differs)
+    try:
+        db.table("interview_sessions").update(
+            {
+                "feedback": json.dumps([f.model_dump() for f in feedback_items]),
+                "overall_score": overall_score,
+            }
+        ).eq("id", payload.session_id).execute()
+    except Exception as e:
+        logger.warning(f"interview_sessions update failed (evaluate-session): {e}")
+
+    return SessionSummaryResponse(
+        session_id=payload.session_id,
+        overall_score=overall_score,
+        feedback=feedback_items,
+        overall_strengths=overall_strengths,
+        overall_improvements=overall_improvements,
+    )
 
 
 @router.post("/submit-answer-stream")

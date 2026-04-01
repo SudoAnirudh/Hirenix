@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { submitAnswer } from "@/lib/api";
+import { useRef, useState, useEffect, useMemo } from "react";
+import { evaluateInterviewSession } from "@/lib/api";
 import {
   ChevronRight,
   CheckCircle,
@@ -8,8 +8,23 @@ import {
   Brain,
   TrendingUp,
   Sparkles,
+  Mic,
+  MicOff,
 } from "lucide-react";
 import { motion } from "framer-motion";
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: unknown) => void) | null;
+  onerror: ((event: unknown) => void) | null;
+  onend: (() => void) | null;
+};
+
+type SpeechRecognitionCtorLike = new () => SpeechRecognitionLike;
 
 interface Question {
   question_id: string;
@@ -30,6 +45,7 @@ interface Session {
 }
 
 interface Feedback {
+  question_id: string;
   score: number;
   overall_score: number;
   clarity_score: number;
@@ -44,57 +60,254 @@ interface Feedback {
   coaching_tip: string;
 }
 
-interface Props {
-  session: Session;
-  proctoringEnabled: boolean;
-  onComplete: (scores: Feedback[]) => void;
+export interface SessionSummary {
+  session_id: string;
+  overall_score: number; // 0-100
+  feedback: Feedback[];
+  overall_strengths: string[];
+  overall_improvements: string[];
+  terminated?: boolean;
+  termination_reason?: string;
+  malpractice_warnings?: number;
 }
 
-export default function InterviewPanel({
-  session,
-  proctoringEnabled,
-  onComplete,
-}: Props) {
+interface Props {
+  session: Session;
+  onComplete: (summary: SessionSummary) => void;
+}
+
+export default function InterviewPanel({ session, onComplete }: Props) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [allFeedback, setAllFeedback] = useState<Feedback[]>([]);
+  const [answersByQuestionId, setAnswersByQuestionId] = useState<
+    Record<string, string>
+  >({});
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per question
+
+  const isVoiceMode = session.answer_mode === "voice";
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(true);
+
+  const [malpracticeWarnings, setMalpracticeWarnings] = useState(0);
+  const [terminated, setTerminated] = useState(false);
+  const [needsFullscreen, setNeedsFullscreen] = useState(false);
+  const malpracticeEndRequestedRef = useRef(false);
+
+  const SpeechRecognitionCtor = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const w = window as unknown as {
+      SpeechRecognition?: SpeechRecognitionCtorLike;
+      webkitSpeechRecognition?: SpeechRecognitionCtorLike;
+    };
+    return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+  }, []);
 
   const q = session.questions[currentIdx];
   const isLast = currentIdx === session.questions.length - 1;
 
+  async function requestFullscreen() {
+    try {
+      if (typeof document === "undefined") return;
+      if (document.fullscreenElement) return;
+      await document.documentElement.requestFullscreen();
+      setNeedsFullscreen(false);
+    } catch {
+      setNeedsFullscreen(true);
+    }
+  }
+
+  function bumpMalpractice(reason: string) {
+    setMalpracticeWarnings((prev) => {
+      const next = prev + 1;
+      if (next >= 3 && !malpracticeEndRequestedRef.current) {
+        malpracticeEndRequestedRef.current = true;
+        setTerminated(true);
+        void handleFinish(true, `Session ended: ${reason}`);
+      }
+      return next;
+    });
+  }
+
   useEffect(() => {
-    if (feedback || submitting) return;
+    // Best-effort: fullscreen must be entered to continue.
+    void requestFullscreen();
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        bumpMalpractice("tab switch detected");
+      }
+    };
+    const onBlur = () => {
+      bumpMalpractice("window focus lost");
+    };
+    const onFullscreen = () => {
+      const inFullscreen = !!document.fullscreenElement;
+      setNeedsFullscreen(!inFullscreen);
+      if (!inFullscreen) {
+        bumpMalpractice("fullscreen exited");
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", onBlur);
+    document.addEventListener("fullscreenchange", onFullscreen);
+
+    // Initialize fullscreen state
+    setNeedsFullscreen(!document.fullscreenElement);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("fullscreenchange", onFullscreen);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    setAnswer(answersByQuestionId[q.question_id] ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q.question_id]);
+
+  useEffect(() => {
+    if (!isVoiceMode) return;
+    setSpeechSupported(!!SpeechRecognitionCtor);
+  }, [isVoiceMode, SpeechRecognitionCtor]);
+
+  useEffect(() => {
+    if (!isVoiceMode || !SpeechRecognitionCtor) return;
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onresult = (event: unknown) => {
+      const e = event as {
+        resultIndex: number;
+        results: ArrayLike<{
+          isFinal: boolean;
+          0?: { transcript?: string };
+        }>;
+      };
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const result = e.results[i];
+        const text = result?.[0]?.transcript ?? "";
+        if (result.isFinal) finalTranscript += text;
+        else interimTranscript += text;
+      }
+
+      const transcript = (finalTranscript + interimTranscript).trim();
+      if (!transcript) return;
+      setAnswer(transcript);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    return () => {
+      try {
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+        recognition.stop();
+      } catch {
+        // ignore
+      } finally {
+        recognitionRef.current = null;
+      }
+    };
+  }, [isVoiceMode, SpeechRecognitionCtor]);
+
+  function stopListening() {
+    try {
+      recognitionRef.current?.stop();
+    } catch {
+      // ignore
+    } finally {
+      setIsListening(false);
+    }
+  }
+
+  function toggleListening() {
+    if (!isVoiceMode || !speechSupported) return;
+    if (isListening) {
+      stopListening();
+      return;
+    }
+    try {
+      recognitionRef.current?.start();
+      setIsListening(true);
+    } catch {
+      setIsListening(false);
+    }
+  }
+
+  useEffect(() => {
+    if (submitting) return;
 
     if (timeLeft <= 0) {
-      if (!feedback && !submitting) {
-        void handleSubmit(true);
-      }
+      void handleNext(true);
       return;
     }
 
     const id = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeLeft, feedback, submitting]);
+  }, [timeLeft, submitting]);
 
-  async function handleSubmit(autoSubmit = false) {
-    let finalAnswer = answer.trim();
-    if (!finalAnswer && !autoSubmit) return;
-    if (!finalAnswer && autoSubmit) finalAnswer = "No answer provided.";
+  function persistCurrentAnswer(fallbackIfEmpty?: string) {
+    const trimmed = answer.trim();
+    const finalAnswer = trimmed || fallbackIfEmpty || "";
+    setAnswersByQuestionId((prev) => ({
+      ...prev,
+      [q.question_id]: finalAnswer,
+    }));
+  }
+
+  async function handleFinish(
+    terminatedForMalpractice = false,
+    reason?: string,
+  ) {
+    if (isListening) stopListening();
+    persistCurrentAnswer("No answer provided.");
+
+    const payloadAnswers = session.questions.map((qq) => ({
+      question_id: qq.question_id,
+      answer: (answersByQuestionId[qq.question_id] ?? "").trim(),
+    }));
 
     setSubmitting(true);
     try {
-      const fb = await submitAnswer(
+      const summary = (await evaluateInterviewSession(
         session.session_id,
-        q.question_id,
-        finalAnswer,
-      );
-      const fbTyped = fb as Feedback;
-      setFeedback(fbTyped);
-      setAllFeedback((prev) => [...prev, fbTyped]);
+        payloadAnswers.map((a) => ({
+          ...a,
+          answer: a.answer || "No answer provided.",
+        })),
+      )) as SessionSummary;
+      onComplete({
+        ...summary,
+        terminated: terminatedForMalpractice,
+        termination_reason: terminatedForMalpractice ? reason : undefined,
+        malpractice_warnings: terminatedForMalpractice
+          ? malpracticeWarnings
+          : 0,
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -102,14 +315,11 @@ export default function InterviewPanel({
     }
   }
 
-  function handleNext() {
-    if (isLast) {
-      onComplete(allFeedback);
-      return;
-    }
+  function handleNext(autoAdvance = false) {
+    if (isListening) stopListening();
+    persistCurrentAnswer(autoAdvance ? "No answer provided." : undefined);
+    if (isLast) return;
     setCurrentIdx((i) => i + 1);
-    setAnswer("");
-    setFeedback(null);
     setTimeLeft(120);
   }
 
@@ -126,7 +336,33 @@ export default function InterviewPanel({
   const isUrgent = timeLeft <= 30;
 
   return (
-    <div className="flex flex-col gap-10 animate-fade-up max-w-5xl mx-auto w-full pb-20 px-4 mt-8">
+    <div className="flex flex-col gap-10 animate-fade-up max-w-6xl lg:max-w-7xl mx-auto w-full pb-20 px-4 mt-8">
+      {needsFullscreen && !terminated && (
+        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="glass-card w-full max-w-xl p-10 rounded-[40px] bg-white/70 border border-white shadow-2xl">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#718096] mb-3">
+              Fullscreen required
+            </div>
+            <h3 className="font-display font-black text-3xl tracking-tight text-[#17232E] mb-4">
+              Enter fullscreen to continue
+            </h3>
+            <p className="text-sm font-body text-[#4A5568] leading-relaxed font-medium mb-8">
+              This is a proctored interview. Leaving fullscreen or switching
+              tabs triggers warnings.
+            </p>
+            <div className="flex gap-4 justify-end">
+              <button
+                type="button"
+                onClick={() => void requestFullscreen()}
+                className="px-10 py-4 rounded-[28px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white font-display font-black shadow-2xl hover:scale-[1.01] active:scale-[0.98] transition-all"
+              >
+                Enter fullscreen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header / Progress Area */}
       <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
         <div className="flex-1">
@@ -160,19 +396,32 @@ export default function InterviewPanel({
         </div>
 
         {/* Timer */}
-        {!feedback && (
-          <div
-            className={`flex items-center gap-3 px-8 py-5 rounded-[24px] text-sm font-bold transition-all duration-500 border border-white/60 ${
-              isUrgent
-                ? "animate-pulse bg-red-50 text-red-500 shadow-lg shadow-red-200"
-                : "bg-white/40 backdrop-blur-md text-[#4A5568] shadow-glass"
-            }`}
-          >
-            <Timer
-              size={20}
-              className={isUrgent ? "text-red-500" : "text-[#7C9ADD]"}
-            />
-            <span className="tabular-nums tracking-wider">{timeString}</span>
+        {true && (
+          <div className="flex items-center gap-4 flex-wrap justify-end">
+            <div
+              className={`flex items-center gap-3 px-8 py-5 rounded-[24px] text-sm font-bold transition-all duration-500 border border-white/60 ${
+                isUrgent
+                  ? "animate-pulse bg-red-50 text-red-500 shadow-lg shadow-red-200"
+                  : "bg-white/40 backdrop-blur-md text-[#4A5568] shadow-glass"
+              }`}
+            >
+              <Timer
+                size={20}
+                className={isUrgent ? "text-red-500" : "text-[#7C9ADD]"}
+              />
+              <span className="tabular-nums tracking-wider">{timeString}</span>
+            </div>
+
+            <div
+              className={`flex items-center gap-2 px-6 py-4 rounded-[24px] text-[11px] font-black uppercase tracking-[0.25em] border ${
+                malpracticeWarnings > 0
+                  ? "bg-amber-50 text-amber-700 border-amber-100"
+                  : "bg-white/40 text-[#718096] border-white/60"
+              }`}
+            >
+              Warnings:{" "}
+              <span className="tabular-nums">{malpracticeWarnings}</span>/3
+            </div>
           </div>
         )}
       </div>
@@ -199,7 +448,12 @@ export default function InterviewPanel({
               </span>
             </div>
 
-            <h3 className="font-display font-bold text-3xl md:text-5xl leading-tight mb-10 relative z-10 text-[#2D3748] tracking-tighter text-balance">
+            <h3
+              className="font-display font-bold text-3xl md:text-5xl leading-tight mb-10 relative z-10 text-[#2D3748] tracking-tighter text-balance select-none"
+              onCopy={(e) => e.preventDefault()}
+              onCut={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
+            >
               {q.question}
             </h3>
 
@@ -249,11 +503,29 @@ export default function InterviewPanel({
                   Your Technical Response
                 </span>
               </div>
-              {session.answer_mode !== "text" && (
-                <span className="text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 animate-pulse">
-                  {session.answer_mode} Mode Active
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {session.answer_mode !== "text" && (
+                  <span className="text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 animate-pulse">
+                    {session.answer_mode} Mode Active
+                  </span>
+                )}
+                {isVoiceMode && (
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    disabled={!speechSupported || submitting}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${
+                      isListening
+                        ? "bg-red-50 text-red-600 border-red-100"
+                        : "bg-white/60 text-[#2D3748] border-white/60 hover:bg-white/80"
+                    } disabled:opacity-50`}
+                    aria-pressed={isListening}
+                  >
+                    {isListening ? <MicOff size={14} /> : <Mic size={14} />}
+                    {isListening ? "Stop" : "Record"}
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="relative group">
@@ -264,26 +536,56 @@ export default function InterviewPanel({
                 placeholder={
                   session.answer_mode === "text"
                     ? "Formulate your narrative here. Balance technical depth with clear structural logic..."
-                    : `Respond via ${session.answer_mode === "audio" ? "voice" : "video"} and Hirenix will capture the transcript...`
+                    : session.answer_mode === "voice"
+                      ? speechSupported
+                        ? "Press Record and speak. Your transcript will appear here..."
+                        : "Voice transcript isn’t supported in this browser. Please type your answer instead."
+                      : "Type your answer here..."
                 }
                 value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                disabled={!!feedback}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setAnswer(next);
+                  setAnswersByQuestionId((prev) => ({
+                    ...prev,
+                    [q.question_id]: next,
+                  }));
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                }}
+                disabled={submitting || needsFullscreen || terminated}
               />
             </div>
 
-            {!feedback && (
-              <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-end gap-4">
+              {!isLast ? (
                 <button
-                  id="submit-answer-btn"
+                  type="button"
                   className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#7C9ADD] to-[#6b89cc] text-white shadow-2xl shadow-[#7C9ADD]/40 hover:scale-[1.02] hover:shadow-indigo-300/50 active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
-                  onClick={() => handleSubmit(false)}
-                  disabled={submitting || !answer.trim()}
+                  onClick={() => handleNext(false)}
+                  disabled={submitting || needsFullscreen || terminated}
                 >
                   <span className="font-display font-black text-2xl tracking-tighter">
-                    {submitting
-                      ? "Analyzing Performance..."
-                      : "Evaluate Performance"}
+                    Next Question
+                  </span>
+                  <ChevronRight
+                    size={28}
+                    className="group-hover:translate-x-1.5 transition-transform"
+                  />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
+                  onClick={() => void handleFinish()}
+                  disabled={submitting || needsFullscreen || terminated}
+                >
+                  <span className="font-display font-black text-2xl tracking-tighter">
+                    {submitting ? "Evaluating Session..." : "Finish & Evaluate"}
                   </span>
                   {!submitting && (
                     <ChevronRight
@@ -292,200 +594,10 @@ export default function InterviewPanel({
                     />
                   )}
                 </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Feedback Section */}
-        {feedback && (
-          <div className="animate-fade-up mt-12 pb-20">
-            <div className="glass-card overflow-hidden rounded-[48px] border border-white/60 bg-white/40 shadow-glass backdrop-blur-2xl relative">
-              {/* Feedback Header */}
-              <div className="p-14 md:p-20 border-b border-white/40 relative">
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-linear-to-br from-[#98C9A3]/10 to-[#7C9ADD]/5 blur-[100px] pointer-events-none" />
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-12 relative z-10">
-                  <div className="flex items-center gap-8">
-                    <div className="w-24 h-24 flex items-center justify-center rounded-[36px] bg-[#98C9A3] text-white shadow-2xl shadow-[#98C9A3]/40 shrink-0 transform hover:rotate-3 transition-transform">
-                      <CheckCircle size={44} strokeWidth={1.5} />
-                    </div>
-                    <div>
-                      <span className="text-[11px] font-black uppercase tracking-[0.4em] text-[#98C9A3] block mb-3">
-                        Hirenix Evaluation
-                      </span>
-                      <h4 className="font-display font-bold text-5xl text-[#2D3748] tracking-tighter leading-none">
-                        Deep Insight
-                      </h4>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center justify-center gap-2 px-14 py-8 rounded-[40px] bg-white/50 shrink-0 border border-white shadow-lg">
-                    <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#718096]">
-                      Impact Score
-                    </span>
-                    <div className="font-display font-bold text-7xl tracking-tighter text-[#2D3748] leading-none">
-                      {feedback.score}
-                      <span className="text-3xl opacity-20 ml-3 font-medium">
-                        /10
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-14 md:p-20">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 xl:gap-24">
-                  {/* Left Column: Scores */}
-                  <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-12">
-                    <div className="flex items-center gap-5">
-                      <span className="w-16 h-0.5 bg-linear-to-r from-[#7C9ADD] to-transparent rounded-full" />
-                      <h5 className="text-[11px] font-black text-[#A0AEC0] uppercase tracking-[0.4em]">
-                        Performance Metrics
-                      </h5>
-                    </div>
-                    <div className="flex flex-col gap-12">
-                      {[
-                        { label: "Clarity", val: feedback.clarity_score },
-                        { label: "Technical", val: feedback.technical_score },
-                        { label: "Depth", val: feedback.depth_score },
-                        {
-                          label: "Communication",
-                          val: feedback.communication_score,
-                        },
-                        {
-                          label: "Problem Solving",
-                          val: feedback.problem_solving_score,
-                        },
-                      ].map(({ label, val }) => (
-                        <div key={label} className="group/metric">
-                          <div className="flex justify-between items-end mb-5">
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#718096] group-hover/metric:text-[#2D3748] transition-colors">
-                              {label}
-                            </span>
-                            <span className="text-2xl font-display font-bold text-[#2D3748] tabular-nums">
-                              {val}
-                              <span className="text-sm text-[#A0AEC0] font-medium ml-1.5 opacity-50">
-                                /10
-                              </span>
-                            </span>
-                          </div>
-                          <div className="h-3 rounded-full overflow-hidden bg-white/40 border border-white shadow-inner p-px">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${val * 10}%` }}
-                              transition={{ duration: 1.5, ease: "easeOut" }}
-                              className="h-full rounded-full shadow-lg"
-                              style={{
-                                background:
-                                  val >= 8
-                                    ? "linear-gradient(90deg, #98C9A3, #7CC18F)"
-                                    : val >= 5
-                                      ? "linear-gradient(90deg, #7C9ADD, #9BA6D5)"
-                                      : "linear-gradient(90deg, #F28C8C, #E57373)",
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Strengths & Improvements */}
-                  <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-12">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      <div className="p-12 rounded-[40px] bg-[#98C9A3]/5 border border-[#98C9A3]/10 group/s hover:bg-[#98C9A3]/10 transition-colors shadow-sm">
-                        <div className="flex items-center gap-5 mb-10">
-                          <div className="p-3.5 rounded-2xl bg-[#98C9A3] text-white shadow-xl shadow-[#98C9A3]/30 group-hover/s:scale-110 group-hover/s:rotate-6 transition-transform">
-                            <CheckCircle size={22} />
-                          </div>
-                          <span className="text-[11px] font-black uppercase tracking-[0.3em] text-[#98C9A3]">
-                            Strengths
-                          </span>
-                        </div>
-                        <ul className="space-y-8">
-                          {feedback.strengths.map((s: string, i: number) => (
-                            <li
-                              key={i}
-                              className="flex gap-5 text-lg font-body font-medium text-[#4A5568] leading-relaxed group-hover/item:translate-x-1 transition-transform"
-                            >
-                              <span className="text-[#98C9A3] font-black text-xl">
-                                ✓
-                              </span>
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="p-12 rounded-[40px] bg-amber-500/5 border border-amber-500/10 group/i hover:bg-amber-500/10 transition-colors shadow-sm">
-                        <div className="flex items-center gap-5 mb-10">
-                          <div className="p-3.5 rounded-2xl bg-amber-500 text-white shadow-xl shadow-amber-500/30 group-hover/i:scale-110 group-hover/i:-rotate-6 transition-transform">
-                            <TrendingUp size={22} />
-                          </div>
-                          <span className="text-[11px] font-black uppercase tracking-[0.3em] text-amber-500">
-                            Growth Areas
-                          </span>
-                        </div>
-                        <ul className="space-y-8">
-                          {feedback.improvements.map((s: string, i: number) => (
-                            <li
-                              key={i}
-                              className="flex gap-5 text-lg font-body font-medium text-[#4A5568] leading-relaxed"
-                            >
-                              <span className="text-amber-500 font-black text-xl">
-                                →
-                              </span>
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-10">
-                      <div className="p-12 rounded-[40px] border border-white bg-white/30 backdrop-blur-md relative overflow-hidden shadow-glass border-opacity-50">
-                        <div className="absolute top-0 right-0 w-48 h-48 bg-[#7C9ADD]/10 blur-[60px] pointer-events-none" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#7C9ADD] block mb-6">
-                          Hirenix Mentorship Insight
-                        </span>
-                        <p className="font-display font-bold text-2xl leading-relaxed text-[#2D3748] italic tracking-tight">
-                          &quot;{feedback.coaching_tip}&quot;
-                        </p>
-                      </div>
-
-                      <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-10 border-t border-white/60 mt-6 px-4">
-                        <div className="flex items-center gap-4">
-                          <div
-                            className={`w-3 h-3 rounded-full ${isLast ? "bg-emerald-500" : "bg-indigo-400"} shadow-lg animate-pulse`}
-                          />
-                          <div className="text-[11px] font-black uppercase tracking-[0.4em] text-[#A0AEC0]">
-                            {isLast
-                              ? "Narrative Finalized"
-                              : "Review Captured · Transition Ready"}
-                          </div>
-                        </div>
-                        <button
-                          className="flex items-center justify-center gap-6 px-16 py-7 rounded-[40px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl hover:scale-[1.03] active:scale-[0.97] transition-all group w-full md:w-auto"
-                          onClick={handleNext}
-                        >
-                          <span className="font-display font-black text-2xl tracking-tighter">
-                            {isLast
-                              ? "Complete Studio Session"
-                              : "Engage Next Phase"}
-                          </span>
-                          <ChevronRight
-                            size={28}
-                            className="group-hover:translate-x-1.5 transition-transform"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

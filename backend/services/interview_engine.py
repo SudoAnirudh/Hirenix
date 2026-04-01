@@ -160,7 +160,133 @@ def generate_interview_plan(
 
 
 def _pick_role_bank(target_role: str) -> Dict[str, List[dict]]:
+    normalized = (target_role or "").strip().lower()
+    if "intern" in normalized:
+        if "front" in normalized:
+            return QUESTION_BANK.get("Frontend Engineer", QUESTION_BANK["default"])
+        if "back" in normalized:
+            return QUESTION_BANK.get("Backend Engineer", QUESTION_BANK["default"])
+        if "full" in normalized or "stack" in normalized:
+            return QUESTION_BANK.get("default", QUESTION_BANK["default"])
+        if "data" in normalized:
+            return QUESTION_BANK.get("default", QUESTION_BANK["default"])
+        if "ml" in normalized:
+            return QUESTION_BANK.get("default", QUESTION_BANK["default"])
+        if "devops" in normalized:
+            return QUESTION_BANK.get("default", QUESTION_BANK["default"])
+        return QUESTION_BANK["default"]
+
+    if "fresher" in normalized or "entry" in normalized or "junior" in normalized:
+        if "front" in normalized:
+            return QUESTION_BANK.get("Frontend Engineer", QUESTION_BANK["default"])
+        if "back" in normalized:
+            return QUESTION_BANK.get("Backend Engineer", QUESTION_BANK["default"])
+        return QUESTION_BANK["default"]
+
     return QUESTION_BANK.get(target_role, QUESTION_BANK["default"])
+
+
+async def _generate_questions_with_nvidia(
+    resume_context: str,
+    target_role: str,
+    difficulty: str,
+    interview_type: str,
+    experience_level: str,
+    num_questions: int,
+) -> Optional[List[InterviewQuestion]]:
+    """
+    Generate role-specific questions using NVIDIA's chat completions API.
+    Returns InterviewQuestion list on success, otherwise None.
+    """
+    if not settings.nvidia_api_key:
+        return None
+
+    system = (
+        "You are an expert interviewer. Generate concise, role-appropriate mock interview questions. "
+        "Return ONLY valid JSON."
+    )
+
+    context_hint = resume_context.strip()
+    if context_hint:
+        # Bound context so we don't explode prompt size
+        context_hint = context_hint[:2500]
+
+    user = f"""
+Generate {num_questions} interview questions for:
+- target_role: {target_role}
+- experience_level: {experience_level}
+- interview_type: {interview_type}  (technical | behavioral | system_design | mixed)
+- difficulty: {difficulty} (easy | medium | hard)
+
+If resume_context is provided, lightly tailor 1-2 questions to it without copying text verbatim.
+
+resume_context:
+{context_hint if context_hint else "(none)"}
+
+Return JSON as an array of objects. Each object MUST contain:
+- question (string)
+- category (one of: "technical", "behavioral", "system_design")
+- expected_topics (array of 3-6 short strings)
+- follow_up_prompt (string or null)
+
+Rules:
+- Questions should be realistic for {experience_level} candidates (intern/fresher friendly when applicable).
+- Avoid overly senior prompts unless experience_level is senior/lead.
+- Keep each question under 35 words.
+- Do NOT include markdown fences.
+"""
+
+    try:
+        response_data = await invoke_nvidia_llm(
+            [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=0.7,
+            max_tokens=2048,
+        )
+        if not response_data:
+            return None
+
+        content = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        cleaned = content.strip()
+        cleaned = cleaned.lstrip("```json").lstrip("```").rstrip("```").strip()
+        raw = json.loads(cleaned)
+        if not isinstance(raw, list) or not raw:
+            return None
+
+        questions: List[InterviewQuestion] = []
+        for item in raw[:num_questions]:
+            if not isinstance(item, dict):
+                continue
+            question_text = item.get("question")
+            category = item.get("category")
+            expected_topics = item.get("expected_topics") or []
+            follow_up = item.get("follow_up_prompt", None)
+            if not isinstance(question_text, str) or not question_text.strip():
+                continue
+            if category not in {"technical", "behavioral", "system_design"}:
+                continue
+            if not isinstance(expected_topics, list):
+                expected_topics = []
+            expected_topics = [str(t).strip() for t in expected_topics if str(t).strip()][:8]
+            questions.append(
+                InterviewQuestion(
+                    question_id=str(uuid.uuid4()),
+                    question=question_text.strip(),
+                    category=category,
+                    difficulty=difficulty if category != "behavioral" else "medium",
+                    expected_topics=expected_topics,
+                    follow_up_prompt=follow_up if isinstance(follow_up, str) or follow_up is None else None,
+                )
+            )
+
+        if len(questions) < max(1, min(3, num_questions)):
+            return None
+        return questions[:num_questions]
+    except Exception as e:
+        logger.warning(f"NVIDIA question generation failed, falling back. err={e}")
+        return None
 
 
 async def generate_questions(
@@ -172,7 +298,6 @@ async def generate_questions(
     experience_level: str = "junior",
 ) -> tuple[InterviewPlan, List[InterviewQuestion]]:
     """Generate a structured interview plan plus role-aware questions."""
-    role_bank = _pick_role_bank(target_role)
     plan = generate_interview_plan(
         target_role=target_role,
         difficulty=difficulty,
@@ -180,6 +305,19 @@ async def generate_questions(
         interview_type=interview_type,
         experience_level=experience_level,
     )
+
+    llm_questions = await _generate_questions_with_nvidia(
+        resume_context=resume_context,
+        target_role=target_role,
+        difficulty=difficulty,
+        interview_type=interview_type,
+        experience_level=experience_level,
+        num_questions=num_questions,
+    )
+    if llm_questions:
+        return plan, llm_questions
+
+    role_bank = _pick_role_bank(target_role)
     questions: List[InterviewQuestion] = []
 
     def append_question(item: dict, category: str) -> None:
