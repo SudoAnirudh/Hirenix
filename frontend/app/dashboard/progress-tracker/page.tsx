@@ -16,18 +16,7 @@ import {
   PolarRadiusAxis,
 } from "recharts";
 import ReactMarkdown from "react-markdown";
-import {
-  Sparkles,
-  Loader2,
-  Copy,
-  FileText,
-  Check,
-  Rocket,
-  Trophy,
-  Target,
-  Zap,
-  TrendingUp,
-} from "lucide-react";
+import { Sparkles, Loader2, Copy, FileText, Check, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { useReactToPrint } from "react-to-print";
 
@@ -75,97 +64,6 @@ const ReadinessRadar = ({ data }: { data: RadarPoint[] }) => (
           />
         </RadarChart>
       </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-// ─── Milestones Grid ──────────────────────────────────────────────────────────
-interface Milestone {
-  id: string;
-  name: string;
-  description: string;
-  icon: React.ReactNode;
-  unlocked: boolean;
-  color: string;
-}
-
-const MilestonesGrid = ({ milestones }: { milestones: Milestone[] }) => (
-  <div className="glass-card p-6">
-    <h3 className="font-display font-bold text-xs uppercase tracking-[0.2em] text-zinc-500 mb-6 flex items-center gap-2">
-      <Trophy className="w-4 h-4 text-amber-400" />
-      Career Milestones
-    </h3>
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {milestones.map((m) => (
-        <div
-          key={m.id}
-          className={`p-4 rounded-2xl border transition-all duration-500 flex flex-col items-center text-center group ${
-            m.unlocked
-              ? "bg-white/5 border-white/10 opacity-100 scale-100"
-              : "bg-black/20 border-white/5 opacity-40 grayscale scale-95"
-          }`}
-        >
-          <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-transform group-hover:scale-110 ${
-              m.unlocked ? "shadow-lg" : ""
-            }`}
-            style={{
-              background: m.unlocked
-                ? `${m.color}20`
-                : "rgba(255,255,255,0.05)",
-              color: m.unlocked ? m.color : "rgba(255,255,255,0.2)",
-              boxShadow: m.unlocked ? `0 0 20px ${m.color}30` : "none",
-            }}
-          >
-            {m.icon}
-          </div>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-1">
-            {m.name}
-          </div>
-          <div className="text-[9px] text-zinc-500 leading-tight">
-            {m.description}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-// ─── Readiness Forecast ──────────────────────────────────────────────────────
-const ReadinessForecast = ({
-  daysToTarget,
-}: {
-  daysToTarget: number | null;
-}) => (
-  <div className="glass-card p-6 relative overflow-hidden group">
-    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-500/20 transition-colors" />
-    <h3 className="font-display font-bold text-xs uppercase tracking-[0.2em] text-zinc-500 mb-4 flex items-center gap-2">
-      <TrendingUp className="w-4 h-4 text-emerald-400" />
-      AI Readiness Forecast
-    </h3>
-    <div className="flex items-end gap-3">
-      <div className="text-4xl font-display font-black tracking-tighter text-white">
-        {daysToTarget !== null ? `~${daysToTarget}` : "—"}
-      </div>
-      <div className="pb-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mb-0.5">
-          Days to Elite
-        </div>
-        <div className="text-[9px] text-zinc-500 font-medium">
-          Target: 90+ Score
-        </div>
-      </div>
-    </div>
-    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-      <div
-        className="h-full bg-indigo-500 animate-pulse"
-        style={{
-          width:
-            daysToTarget !== null
-              ? `${Math.max(10, 100 - daysToTarget)}%`
-              : "0%",
-        }}
-      />
     </div>
   </div>
 );
@@ -320,56 +218,6 @@ export default function ProgressTrackerPage() {
     { subject: "Consistency", value: 80, fullMark: 100 }, // Mock consistency
   ];
 
-  // Calculate Milestones
-  const milestones: Milestone[] = [
-    {
-      id: "ats-80",
-      name: "ATS Alchemist",
-      description: "Achieve an 80+ resume score",
-      icon: <Target className="w-6 h-6" />,
-      unlocked: (data?.ats_trend || []).some((p) => p.score >= 80),
-      color: "#6366f1",
-    },
-    {
-      id: "int-75",
-      name: "Interview Ace",
-      description: "Score 75+ in a mock session",
-      icon: <Zap className="w-6 h-6" />,
-      unlocked: (data?.interview_trend || []).some((p) => p.score >= 75),
-      color: "#a855f7",
-    },
-    {
-      id: "growth-3",
-      name: "Growth Engine",
-      description: "3+ consecutive improvements",
-      icon: <TrendingUp className="w-6 h-6" />,
-      unlocked: (data?.ats_trend || []).length >= 3,
-      color: "#10b981",
-    },
-    {
-      id: "elite-1",
-      name: "Elite Potential",
-      description: "Overall score above 70",
-      icon: <Trophy className="w-6 h-6" />,
-      unlocked: evolutionScore >= 70,
-      color: "#f59e0b",
-    },
-  ];
-
-  // Forecast Logic (Simple linear estimate)
-  const calculateForecast = () => {
-    if (!data?.ats_trend || data.ats_trend.length < 2) return null;
-    const scores = data.ats_trend.map((p) => p.score);
-    const last = scores[scores.length - 1];
-    const prev = scores[scores.length - 2];
-    const velocity = last - prev;
-    if (velocity <= 0) return 30; // Conservative default if slowing
-    const gap = 90 - last;
-    return Math.ceil(gap / velocity) * 3; // sessions to days estimate
-  };
-
-  const daysToTarget = calculateForecast();
-
   return (
     <div className="animate-fade-up max-w-4xl pb-20">
       <div className="flex justify-between items-start mb-2">
@@ -506,11 +354,6 @@ export default function ProgressTrackerPage() {
             <div className="md:col-span-2">
               <ReadinessRadar data={radarData} />
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MilestonesGrid milestones={milestones} />
-            <ReadinessForecast daysToTarget={daysToTarget} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
