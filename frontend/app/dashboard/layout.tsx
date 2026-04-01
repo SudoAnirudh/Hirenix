@@ -96,7 +96,7 @@ export default function DashboardLayout({
       return;
     }
 
-    router.replace("/");
+    router.replace("/auth/login");
     router.refresh();
   }
 
