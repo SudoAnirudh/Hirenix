@@ -119,7 +119,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="animate-fade-up max-w-6xl mx-auto space-y-12 pb-20 relative">
+    <div className="animate-fade-up w-full mx-auto space-y-12 pb-20 relative">
       {/* Decorative background orbs */}
       <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-[120px] bg-[#7C9ADD]/10 pointer-events-none -z-10" />
       <div className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full blur-[150px] bg-[#B8C1EC]/10 pointer-events-none -z-10" />
