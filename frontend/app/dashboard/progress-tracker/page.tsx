@@ -41,7 +41,7 @@ const ReadinessRadar = ({ data }: { data: RadarPoint[] }) => (
       <Rocket className="w-4 h-4 text-indigo-400" />
       Readiness Radar
     </h3>
-    <div className="flex-1 min-h-[250px]">
+    <div className="flex-1 min-h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           <PolarGrid stroke="rgba(255,255,255,0.05)" />
@@ -219,7 +219,7 @@ export default function ProgressTrackerPage() {
   ];
 
   return (
-    <div className="animate-fade-up max-w-4xl pb-20">
+    <div className="animate-fade-up w-full pb-20">
       <div className="flex justify-between items-start mb-2">
         <div>
           <h1 className="font-display font-bold text-3xl mb-2">
@@ -361,7 +361,7 @@ export default function ProgressTrackerPage() {
             {data.ats_trend?.length > 0 && (
               <div className="glass-card p-6">
                 <h3 className="font-semibold text-sm mb-4">ATS Score Trend</h3>
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={300}>
                   <LineChart
                     data={data.ats_trend.map((p: TrendPoint, i: number) => ({
                       name: `#${i + 1}`,
@@ -406,7 +406,7 @@ export default function ProgressTrackerPage() {
                 <h3 className="font-semibold text-sm mb-4">
                   Interview Score Trend
                 </h3>
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width="100%" height={300}>
                   <LineChart
                     data={data.interview_trend.map(
                       (p: TrendPoint, i: number) => ({
