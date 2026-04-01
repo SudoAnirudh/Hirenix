@@ -1,102 +1,167 @@
 import httpx
+import logging
+from datetime import datetime, timedelta
 from config import settings
 from models.github import GitHubAnalysisResponse, GitHubMetrics, RepoMetric
 from utils.scoring_weights import GPI_WEIGHTS
+from services.groq_client import invoke_groq_llm
 
 GITHUB_API = "https://api.github.com"
-
+logger = logging.getLogger("hirenix.github")
 
 def _auth_headers() -> dict:
-    headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "Hirenix-AI-Agent"
+    }
     if settings.github_token:
         headers["Authorization"] = f"Bearer {settings.github_token}"
     return headers
 
-
 async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
-    """Fetch GitHub repos and compute GitHub Performance Index (GPI)."""
-    async with httpx.AsyncClient(timeout=15) as client:
-        # User info
-        user_r = await client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
-        user_r.raise_for_status()
+    """Fetch GitHub repos and compute a comprehensive AI-powered profile analysis."""
+    async with httpx.AsyncClient(timeout=20) as client:
+        try:
+            # User info
+            user_r = await client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
+            if user_r.status_code == 401:
+                raise Exception("GitHub API Unauthorized: Please check if the GITHUB_TOKEN in the backend environment is valid.")
+            user_r.raise_for_status()
+            user_data = user_r.json()
 
-        # Repositories (up to 100)
-        repos_r = await client.get(
-            f"{GITHUB_API}/users/{username}/repos",
-            params={"per_page": 100, "sort": "updated"},
-            headers=_auth_headers(),
+            # Repositories
+            repos_r = await client.get(
+                f"{GITHUB_API}/users/{username}/repos",
+                params={"per_page": 100, "sort": "updated"},
+                headers=_auth_headers(),
+            )
+            repos_r.raise_for_status()
+            repos = repos_r.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 401:
+                raise Exception("GitHub API Unauthorized: The system's GitHub token is invalid or expired. Please contact support.")
+            raise Exception(f"GitHub API Error: {e.response.text}")
+        except Exception as e:
+            logger.error(f"GitHub Error: {str(e)}")
+            raise e
+
+        # ─── Language Distribution ────────────────────────────────────────────────
+        lang_counts = {}
+        for r in repos:
+            lang = r.get("language")
+            if lang:
+                lang_counts[lang] = lang_counts.get(lang, 0) + 1
+        
+        total_lang_repos = sum(lang_counts.values()) or 1
+        lang_dist = {lang: (count / total_lang_repos) * 100 for lang, count in lang_counts.items()}
+        languages = sorted(lang_counts.keys(), key=lambda x: lang_counts[x], reverse=True)
+
+        total_stars = sum(r.get("stargazers_count", 0) for r in repos)
+
+        # ─── Detailed Repo Metrics (Top 5) ───────────────────────────────────────
+        repo_metrics: list[RepoMetric] = []
+        three_months_ago = (datetime.now() - timedelta(days=90)).isoformat()
+        
+        for r in repos[:5]:
+            commits_count = 0
+            # Attempt to fetch commit count for the last 90 days
+            try:
+                commits_r = await client.get(
+                    f"{GITHUB_API}/repos/{username}/{r['name']}/commits",
+                    params={"since": three_months_ago, "per_page": 1, "author": username},
+                    headers=_auth_headers(),
+                )
+                if commits_r.status_code == 200:
+                    # Link header often contains 'last' page info for count
+                    link = commits_r.headers.get("Link", "")
+                    if 'rel="last"' in link:
+                        # Simple heuristic: last page number is the count if per_page=1
+                        import re
+                        match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
+                        if match:
+                            commits_count = int(match.group(1))
+                    else:
+                        commits_count = len(commits_r.json())
+            except:
+                pass # Gracefully skip if commit fetch fails
+
+            repo_metrics.append(RepoMetric(
+                name=r["name"],
+                description=r.get("description"),
+                language=r.get("language"),
+                license=r.get("license", {}).get("name") if r.get("license") else None,
+                stars=r.get("stargazers_count", 0),
+                forks=r.get("forks_count", 0),
+                has_readme=bool(r.get("description")), # Simplified check
+                has_ci=False, 
+                has_deployment=bool(r.get("homepage")),
+                size_kb=r.get("size", 0),
+                commits_last_90_days=commits_count
+            ))
+
+        # ─── Metric Calculations ──────────────────────────────────────────────────
+        stack_diversity = min(len(languages) / 10.0, 1.0) * 100
+        avg_size = sum(r.get("size", 0) for r in repos) / max(len(repos), 1)
+        project_depth = min(avg_size / 500.0, 1.0) * 100
+        with_deploy = sum(1 for r in repos if r.get("homepage"))
+        production_readiness = (with_deploy / max(len(repos), 1)) * 100
+        consistency = min((len(repos) / 30.0) * 0.5 + (total_stars / 50.0) * 0.5, 1.0) * 100
+
+        metrics = GitHubMetrics(
+            total_repos=len(repos),
+            total_stars=total_stars,
+            languages=languages,
+            language_distribution=lang_dist,
+            top_repos=repo_metrics,
+            consistency_score=round(consistency, 1),
+            project_depth_score=round(project_depth, 1),
+            stack_diversity_score=round(stack_diversity, 1),
+            production_readiness_score=round(production_readiness, 1),
         )
-        repos_r.raise_for_status()
-        repos = repos_r.json()
 
-    languages = list({r["language"] for r in repos if r.get("language")})
-    total_stars = sum(r.get("stargazers_count", 0) for r in repos)
+        # ─── AI Deep Dive ────────────────────────────────────────────────────────
+        ai_summary = "AI analysis could not be generated."
+        if settings.groq_api_key:
+            prompt = f"""
+            Analyze this GitHub profile for a developer named {username}.
+            Total Repos: {len(repos)}
+            Total Stars: {total_stars}
+            Top Languages: {', '.join(languages[:5])}
+            Key Projects: {', '.join([f"{r.name} ({r.stars} stars, {r.commits_last_90_days} recent commits)" for r in repo_metrics])}
+            
+            Provide a 3-4 sentence high-level technical summary of this developer's "vibe", impact, and expertise.
+            Focus on what makes them unique and their career potential.
+            Return ONLY the summary text.
+            """
+            ai_resp = await invoke_groq_llm([{"role": "user", "content": prompt}])
+            if ai_resp:
+                ai_summary = ai_resp.get("choices", [{}])[0].get("message", {}).get("content", ai_summary)
+        
+        metrics.ai_summary = ai_summary
 
-    repo_metrics: list[RepoMetric] = []
-    for r in repos[:10]:  # top 10 by recency
-        rm = RepoMetric(
-            name=r["name"],
-            language=r.get("language"),
-            stars=r.get("stargazers_count", 0),
-            forks=r.get("forks_count", 0),
-            has_readme=bool(r.get("has_projects") or r.get("description")),
-            has_ci=False,   # would require per-repo API call
-            has_deployment=bool(r.get("homepage")),
-            size_kb=r.get("size", 0),
-            commits_last_90_days=0,  # would require statistics API
+        gpi = sum(getattr(metrics, key) * weight for key, weight in GPI_WEIGHTS.items())
+        gpi = round(gpi, 1)
+
+        # Strengths and recommendations
+        strengths, recs = [], []
+        if stack_diversity >= 60:
+            strengths.append(f"Diverse tech stack: {', '.join(languages[:5])}")
+        if total_stars >= 10:
+            strengths.append(f"{total_stars} total stars — evidence of community recognition")
+        if production_readiness < 20:
+            recs.append("Add deployment links/homepages to your repos (GitHub Pages, Vercel, etc.)")
+        if len(languages) < 3:
+            recs.append("Explore more languages/frameworks to show stack breadth")
+        if not strengths:
+            strengths.append("Active GitHub presence with consistent contributions")
+
+        return GitHubAnalysisResponse(
+            analysis_id="", 
+            username=username,
+            gpi_score=gpi,
+            metrics=metrics,
+            strengths=strengths,
+            recommendations=recs,
         )
-        repo_metrics.append(rm)
 
-    # ─── Metric Calculations ──────────────────────────────────────────────────
-    # 1. Stack Diversity (language count normalised to 10)
-    stack_diversity = min(len(languages) / 10.0, 1.0) * 100
-
-    # 2. Project Depth (avg repo size, normalised to 500KB)
-    avg_size = sum(r.get("size", 0) for r in repos) / max(len(repos), 1)
-    project_depth = min(avg_size / 500.0, 1.0) * 100
-
-    # 3. Production Readiness (% repos with homepage/deployment)
-    with_deploy = sum(1 for r in repos if r.get("homepage"))
-    production_readiness = (with_deploy / max(len(repos), 1)) * 100
-
-    # 4. Consistency (proxy: public repos > 5 and stars > 5)
-    consistency = min((len(repos) / 30.0) * 0.5 + (total_stars / 50.0) * 0.5, 1.0) * 100
-
-    metrics = GitHubMetrics(
-        total_repos=len(repos),
-        total_stars=total_stars,
-        languages=languages,
-        top_repos=repo_metrics,
-        consistency_score=round(consistency, 1),
-        project_depth_score=round(project_depth, 1),
-        stack_diversity_score=round(stack_diversity, 1),
-        production_readiness_score=round(production_readiness, 1),
-    )
-
-    gpi = sum(
-        getattr(metrics, key) * weight
-        for key, weight in GPI_WEIGHTS.items()
-    )
-    gpi = round(gpi, 1)
-
-    # Strengths and recommendations
-    strengths, recs = [], []
-    if stack_diversity >= 60:
-        strengths.append(f"Diverse tech stack: {', '.join(languages[:5])}")
-    if total_stars >= 10:
-        strengths.append(f"{total_stars} total stars — evidence of community recognition")
-    if production_readiness < 20:
-        recs.append("Add deployment links/homepages to your repos (GitHub Pages, Vercel, etc.)")
-    if len(languages) < 3:
-        recs.append("Explore more languages/frameworks to show stack breadth")
-    if not strengths:
-        strengths.append("Active GitHub presence with consistent contributions")
-
-    return GitHubAnalysisResponse(
-        analysis_id="",  # filled by router
-        username=username,
-        gpi_score=gpi,
-        metrics=metrics,
-        strengths=strengths,
-        recommendations=recs,
-    )

@@ -71,6 +71,7 @@ export default function JobMatchPage() {
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobs, setJobs] = useState<ScrapedJob[]>([]);
   const [error, setError] = useState("");
+  const [jobsError, setJobsError] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdFile, setJdFile] = useState<File | null>(null);
 
@@ -579,6 +580,17 @@ export default function JobMatchPage() {
             </button>
           </div>
         </div>
+
+        {jobsError && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-5 rounded-2xl bg-red-50 border border-red-100/50 flex items-center gap-4 text-red-600 text-xs font-bold"
+          >
+            <AlertCircle size={20} />
+            <span>Search Error: {jobsError}</span>
+          </motion.div>
+        )}
 
         {jobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">

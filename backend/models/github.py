@@ -1,14 +1,10 @@
-from pydantic import BaseModel
-from typing import List, Optional
-
-
-class GitHubAnalysisRequest(BaseModel):
-    username: str
-
+from typing import List, Optional, Dict
 
 class RepoMetric(BaseModel):
     name: str
+    description: Optional[str]
     language: Optional[str]
+    license: Optional[str]
     stars: int
     forks: int
     has_readme: bool
@@ -22,11 +18,13 @@ class GitHubMetrics(BaseModel):
     total_repos: int
     total_stars: int
     languages: List[str]
+    language_distribution: Dict[str, float]
     top_repos: List[RepoMetric]
     consistency_score: float      # 0–100
     project_depth_score: float    # 0–100
     stack_diversity_score: float  # 0–100
     production_readiness_score: float  # 0–100
+    ai_summary: Optional[str] = None
 
 
 class GitHubAnalysisResponse(BaseModel):
