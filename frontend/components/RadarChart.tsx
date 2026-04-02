@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import {
   RadarChart as RechartsRadar,
   Radar,
@@ -13,7 +14,8 @@ interface Props {
   title?: string;
 }
 
-export default function RadarChart({ data, title }: Props) {
+// Optimization: Wrapped RadarChart in React.memo to prevent unnecessary re-renders when parent components update but the chart data remains the same.
+const RadarChart = React.memo(function RadarChart({ data, title }: Props) {
   return (
     <div className="glass-card p-8 rounded-[2rem] border-0 bg-white/70 shadow-xl shadow-indigo-500/5 h-full transition-all duration-500 hover:shadow-indigo-500/10">
       {title && (
@@ -62,4 +64,6 @@ export default function RadarChart({ data, title }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default RadarChart;

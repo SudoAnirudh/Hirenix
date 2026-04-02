@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, AlertCircle, Sparkles, TrendingUp } from "lucide-react";
 
@@ -12,7 +13,8 @@ interface Props {
   skillGap: SkillGap;
 }
 
-export default function SkillGapList({ skillGap }: Props) {
+// Optimization: Wrapped SkillGapList in React.memo to prevent unnecessary re-renders when parent components update but the skill gaps data remains unchanged.
+const SkillGapList = React.memo(function SkillGapList({ skillGap }: Props) {
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -135,4 +137,6 @@ export default function SkillGapList({ skillGap }: Props) {
       </motion.div>
     </div>
   );
-}
+});
+
+export default SkillGapList;

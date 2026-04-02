@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 interface Props {
   title: string;
@@ -27,7 +28,8 @@ function getScoreColors(score: number) {
 const R = 54;
 const CIRC = 2 * Math.PI * R;
 
-export default function ScoreCard({ title, score, subtitle }: Props) {
+// Optimization: Wrapped ScoreCard in React.memo to prevent unnecessary re-renders when parent components (like ResumeAnalysisPage) update but the score props remain unchanged.
+const ScoreCard = React.memo(function ScoreCard({ title, score, subtitle }: Props) {
   const { stroke, label } = getScoreColors(score);
   const progress = CIRC - (score / 100) * CIRC;
 
@@ -95,4 +97,6 @@ export default function ScoreCard({ title, score, subtitle }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default ScoreCard;

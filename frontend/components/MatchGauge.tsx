@@ -8,11 +8,8 @@ interface MatchGaugeProps {
   size?: number;
 }
 
-const MatchGauge: React.FC<MatchGaugeProps> = ({
-  score,
-  label,
-  size = 200,
-}) => {
+// Optimization: Wrapped MatchGauge in React.memo to prevent unnecessary re-renders when parent components update but the score props remain unchanged.
+const MatchGauge: React.FC<MatchGaugeProps> = React.memo(function MatchGauge({ score, label, size = 200 }: MatchGaugeProps) {
   const [displayScore, setDisplayScore] = useState(0);
   const radius = size * 0.4;
   const strokeWidth = size * 0.08;
@@ -93,6 +90,6 @@ const MatchGauge: React.FC<MatchGaugeProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default MatchGauge;
