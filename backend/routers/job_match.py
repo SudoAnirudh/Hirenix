@@ -1,9 +1,11 @@
 import uuid
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from dependencies import get_current_user, get_supabase_admin
 from services.jd_matcher import match_job_description
 from services.job_scraper import scrape_jobs
 from services.resume_parser import parse_resume
+from services.embedding_engine import compare_texts
 from models.analysis import (
     JobMatchRequest,
     JobMatchResponse,
@@ -15,7 +17,6 @@ from utils.text_cleaner import clean_text
 
 router = APIRouter()
 
-
 @router.post("/match-job", response_model=JobMatchResponse)
 async def match_job(
     payload: JobMatchRequest,
@@ -23,7 +24,6 @@ async def match_job(
     db=Depends(get_supabase_admin),
 ):
     """Compare a resume against a job description and return match score + skill gaps."""
-    # Fetch resume text
     r = (
         db.table("resumes")
         .select("raw_text")
@@ -46,85 +46,65 @@ async def match_job(
             "id": match_id,
             "resume_id": payload.resume_id,
             "user_id": user["user_id"],
-            "target_role": payload.target_role,
-            "jd_text": payload.jd_text[:2000],
+            "target_role": payload.target_role or "Role",
+            "jd_text": payload.jd_text[:3000],
             "match_score": result.match_score,
-            "skill_gap": {
-                "missing": result.skill_gap.mandatory_missing
-                + result.skill_gap.competitive_missing
-            },
+            "semantic_similarity": result.semantic_similarity,
+            "skill_gap": result.skill_gap.model_dump(),
+            "recommendations": result.recommendations,
+            "metadata": {
+                "technical_score": result.technical_score,
+                "experience_score": result.experience_score,
+                "soft_skills_score": result.soft_skills_score,
+                "keyword_heatmap": result.keyword_heatmap,
+                "bridge_advice": result.bridge_advice
+            }
         }
     ).execute()
 
-    return JobMatchResponse(
-        match_id=match_id,
-        resume_id=payload.resume_id,
-        **result.model_dump(exclude={"match_id", "resume_id"})
-    )
-
-
-@router.post("/match-job-upload", response_model=JobMatchResponse)
-async def match_job_upload(
-    resume_file: UploadFile = File(...),
-    jd_text: str | None = Form(default=None),
-    jd_file: UploadFile | None = File(default=None),
-    target_role: str | None = Form(default=None),
-    user: dict = Depends(get_current_user),
-):
-    """Compare uploaded resume and uploaded/pasted job description."""
-    if not resume_file.filename or not resume_file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Resume must be a PDF file.")
-
-    resume_content = await resume_file.read()
-    _, resume_text = parse_resume(resume_content)
-    if len(resume_text.strip()) < 40:
-        raise HTTPException(
-            status_code=422,
-            detail="Could not extract readable text from the resume PDF.",
-        )
-
-    effective_jd_text = (jd_text or "").strip()
-    if jd_file is not None:
-        if not jd_file.filename:
-            raise HTTPException(status_code=400, detail="Job description file is invalid.")
-        jd_content = await jd_file.read()
-        lowered = jd_file.filename.lower()
-        if lowered.endswith(".pdf"):
-            effective_jd_text = clean_text(extract_pdf_text(jd_content))
-        elif lowered.endswith(".txt") or lowered.endswith(".md"):
-            effective_jd_text = clean_text(jd_content.decode("utf-8", errors="ignore"))
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail="Job description file must be PDF, TXT, or MD.",
-            )
-
-    if len(effective_jd_text) < 40:
-        raise HTTPException(
-            status_code=422,
-            detail="Provide a valid job description (paste text or upload JD file).",
-        )
-
-    result = await match_job_description(resume_text, effective_jd_text, target_role)
-    match_id = str(uuid.uuid4())
-    return JobMatchResponse(
-        match_id=match_id,
-        resume_id=f"uploaded:{user['user_id']}",
-        **result.model_dump(exclude={"match_id", "resume_id"})
-    )
-
+    # Note: Returning JobMatchResponse directly
+    return result.model_copy(update={"match_id": match_id, "resume_id": payload.resume_id})
 
 @router.post("/scrape-jobs", response_model=JobScrapeResponse)
 async def scrape_jobs_for_fields(
     payload: JobScrapeRequest,
     user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
 ):
-    """Scrape job listings for user-specified fields and return apply links + details."""
+    """Scrape job listings and automatically calculate a 'Quick Match' score against the user's latest resume."""
     fields = [f.strip() for f in payload.fields if f and f.strip()]
     if not fields:
         raise HTTPException(status_code=400, detail="At least one field is required.")
 
+    # 1. Scrape jobs
     limit = max(1, min(payload.limit, 50))
     jobs = await scrape_jobs(fields, payload.location, payload.remote_only, limit)
+    
+    # 2. Fetch user's latest resume for auto-matching
+    r = (
+        db.table("resumes")
+        .select("raw_text")
+        .eq("user_id", user["user_id"])
+        .order("created_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    
+    if r.data:
+        resume_text = r.data[0]["raw_text"]
+        
+        # 3. Quick Match injection (Semantic Only for speed during browse)
+        async def _score_job(job):
+            # Job description snippet is used for speed
+            score = compare_texts(resume_text, job.description_snippet)
+            job.match_score = round(score * 100, 1)
+            # Generate a unique ID if missing
+            if not job.id:
+                job.id = str(uuid.uuid5(uuid.NAMESPACE_URL, job.apply_url))
+            return job
+
+        scored_jobs = await asyncio.gather(*[_score_job(j) for j in jobs])
+        jobs = scored_jobs
+
     query = " ".join(fields + ([payload.location.strip()] if payload.location else []))
     return JobScrapeResponse(query=query, total=len(jobs), jobs=jobs)

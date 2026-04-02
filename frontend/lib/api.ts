@@ -294,3 +294,82 @@ export async function getAISummary() {
     generated_at: number;
   }>("/analytics/summary", { method: "POST" });
 }
+
+// ─── Cover Letter ─────────────────────────────────────────────────────────────
+export async function generateCoverLetter(
+  resumeId: string,
+  jdText: string,
+  targetRole?: string,
+  tone = "Professional",
+) {
+  return request<{
+    id: string;
+    content: string;
+    resume_id: string;
+    target_role: string;
+  }>("/cover-letter/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      resume_id: resumeId,
+      jd_text: jdText,
+      target_role: targetRole,
+      tone,
+    }),
+  });
+}
+
+export function getCoverLetterExportUrl(
+  letterId: string,
+  format: "pdf" | "docx",
+) {
+  return `${getBaseUrl()}/cover-letter/export/${letterId}?format=${format}`;
+}
+
+// ─── Applications CRM ─────────────────────────────────────────────────────────
+export interface JobApplication {
+  id: string;
+  company: string;
+  role: string;
+  location?: string;
+  status: "wishlist" | "applied" | "interviewing" | "offer" | "rejected";
+  apply_url?: string;
+  match_score?: number;
+  notes?: string;
+  created_at: string;
+}
+
+export async function getApplications() {
+  return request<JobApplication[]>("/applications/");
+}
+
+export async function createApplication(data: {
+  company: string;
+  role: string;
+  location?: string;
+  status?: string;
+  apply_url?: string;
+  match_score?: number;
+  notes?: string;
+}) {
+  return request("/applications/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateApplication(
+  appId: string,
+  data: { status?: string; notes?: string },
+) {
+  return request(`/applications/${appId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteApplication(appId: string) {
+  return request(`/applications/${appId}`, { method: "DELETE" });
+}

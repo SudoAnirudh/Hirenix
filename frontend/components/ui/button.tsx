@@ -10,15 +10,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "ghost" | "outline" | "shine";
+  variant?: "primary" | "ghost" | "outline" | "shine" | "glow" | "glass";
   size?: "default" | "sm" | "lg" | "icon";
   isLoading?: boolean;
 }
-
-type MotionButtonProps = Omit<
-  React.ComponentPropsWithoutRef<typeof motion.button>,
-  "whileHover" | "whileTap"
->;
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -42,9 +37,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ghost:
         "bg-transparent text-[#2D3748] hover:bg-[#7C9ADD]/10 hover:text-[#7C9ADD]",
       outline:
-        "bg-transparent text-[#2D3748] border border-[#rgba(255,255,255,0.8)] hover:bg-white/50 hover:border-[#7C9ADD]/50",
+        "bg-transparent text-[#2D3748] border border-[#rgba(255,255,255,0.8)] hover:bg-white/50 hover:border-[#7C9ADD]/50 font-bold",
       shine:
-        "relative overflow-hidden bg-[#2D3748] text-white shadow-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/10 before:to-transparent hover:-translate-y-0.5",
+        "relative overflow-hidden bg-[#2D3748] text-white shadow-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/10 before:to-transparent hover:-translate-y-0.5 font-bold",
+      glow: "relative bg-[#98C9A3] text-white shadow-[0_0_20px_rgba(152,201,163,0.4)] hover:shadow-[0_0_30px_rgba(152,201,163,0.6)] hover:-translate-y-0.5 active:scale-95 font-bold",
+      glass:
+        "bg-white/40 backdrop-blur-md border border-white/60 text-[#2D3748] shadow-sm hover:bg-white/60 hover:shadow-md active:scale-95 font-bold",
     };
 
     const sizes = {
