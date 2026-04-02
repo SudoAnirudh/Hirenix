@@ -43,9 +43,9 @@ export default function GitHubAnalysisPage() {
     try {
       const data = await analyzeGithub(username.trim());
       setResult(data as AnalysisResult);
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Improved error message for user
-      const msg = e.message || "An unexpected error occurred";
+      const msg = e instanceof Error ? e.message : "An unexpected error occurred";
       setError(msg);
     } finally {
       setLoading(false);
