@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 
 class JobMatchRequest(BaseModel):
@@ -18,12 +18,17 @@ class JobMatchResponse(BaseModel):
     match_id: str
     resume_id: str
     match_score: float  # 0–100
-    semantic_similarity: float  # cosine similarity
+    technical_score: float
+    experience_score: float
+    soft_skills_score: float
+    semantic_similarity: float
     fit_verdict: str
     pros: List[str]
     cons: List[str]
     skill_gap: SkillGapResult
+    keyword_heatmap: Dict[str, str]  # skill -> "matched" | "missing" | "partial"
     recommendations: List[str]
+    bridge_advice: List[str]
 
 
 class JobScrapeRequest(BaseModel):
@@ -34,6 +39,7 @@ class JobScrapeRequest(BaseModel):
 
 
 class JobListing(BaseModel):
+    id: Optional[str] = None
     title: str
     company: str
     location: str
@@ -44,9 +50,24 @@ class JobListing(BaseModel):
     source: str
     posted_at: str
     description_snippet: str
+    match_score: Optional[float] = None
 
 
 class JobScrapeResponse(BaseModel):
     query: str
     total: int
     jobs: List[JobListing]
+
+
+class CoverLetterRequest(BaseModel):
+    resume_id: str
+    jd_text: str
+    target_role: Optional[str] = None
+    tone: str = "Professional"  # Professional, Creative, Persuasive
+
+
+class CoverLetterResponse(BaseModel):
+    id: str
+    content: str  # Markdown/Plaintext
+    resume_id: str
+    target_role: str

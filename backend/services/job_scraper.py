@@ -18,19 +18,24 @@ def _strip_html(text: str) -> str:
     return text.strip()
 
 
-def _snippet(text: str, max_len: int = 220) -> str:
+def _snippet(text: str, max_len: int = 450) -> str:
     if len(text) <= max_len:
         return text
-    return text[: max_len - 1].rstrip() + "..."
+    # Try to cut at a sentence or space
+    cut = text[: max_len - 1].rsplit(".", 1)[0]
+    if len(cut) < max_len * 0.7: # Too aggressive cut
+         cut = text[: max_len - 1].rsplit(" ", 1)[0]
+    return cut.rstrip() + "..."
 
 
 def _dedupe_jobs(jobs: List[JobListing]) -> List[JobListing]:
     seen = set()
     deduped: List[JobListing] = []
     for job in jobs:
+        # Normalize key for better deduping
         key = (
             job.apply_url.strip().lower(),
-            job.title.strip().lower(),
+            job.title.strip().lower()[:30], # First 30 chars of title
             job.company.strip().lower(),
         )
         if key in seen:
@@ -182,34 +187,44 @@ async def _fetch_jobspresso(keywords: List[str], limit: int) -> List[JobListing]
 async def scrape_jobs(
     fields: List[str], location: str | None, remote_only: bool, limit: int
 ) -> List[JobListing]:
-    query_parts = [f.strip() for f in fields if f and f.strip()]
-    query = " ".join(query_parts).strip()
+    # Refined search query construction
+    queries = [f.strip() for f in fields if f and f.strip()]
+    
+    # We'll run searches for each field separately to maximize breadth
+    source_limit = max(8, limit // 2)
+    
+    all_tasks = []
+    for q in queries:
+        all_tasks.append(_fetch_remotive(q, source_limit))
+        all_tasks.append(_fetch_arbeitnow(q, source_limit, remote_only))
+        all_tasks.append(_fetch_wwr([q], source_limit))
+        all_tasks.append(_fetch_jobspresso([q], source_limit))
 
-    per_source = max(5, min(50, limit))
-    
-    # Parallelize fetching from all sources
-    tasks = [
-        _fetch_remotive(query, per_source),
-        _fetch_arbeitnow(query, per_source, remote_only),
-        _fetch_wwr(fields, per_source),
-        _fetch_jobspresso(fields, per_source)
-    ]
-    
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+    if not all_tasks and location: # Just location search
+        all_tasks = [
+            _fetch_remotive(location, source_limit),
+            _fetch_arbeitnow(location, source_limit, remote_only)
+        ]
+
+    results = await asyncio.gather(*all_tasks, return_exceptions=True)
     
     all_jobs: List[JobListing] = []
     for res in results:
         if isinstance(res, list):
             all_jobs.extend(res)
         elif isinstance(res, Exception):
-            logger.error(f"Scraper error: {res}")
+            logger.error(f"Global Scraper error: {res}")
 
-    # Keep only jobs with actionable apply links.
-    all_jobs = [j for j in all_jobs if j.apply_url]
+    # Robust location filtering if provided
+    if location:
+        loc_q = location.lower().strip()
+        all_jobs = [
+            j for j in all_jobs 
+            if loc_q in j.location.lower() or (j.remote and loc_q == "remote")
+        ]
 
-    # Optional remote filter across all sources.
-    if remote_only:
-        all_jobs = [j for j in all_jobs if j.remote]
-
+    # Post-filtering for quality
+    all_jobs = [j for j in all_jobs if j.apply_url and len(j.title) > 3]
     all_jobs = _dedupe_jobs(all_jobs)
+    
     return all_jobs[:limit]

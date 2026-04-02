@@ -35,6 +35,11 @@ const nav = [
     label: "GitHub Intelligence",
   },
   { href: "/dashboard/job-match", icon: Briefcase, label: "Job Matching" },
+  {
+    href: "/dashboard/applications",
+    icon: TrendingUp,
+    label: "Applications CRM",
+  },
   { href: "/dashboard/mock-interview", icon: Mic, label: "Mock Interview" },
   {
     href: "/dashboard/progress-tracker",

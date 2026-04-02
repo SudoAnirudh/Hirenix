@@ -1,7 +1,12 @@
 "use client";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { matchJob, matchJobWithUpload, scrapeJobs } from "@/lib/api";
+import {
+  matchJob,
+  matchJobWithUpload,
+  scrapeJobs,
+  createApplication,
+} from "@/lib/api";
 import MatchGauge from "@/components/MatchGauge";
 import SkillGapList from "@/components/SkillGapList";
 import {
@@ -18,7 +23,12 @@ import {
   Briefcase,
   History,
   Info,
+  TrendingUp,
+  FileEdit,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import CoverLetterModal from "@/components/CoverLetterModal";
 
 const ROLES = [
   "Software Engineer",
@@ -46,6 +56,7 @@ interface JobMatchResult {
 }
 
 interface ScrapedJob {
+  id?: string;
   title: string;
   company: string;
   location: string;
@@ -56,6 +67,7 @@ interface ScrapedJob {
   source: string;
   posted_at: string;
   description_snippet: string;
+  match_score?: number;
 }
 
 export default function JobMatchPage() {
@@ -74,6 +86,7 @@ export default function JobMatchPage() {
   const [jobsError, setJobsError] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdFile, setJdFile] = useState<File | null>(null);
+  const [isCLModalOpen, setIsCLModalOpen] = useState(false);
 
   async function handleMainAction() {
     setLoading(true);
@@ -408,6 +421,30 @@ export default function JobMatchPage() {
                   </div>
                 </div>
 
+                {/* Cover Letter Prompt */}
+                <div className="glass-card p-4 rounded-3xl bg-linear-to-r from-[#7C9ADD]/5 to-[#6366F1]/5 border border-[#7C9ADD]/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-white shadow-sm text-[#7C9ADD]">
+                      <FileEdit size={18} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-[#2D3748] uppercase tracking-wider">
+                        Ready to Apply?
+                      </p>
+                      <p className="text-[10px] font-bold text-[#718096]">
+                        Generate a tailored cover letter.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#7C9ADD] hover:text-white transition-all shadow-sm"
+                    onClick={() => setIsCLModalOpen(true)}
+                  >
+                    Build Letter
+                  </Button>
+                </div>
+
                 {/* Quick Strategy */}
                 <div className="glass-card p-8 rounded-4xl bg-white/80 border border-white">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#A0AEC0] mb-8 flex items-center gap-3">
@@ -518,66 +555,99 @@ export default function JobMatchPage() {
 
       {/* Correlated Opportunities (Jobs) */}
       <div className="space-y-10">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-6">
           <div className="space-y-2">
             <h3 className="font-display font-black text-3xl text-[#2D3748] tracking-tight flex items-center gap-3">
               <Sparkles className="text-[#7C9ADD]" size={32} />
               Open Market <span className="text-[#7C9ADD]">Opportunities</span>
             </h3>
             <p className="text-sm font-medium text-[#718096]">
-              Discover roles correlated to your analyzed skill profile.
+              Refine your search preferences to discover roles correlated to
+              your profile.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 p-3 rounded-3xl bg-white/50 border border-white/80 backdrop-blur-md shadow-sm">
-            <div className="relative group">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7C9ADD]/40"
-                size={16}
-              />
-              <input
-                id="keywordInput"
-                className="bg-transparent border-none focus:ring-0 px-10 py-2 text-sm font-bold text-[#4A5568] placeholder:text-[#CBD5E0] min-w-[200px]"
-                placeholder="Keywords..."
-                value={fieldInput}
-                onChange={(e) => setFieldInput(e.target.value)}
-              />
+          <div className="glass-card p-8 rounded-4xl bg-white/80 border border-white/80 shadow-sm backdrop-blur-md">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Roles Selection */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-[#A0AEC0] uppercase tracking-widest flex items-center gap-2">
+                  <Briefcase size={12} className="text-[#7C9ADD]" />
+                  Target Roles
+                </label>
+                <div className="relative group">
+                  <input
+                    className="w-full bg-slate-50/50 border border-slate-100 focus:border-[#7C9ADD]/30 rounded-xl px-4 py-3 text-xs font-bold text-[#4A5568] outline-none transition-all"
+                    placeholder="e.g. Frontend, React..."
+                    value={fieldInput}
+                    onChange={(e) => setFieldInput(e.target.value)}
+                  />
+                  <p className="mt-2 text-[9px] text-[#A0AEC0] font-medium italic">
+                    Separate by comma for multi-role search
+                  </p>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-[#A0AEC0] uppercase tracking-widest flex items-center gap-2">
+                  <MapPin size={12} className="text-[#7C9ADD]" />
+                  Preferred Location
+                </label>
+                <div className="relative group">
+                  <input
+                    className="w-full bg-slate-50/50 border border-slate-100 focus:border-[#7C9ADD]/30 rounded-xl px-4 py-3 text-xs font-bold text-[#4A5568] outline-none transition-all"
+                    placeholder="e.g. London, Remote..."
+                    value={jobLocation}
+                    onChange={(e) => setJobLocation(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Mode Toggle */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-[#A0AEC0] uppercase tracking-widest flex items-center gap-2">
+                  <Globe size={12} className="text-[#7C9ADD]" />
+                  Work Arrangement
+                </label>
+                <button
+                  onClick={() => setRemoteOnly(!remoteOnly)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-[10px] font-bold uppercase tracking-wider ${
+                    remoteOnly
+                      ? "bg-[#7C9ADD]/10 text-[#7C9ADD] border-[#7C9ADD]/20"
+                      : "bg-slate-50/50 text-slate-400 border-slate-100"
+                  }`}
+                >
+                  <span>{remoteOnly ? "Remote Only" : "Any Mode"}</span>
+                  <div
+                    className={`w-8 h-4 rounded-full relative transition-all ${remoteOnly ? "bg-[#7C9ADD]" : "bg-slate-200"}`}
+                  >
+                    <div
+                      className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${remoteOnly ? "right-0.5" : "left-0.5"}`}
+                    />
+                  </div>
+                </button>
+              </div>
+
+              {/* Action */}
+              <div className="flex items-end">
+                <button
+                  id="pulseSearchBtn"
+                  onClick={handleScrapeJobs}
+                  disabled={jobsLoading}
+                  className="w-full h-12 rounded-xl bg-[#2D3748] text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#2D3748]/10 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                >
+                  {jobsLoading ? (
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Search size={14} />
+                      Pulse Search
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <div className="w-px h-6 bg-gray-200 self-center" />
-            <div className="relative group">
-              <MapPin
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7C9ADD]/40"
-                size={16}
-              />
-              <input
-                id="locationInput"
-                className="bg-transparent border-none focus:ring-0 px-10 py-2 text-sm font-bold text-[#4A5568] placeholder:text-[#CBD5E0] min-w-[160px]"
-                placeholder="Location..."
-                value={jobLocation}
-                onChange={(e) => setJobLocation(e.target.value)}
-              />
-            </div>
-            <div className="w-px h-6 bg-gray-200 self-center" />
-            <button
-              id="remoteModeToggle"
-              onClick={() => setRemoteOnly(!remoteOnly)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider ${
-                remoteOnly
-                  ? "bg-[#7C9ADD]/10 text-[#7C9ADD] border border-[#7C9ADD]/20"
-                  : "bg-gray-100 text-gray-400 border border-gray-200"
-              }`}
-            >
-              <Globe size={14} />
-              {remoteOnly ? "Remote Selected" : "Any Mode"}
-            </button>
-            <button
-              id="pulseSearchBtn"
-              onClick={handleScrapeJobs}
-              disabled={jobsLoading}
-              className="px-8 h-12 rounded-2xl bg-[#2D3748] text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-[#2D3748]/10 hover:shadow-xl hover:-translate-y-1 transition-all disabled:opacity-50"
-            >
-              {jobsLoading ? "Searching..." : "Pulse Search"}
-            </button>
           </div>
         </div>
 
@@ -599,7 +669,7 @@ export default function JobMatchPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: idx * 0.05 }}
-                key={`${job.apply_url}-${idx}`}
+                key={job.id || `${job.apply_url}-${idx}`}
                 className="p-8 rounded-4xl bg-white/70 border border-white/80 hover:border-[#7C9ADD]/40 hover:shadow-2xl transition-all group/card relative overflow-hidden"
               >
                 <div className="flex flex-col h-full justify-between gap-8 relative z-10">
@@ -609,7 +679,9 @@ export default function JobMatchPage() {
                         Via {job.source}
                       </span>
                       <div className="px-3 py-1 rounded-full bg-[#7C9ADD]/10 text-[#7C9ADD] text-[9px] font-bold uppercase tracking-widest border border-[#7C9ADD]/20">
-                        {Math.floor(Math.random() * 20 + 80)}% Match
+                        {job.match_score
+                          ? `${Math.floor(job.match_score)}% Match`
+                          : "Auto-Matching..."}
                       </div>
                     </div>
                     <h5 className="font-display font-bold text-xl text-[#2D3748] mb-6 group-hover/card:text-[#7C9ADD] transition-colors leading-tight min-h-[56px] line-clamp-2">
@@ -623,34 +695,63 @@ export default function JobMatchPage() {
                         <MapPin size={10} className="text-[#7C9ADD]" />
                         {job.location}
                       </div>
-                      {job.remote && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#98C9A3]/10 text-[#98C9A3] text-[10px] font-bold uppercase tracking-wider border border-[#98C9A3]/20 shadow-sm">
-                          <Globe size={10} />
-                          Remote
-                        </div>
-                      )}
                     </div>
                     <p className="text-xs font-medium text-[#718096] line-clamp-3 leading-relaxed opacity-80 group-hover/card:opacity-100 transition-opacity">
                       {job.description_snippet}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-                    <button className="text-[9px] font-black text-[#A0AEC0] uppercase tracking-[0.2em] hover:text-[#7C9ADD] transition-colors flex items-center gap-2">
-                      <History size={12} />
-                      Analyze Match
-                    </button>
-                    <a
-                      href={job.apply_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#6366F1] transition-all flex items-center gap-2 group/link"
-                    >
-                      Apply
-                      <ExternalLink
-                        size={12}
-                        className="transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
-                      />
-                    </a>
+                  <div className="flex flex-col gap-3 pt-6 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setJdText(job.description_snippet);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="text-[9px] font-black text-[#A0AEC0] uppercase tracking-[0.2em] hover:text-[#7C9ADD] transition-colors flex items-center gap-2"
+                      >
+                        <History size={12} />
+                        Analyze Match
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                              await createApplication({
+                                company: job.company,
+                                role: job.title,
+                                location: job.location,
+                                apply_url: job.apply_url,
+                                match_score: job.match_score,
+                              });
+                              toast.success("Added to Applications CRM!");
+                            } catch (error) {
+                              const message =
+                                error instanceof Error
+                                  ? error.message
+                                  : "Failed to add application";
+                              toast.error(message);
+                            }
+                          }}
+                          className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-[#7C9ADD]/10 hover:text-[#7C9ADD] transition-all"
+                          title="Track Application"
+                        >
+                          <TrendingUp size={14} />
+                        </button>
+                        <a
+                          href={job.apply_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#6366F1] transition-all flex items-center gap-2 group/link"
+                        >
+                          Apply
+                          <ExternalLink
+                            size={12}
+                            className="transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
+                          />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {/* Subtle Gradient Shadow */}
@@ -679,94 +780,17 @@ export default function JobMatchPage() {
         )}
       </div>
 
-      {/* Deep Search Radar */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="space-y-8"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h3 className="font-display font-black text-3xl text-[#2D3748] tracking-tight flex items-center gap-3">
-              <Globe className="text-[#9F7AEA]" size={32} />
-              Deep Search <span className="text-[#9F7AEA]">Radar</span>
-            </h3>
-            <p className="text-sm font-medium text-[#718096]">
-              Direct deep-links to industry leaders with pre-filled AI context.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              name: "LinkedIn",
-              icon: "ln",
-              color: "#0077B5",
-              bg: "bg-[#0077B5]/10",
-              url: `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(fieldInput)}&location=${encodeURIComponent(jobLocation)}`,
-            },
-            {
-              name: "Indeed",
-              icon: "in",
-              color: "#2164f3",
-              bg: "bg-[#2164f3]/10",
-              url: `https://www.indeed.com/jobs?q=${encodeURIComponent(fieldInput)}&l=${encodeURIComponent(jobLocation)}`,
-            },
-            {
-              name: "Naukri",
-              icon: "nk",
-              color: "#ff7555",
-              bg: "bg-[#ff7555]/10",
-              url: `https://www.naukri.com/${encodeURIComponent(fieldInput.replace(/,/g, "-"))}-jobs-in-${encodeURIComponent(jobLocation || "india")}`,
-            },
-            {
-              name: "Glassdoor",
-              icon: "gd",
-              color: "#0caa41",
-              bg: "bg-[#0caa41]/10",
-              url: `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${encodeURIComponent(fieldInput)}&locT=C&locId=${encodeURIComponent(jobLocation)}`,
-            },
-          ].map((portal, idx) => (
-            <motion.a
-              key={portal.name}
-              href={portal.url}
-              target="_blank"
-              rel="noreferrer"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: idx * 0.1 }}
-              viewport={{ once: true }}
-              className="p-8 rounded-4xl bg-white border border-white hover:border-[#7C9ADD]/40 shadow-sm hover:shadow-xl transition-all group flex flex-col items-center text-center gap-6 relative overflow-hidden"
-            >
-              <div
-                className={`w-16 h-16 rounded-2xl ${portal.bg} flex items-center justify-center transition-transform group-hover:scale-110`}
-              >
-                <Search size={24} style={{ color: portal.color }} />
-              </div>
-              <div>
-                <h6 className="font-display font-black text-lg text-[#2D3748]">
-                  {portal.name}
-                </h6>
-                <p className="text-[10px] font-bold text-[#A0AEC0] uppercase tracking-widest mt-1">
-                  External Search
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-[10px] font-black text-[#7C9ADD] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                Deploy Radar <ExternalLink size={12} />
-              </div>
-              {/* Subtle Gradient Hover */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity"
-                style={{
-                  background: `radial-gradient(circle at center, ${portal.color}, transparent)`,
-                }}
-              />
-            </motion.a>
-          ))}
-        </div>
-      </motion.div>
+      <AnimatePresence>
+        {isCLModalOpen && (
+          <CoverLetterModal
+            isOpen={isCLModalOpen}
+            onClose={() => setIsCLModalOpen(false)}
+            resumeId={resumeId || "default"}
+            jdText={jdText}
+            initialRole={role}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
