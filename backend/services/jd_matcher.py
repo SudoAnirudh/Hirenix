@@ -1,9 +1,13 @@
+import logging
 from typing import Optional, List, Dict, Any
 from services.embedding_engine import compare_texts
 from services.skill_gap import detect_skill_gap
 from services.groq_client import invoke_groq_llm
 from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import JobMatchResponse, SkillGapResult
+import json
+
+logger = logging.getLogger("hirenix.jd_matcher")
 
 def _fit_verdict(match_score: float) -> str:
     if match_score >= 85: return "Exceptional fit"
@@ -56,7 +60,7 @@ async def match_job_description(
     Incorporates 'Growth Potential' if user context is provided.
     """
     # 1. Semantic similarity (Experience base)
-    semantic_sim = compare_texts(resume_text, jd_text)
+    semantic_sim = await compare_texts(resume_text, jd_text)
     
     # 2. Skill gap detection
     skill_gap_raw = {"mandatory_missing": [], "competitive_missing": [], "matched_skills": []}
@@ -119,6 +123,8 @@ async def match_job_description(
         f"Leverage your {fit_verdict.lower()} to target this opening.",
         "Apply the bridge advice to your resume before submitting."
     ]
+
+    logger.info(f"Job Match complete: {match_score}% (Role: {target_role or 'Unknown'})")
 
     return JobMatchResponse(
         match_id="",

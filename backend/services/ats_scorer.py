@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, List
 from models.resume import ResumeSection
 from utils.text_cleaner import has_measurable_achievement, extract_keywords
@@ -6,6 +7,7 @@ from utils.scoring_weights import (
     ATS_RULE_WEIGHT, ATS_SEMANTIC_WEIGHT,
     ATS_RULES, REQUIRED_SECTIONS,
 )
+logger = logging.getLogger("hirenix.ats")
 
 # Common tech keywords to check for density
 TECH_KEYWORDS = {
@@ -78,7 +80,7 @@ def _rule_based_score(sections: List[ResumeSection], raw_text: str) -> Tuple[flo
     return weighted, breakdown
 
 
-def compute_ats_score(
+async def compute_ats_score(
     sections: List[ResumeSection],
     raw_text: str,
     semantic_similarity: float | None = None,
@@ -91,10 +93,12 @@ def compute_ats_score(
     effective_semantic = (
         semantic_similarity
         if semantic_similarity is not None
-        else compare_texts(raw_text, ATS_BASELINE_PROFILE)
+        else await compare_texts(raw_text, ATS_BASELINE_PROFILE)
     )
     final = (rule_score * ATS_RULE_WEIGHT + effective_semantic * ATS_SEMANTIC_WEIGHT) * 100
     final = round(min(final, 100.0), 1)
+    logger.info(f"ATS Score computed: {final} (Rule: {rule_score*100:.1f}%, Semantic: {effective_semantic*100:.1f}%)")
+    logger.debug(f"Breakdown: {breakdown}")
 
     breakdown["semantic_similarity"] = round(effective_semantic * 100, 1)
     breakdown["final_ats_score"] = final
