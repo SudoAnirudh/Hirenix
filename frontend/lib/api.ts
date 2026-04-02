@@ -243,6 +243,64 @@ export async function analyzeGithub(username: string) {
   });
 }
 
+// ─── LinkedIn ─────────────────────────────────────────────────────────────────
+export interface LinkedInAnalysis {
+  overall_score: number;
+  headline: {
+    score: number;
+    current: string;
+    improved?: string;
+    tips: string[];
+    missing_keywords: string[];
+  };
+  about: {
+    score: number;
+    current: string;
+    improved?: string;
+    tips: string[];
+    missing_keywords: string[];
+  };
+  experience: {
+    score: number;
+    current: string;
+    tips: string[];
+    missing_keywords: string[];
+  };
+  skills: {
+    score: number;
+    current: string;
+    tips: string[];
+    missing_keywords: string[];
+  };
+  completeness_score: number;
+  general_tips: string[];
+  suggested_roles: string[];
+}
+
+export async function analyzeLinkedin(file: File): Promise<LinkedInAnalysis> {
+  const token = await getAccessToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers: HeadersInit = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}/linkedin/analyze`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error: unknown) {
+    throw toApiError(error);
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "LinkedIn analysis failed");
+  }
+  return res.json();
+}
+
 // ─── Interview ────────────────────────────────────────────────────────────────
 export async function startInterview(
   resumeId: string | null,
