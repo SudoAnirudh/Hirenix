@@ -27,6 +27,7 @@ interface ProgressData {
   resume_evolution_score: number;
   ats_trend: TrendPoint[];
   interview_trend: TrendPoint[];
+  linkedin_trend: TrendPoint[];
 }
 interface RadarPoint {
   subject: string;
@@ -214,7 +215,11 @@ export default function ProgressTrackerPage() {
       fullMark: 100,
     },
     { subject: "Velocity", value: evolutionScore, fullMark: 100 },
-    { subject: "Reach", value: 65, fullMark: 100 }, // Mock social reach
+    {
+      subject: "Reach",
+      value: data?.linkedin_trend?.at(-1)?.score || 50,
+      fullMark: 100,
+    },
     { subject: "Consistency", value: 80, fullMark: 100 }, // Mock consistency
   ];
 
@@ -446,10 +451,58 @@ export default function ProgressTrackerPage() {
                 </ResponsiveContainer>
               </div>
             )}
+
+            {/* LinkedIn Trend */}
+            {data.linkedin_trend?.length > 0 && (
+              <div className="glass-card p-6">
+                <h3 className="font-semibold text-sm mb-4">
+                  LinkedIn Brand Trend
+                </h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart
+                    data={data.linkedin_trend.map(
+                      (p: TrendPoint, i: number) => ({
+                        name: `#${i + 1}`,
+                        score: p.score,
+                      }),
+                    )}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="rgba(255,255,255,0.05)"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+                    />
+                    <YAxis
+                      domain={[0, 100]}
+                      tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        background: "var(--bg-elevated)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "10px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#0A66C2"
+                      strokeWidth={2}
+                      dot={{ fill: "#0A66C2", r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
 
           {data.ats_trend?.length === 0 &&
-            data.interview_trend?.length === 0 && (
+            data.interview_trend?.length === 0 &&
+            data.linkedin_trend?.length === 0 && (
               <div
                 className="glass-card p-10 text-center"
                 style={{ color: "var(--text-secondary)" }}

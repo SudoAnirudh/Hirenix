@@ -8,11 +8,12 @@ import {
   Mic,
   ArrowRight,
   User,
-  Clock,
-  CheckCircle2,
   Sparkles,
   Map as MapIcon,
   Zap,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getProgress } from "@/lib/api";
@@ -44,10 +45,11 @@ interface UserSession {
 }
 
 interface ProgressData {
-  ats_trend?: Record<string, unknown>[];
+  ats_trend?: { score: number; date: string }[];
   resume_evolution_score?: number | string;
-  interview_trend?: Record<string, unknown>[];
-  github_trend?: Record<string, unknown>[];
+  interview_trend?: { score: number; role: string; date: string }[];
+  github_trend?: { gpi: number; date: string }[];
+  linkedin_trend?: { score: number; date: string }[];
 }
 
 export default function DashboardPage() {
@@ -90,38 +92,68 @@ export default function DashboardPage() {
   const fullName = session?.user?.user_metadata?.full_name || "Guest User";
   const email = session?.user?.email || "Not signed in";
   const plan = session?.user?.user_metadata?.plan || "free";
-  const stats = [
+
+  const getScoreTrend = (current: number, baseline: number) => {
+    const diff = current - baseline;
+    if (diff > 0)
+      return { icon: TrendingUp, color: "text-emerald-500", text: `+${diff}` };
+    if (diff < 0)
+      return { icon: TrendingDown, color: "text-pink-500", text: `${diff}` };
+    return { icon: Minus, color: "text-slate-400", text: "0" };
+  };
+
+  const performanceMetrics = [
     {
-      label: "Resumes Uploaded",
-      value: progress?.ats_trend?.length?.toString() || "0",
+      name: "Resume",
+      score:
+        typeof progress?.ats_trend?.at(-1)?.score === "number"
+          ? progress.ats_trend.at(-1)!.score
+          : 0,
+      base:
+        typeof progress?.ats_trend?.at(0)?.score === "number"
+          ? progress.ats_trend.at(0)!.score
+          : 0,
+      color: "var(--indigo)",
       icon: FileText,
-      color: "text-indigo-500",
-      bg: "bg-indigo-500/10",
     },
     {
-      label: "AI ATS Score",
-      value: progress?.resume_evolution_score?.toString() || "-",
-      icon: Zap,
-      color: "text-emerald-500",
-      bg: "bg-emerald-500/10",
+      name: "LinkedIn",
+      score:
+        typeof progress?.linkedin_trend?.at(-1)?.score === "number"
+          ? progress.linkedin_trend.at(-1)!.score
+          : 50,
+      base:
+        typeof progress?.linkedin_trend?.at(0)?.score === "number"
+          ? progress.linkedin_trend.at(0)!.score
+          : 50,
+      color: "#0A66C2",
+      icon: User,
     },
     {
-      label: "Analyses Done",
-      value: (
-        (progress?.ats_trend?.length || 0) +
-        (progress?.interview_trend?.length || 0) +
-        (progress?.github_trend?.length || 0)
-      ).toString(),
-      icon: CheckCircle2,
-      color: "text-violet-500",
-      bg: "bg-violet-500/10",
+      name: "Interview",
+      score:
+        typeof progress?.interview_trend?.at(-1)?.score === "number"
+          ? progress.interview_trend.at(-1)!.score
+          : 0,
+      base:
+        typeof progress?.interview_trend?.at(0)?.score === "number"
+          ? progress.interview_trend.at(0)!.score
+          : 0,
+      color: "var(--violet)",
+      icon: Mic,
     },
     {
-      label: "Prep Hours",
-      value: "12",
-      icon: Clock,
-      color: "text-pink-500",
-      bg: "bg-pink-500/10",
+      name: "GitHub",
+      score:
+        typeof progress?.github_trend?.at(-1)?.gpi === "number"
+          ? progress.github_trend.at(-1)!.gpi
+          : 50,
+      base:
+        typeof progress?.github_trend?.at(0)?.gpi === "number"
+          ? progress.github_trend.at(0)!.gpi
+          : 50,
+      color: "#1E293B",
+      icon: Github,
     },
   ];
 
@@ -172,35 +204,73 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-        {stats.map(({ label, value, icon: Icon, color, bg }, index) => (
-          <motion.div
-            key={label}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+      {/* Performance Pulse Hub */}
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-4 flex items-center justify-between px-2">
+          <h2 className="text-xl font-bold font-heading flex items-center gap-2">
+            <Zap className="w-5 h-5 text-indigo-500" />
+            Performance Pulse
+          </h2>
+          <Link
+            href="/dashboard/progress-tracker"
+            className="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
           >
-            <Card className="p-8 border-white/80 bg-white/60 hover:bg-white/90">
-              <div className="flex justify-between items-start mb-6">
-                {progressLoading ? (
-                  <div className="h-10 w-16 bg-slate-100 rounded-lg animate-pulse" />
-                ) : (
-                  <div className="text-5xl font-black font-heading text-[#1E293B] tracking-tight">
-                    {value}
+            View Detailed History →
+          </Link>
+        </div>
+        {performanceMetrics.map((m, i) => {
+          const trend = getScoreTrend(m.score, m.base);
+          const TrendIcon = trend.icon;
+          return (
+            <motion.div
+              key={m.name}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.1 }}
+              className="relative group h-full"
+            >
+              <Card className="p-6 h-full flex flex-col justify-between border-white/60 bg-white/40 group-hover:bg-white/80 transition-all duration-300">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1">
+                      {m.name}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-3xl font-black font-heading text-[#1E293B]">
+                        {progressLoading ? "—" : m.score}
+                      </span>
+                      {!progressLoading && (
+                        <div
+                          className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white border border-slate-100 text-[10px] font-bold ${trend.color} shadow-xs`}
+                        >
+                          <TrendIcon size={10} />
+                          {trend.text}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-                <div
-                  className={`p-3.5 rounded-2xl ${bg} border border-white/60 shrink-0 shadow-sm ${color} transition-transform group-hover:scale-110 duration-500`}
-                >
-                  <Icon size={20} />
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-white shadow-xs bg-white text-slate-400 group-hover:scale-110 transition-transform"
+                    style={{ color: m.color }}
+                  >
+                    <m.icon size={20} />
+                  </div>
                 </div>
-              </div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#64748B] opacity-60">
-                {label}
-              </div>
-            </Card>
-          </motion.div>
-        ))}
+
+                {/* Visual Progress Bar */}
+                <div className="relative w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${m.score}%` }}
+                    transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                    className="h-full rounded-full shadow-sm"
+                    style={{ backgroundColor: m.color }}
+                  />
+                </div>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
       <div className="space-y-8">
@@ -315,6 +385,34 @@ export default function DashboardPage() {
                   Practice real-time technical interviews with vocal
                   recognition.
                 </p>
+              </div>
+            </Card>
+          </Link>
+
+          {/* LinkedIn Optimization */}
+          <Link
+            href="/dashboard/linkedin-analysis"
+            className="lg:col-span-4 group relative overflow-hidden rounded-[32px] block outline-none active:scale-[0.99] transition-transform"
+          >
+            <Card className="h-full p-10 flex flex-col justify-between border-blue-100/50 bg-white/90 hover:bg-white overflow-hidden">
+              <div className="absolute inset-0 bg-linear-to-br from-blue-50 to-indigo-50/30 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-8">
+                  <div className="w-14 h-14 rounded-2xl bg-[#0A66C2] flex items-center justify-center text-white shadow-lg">
+                    <User size={28} />
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                    <ArrowRight size={20} className="text-[#0A66C2]" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold font-heading text-[#1E293B] mb-2">
+                    LinkedIn Optimizer
+                  </h3>
+                  <p className="text-[#64748B] text-sm leading-relaxed">
+                    Improve your professional brand and search visibility.
+                  </p>
+                </div>
               </div>
             </Card>
           </Link>
