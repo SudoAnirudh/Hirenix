@@ -176,7 +176,7 @@ async def scrape_jobs_for_fields(
         # 3. Quick Match injection (Semantic Only for speed during browse)
         async def _score_job(job):
             # Job description snippet is used for speed
-            score = compare_texts(resume_text, job.description_snippet)
+            score = await compare_texts(resume_text, job.description_snippet)
             job.match_score = round(score * 100, 1)
             # Generate a unique ID if missing
             if not job.id:

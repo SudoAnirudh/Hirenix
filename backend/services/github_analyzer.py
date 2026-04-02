@@ -21,16 +21,27 @@ def _auth_headers() -> dict:
 
 async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
     """Fetch GitHub repos and compute a comprehensive AI-powered profile analysis."""
-    async with httpx.AsyncClient(timeout=20) as client:
+    logger.info(f"Starting GitHub analysis for user: {username}")
+    async with httpx.AsyncClient(timeout=25) as client:
         try:
             # User info
+            logger.debug(f"Fetching user info for {username}")
             user_r = await client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
+            
+            if user_r.status_code == 404:
+                raise Exception(f"GitHub user '{username}' not found. Please check the spelling.")
             if user_r.status_code == 401:
-                raise Exception("GitHub API Unauthorized: Please check if the GITHUB_TOKEN in the backend environment is valid.")
+                logger.error("GitHub 401 Unauthorized: Invalid token.")
+                raise Exception("System GitHub token is invalid. Please contact support.")
+            if user_r.status_code == 403:
+                logger.warning(f"GitHub 403 Forbidden: Rate limit reached for {username}.")
+                raise Exception("GitHub API rate limit reached. Please try again later.")
+            
             user_r.raise_for_status()
             user_data = user_r.json()
 
             # Repositories
+            logger.debug(f"Fetching repos for {username}")
             repos_r = await client.get(
                 f"{GITHUB_API}/users/{username}/repos",
                 params={"per_page": 100, "sort": "updated"},
@@ -38,12 +49,12 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             )
             repos_r.raise_for_status()
             repos = repos_r.json()
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
-                raise Exception("GitHub API Unauthorized: The system's GitHub token is invalid or expired. Please contact support.")
-            raise Exception(f"GitHub API Error: {e.response.text}")
+            logger.info(f"Retrieved {len(repos)} repos for {username}")
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error during GitHub fetch: {str(e)}")
+            raise Exception(f"GitHub connection error: {str(e)}")
         except Exception as e:
-            logger.error(f"GitHub Error: {str(e)}")
+            logger.error(f"Unexpected error during GitHub analysis: {str(e)}")
             raise e
 
         # ─── Language Distribution ────────────────────────────────────────────────

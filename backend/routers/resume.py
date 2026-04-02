@@ -48,7 +48,7 @@ async def upload_resume(
         )
 
     # ATS scoring
-    ats_score, ats_breakdown, feedback = compute_ats_score(sections, raw_text)
+    ats_score, ats_breakdown, feedback = await compute_ats_score(sections, raw_text)
 
     # Persist to DB
     now = datetime.now(timezone.utc)
