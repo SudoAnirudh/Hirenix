@@ -11,6 +11,7 @@ import {
   TrendingUp,
   LogOut,
   Map as MapIcon,
+  Linkedin,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,11 @@ const nav = [
     href: "/dashboard/github-analysis",
     icon: Github,
     label: "GitHub Intelligence",
+  },
+  {
+    href: "/dashboard/linkedin-analysis",
+    icon: Linkedin,
+    label: "LinkedIn Optimization",
   },
   { href: "/dashboard/job-match", icon: Briefcase, label: "Job Matching" },
   {
