@@ -36,6 +36,11 @@ const nav = [
   },
   { href: "/dashboard/job-match", icon: Briefcase, label: "Job Matching" },
   {
+    href: "/dashboard/cover-letter",
+    icon: FileText,
+    label: "AI Cover Letter",
+  },
+  {
     href: "/dashboard/applications",
     icon: TrendingUp,
     label: "Applications CRM",

@@ -82,7 +82,7 @@ create index on public.resume_sections (resume_id);
 create table if not exists public.job_matches (
   id                  uuid primary key default gen_random_uuid(),
   user_id             uuid not null references public.profiles(id) on delete cascade,
-  resume_id           uuid not null references public.resumes(id) on delete cascade,
+  resume_id           uuid references public.resumes(id) on delete cascade,
   target_role         text not null,
   jd_text             text not null,
   jd_embedding        vector(1536),
@@ -90,11 +90,29 @@ create table if not exists public.job_matches (
   semantic_similarity numeric(5,2),
   skill_gap           jsonb,              -- { mandatory_missing, competitive_missing, matched_skills }
   recommendations     jsonb default '[]'::jsonb,
+  metadata            jsonb default '{}'::jsonb,
   created_at          timestamptz not null default now()
 );
 
 create index on public.job_matches (user_id);
 create index on public.job_matches (resume_id);
+
+
+-- ============================================================
+-- COVER LETTERS
+-- ============================================================
+create table if not exists public.cover_letters (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references public.profiles(id) on delete cascade,
+  resume_id     uuid references public.resumes(id) on delete set null,
+  target_role   text not null,
+  content       text not null,
+  tone          text not null default 'Professional',
+  created_at    timestamptz not null default now()
+);
+
+alter table public.cover_letters enable row level security;
+create policy "own cover letters" on public.cover_letters for all using (auth.uid() = user_id);
 
 
 -- ============================================================

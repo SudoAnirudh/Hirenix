@@ -1,16 +1,19 @@
 import uuid
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from typing import Optional
 from dependencies import get_current_user, get_supabase_admin
 from services.jd_matcher import match_job_description
 from services.job_scraper import scrape_jobs
 from services.resume_parser import parse_resume
 from services.embedding_engine import compare_texts
+from services.job_suggester import generate_job_suggestions
 from models.analysis import (
     JobMatchRequest,
     JobMatchResponse,
     JobScrapeRequest,
     JobScrapeResponse,
+    JobSuggestionResponse,
 )
 from utils.pdf_extractor import extract_pdf_text
 from utils.text_cleaner import clean_text
@@ -65,6 +68,67 @@ async def match_job(
     # Note: Returning JobMatchResponse directly
     return result.model_copy(update={"match_id": match_id, "resume_id": payload.resume_id})
 
+@router.post("/match-job-upload", response_model=JobMatchResponse)
+async def match_job_upload(
+    resume_file: UploadFile = File(...),
+    jd_text: Optional[str] = Form(None),
+    target_role: Optional[str] = Form(None),
+    jd_file: Optional[UploadFile] = File(None),
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """Compare an uploaded resume (PDF) against job description (text or file) and return match results."""
+    # 1. Parse Resume
+    resume_content = await resume_file.read()
+    if not resume_file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Resume must be a PDF.")
+    
+    _, resume_text = parse_resume(resume_content)
+    if not resume_text.strip():
+        raise HTTPException(status_code=400, detail="Could not extract text from resume.")
+
+    # 2. Extract JD Text
+    final_jd_text = jd_text or ""
+    if jd_file:
+         jd_content = await jd_file.read()
+         if jd_file.filename.lower().endswith(".pdf"):
+             final_jd_text = extract_pdf_text(jd_content)
+         else:
+             final_jd_text = jd_content.decode("utf-8", errors="ignore")
+    
+    if not final_jd_text.strip():
+        raise HTTPException(status_code=400, detail="Job description text or file is required.")
+
+    # 3. Match
+    result = await match_job_description(
+        resume_text, final_jd_text, target_role
+    )
+
+    match_id = str(uuid.uuid4())
+    # Save the match (optional link to resume_id="upload")
+    db.table("job_matches").insert(
+        {
+            "id": match_id,
+            "resume_id": None, # Nullable UUID to support direct upload
+            "user_id": user["user_id"],
+            "target_role": target_role or "Role",
+            "jd_text": final_jd_text[:3000],
+            "match_score": result.match_score,
+            "semantic_similarity": result.semantic_similarity,
+            "skill_gap": result.skill_gap.model_dump(),
+            "recommendations": result.recommendations,
+            "metadata": {
+                "technical_score": result.technical_score,
+                "experience_score": result.experience_score,
+                "soft_skills_score": result.soft_skills_score,
+                "keyword_heatmap": result.keyword_heatmap,
+                "bridge_advice": result.bridge_advice
+            }
+        }
+    ).execute()
+
+    return result.model_copy(update={"match_id": match_id, "resume_id": "upload"})
+
 @router.post("/scrape-jobs", response_model=JobScrapeResponse)
 async def scrape_jobs_for_fields(
     payload: JobScrapeRequest,
@@ -108,3 +172,12 @@ async def scrape_jobs_for_fields(
 
     query = " ".join(fields + ([payload.location.strip()] if payload.location else []))
     return JobScrapeResponse(query=query, total=len(jobs), jobs=jobs)
+
+@router.get("/suggestions", response_model=JobSuggestionResponse)
+async def get_suggestions(
+    limit: int = 6,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """Generate personalized job suggestions based on user readiness and progress."""
+    return await generate_job_suggestions(user["user_id"], db, limit)

@@ -4,13 +4,20 @@ const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
 const LOCAL_API_FALLBACK = "http://127.0.0.1:8000";
 
 export function getBaseUrl(): string {
+  // If the user explicitly provided an API URL, use it.
   const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (configured) return configured;
 
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
-    const isLocal = host === "localhost" || host === "127.0.0.1";
-    return isLocal ? LOCAL_API_FALLBACK : PROD_API_FALLBACK;
+    const isLocal =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.startsWith("192.168.");
+
+    // Use the same host type (localhost vs 127.0.0.1) as the frontend
+    // to avoid cross-origin protocol/DNs mismatches.
+    return isLocal ? `http://${host}:8000` : PROD_API_FALLBACK;
   }
 
   return LOCAL_API_FALLBACK;
@@ -199,6 +206,32 @@ export async function scrapeJobs(
       limit,
     }),
   });
+}
+
+export interface SuggestedJob {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  remote: boolean;
+  job_type: string;
+  tags: string[];
+  apply_url: string;
+  source: string;
+  posted_at: string;
+  description_snippet: string;
+  match_score: number;
+  reason: string;
+  alignment_score: number;
+}
+
+export async function getJobSuggestions(limit = 6) {
+  return request<{
+    user_id: string;
+    suggestions: SuggestedJob[];
+    evolution_score: number;
+    readiness_summary: string;
+  }>(`/jobs/suggestions?limit=${limit}`);
 }
 
 // ─── GitHub ───────────────────────────────────────────────────────────────────
