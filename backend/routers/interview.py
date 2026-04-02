@@ -7,7 +7,7 @@ from dependencies import get_current_user, get_supabase_admin
 from services.interview_engine import (
     generate_questions,
     evaluate_answer,
-    stream_evaluate_answer
+    stream_evaluate_answer,
 )
 from models.interview import (
     StartInterviewRequest,
@@ -85,25 +85,29 @@ async def start_interview(
     serialized_questions = [q.model_dump() for q in questions]
     _cache_questions(session_id, questions)
     try:
-        db.table("interview_sessions").insert({
-            "id": session_id,
-            "user_id": user["user_id"],
-            "resume_id": payload.resume_id,
-            "target_role": payload.target_role,
-            "overall_score": 0.0,
-        }).execute()
-    except Exception as minimal_insert_err:
-        try:
-            db.table("interview_sessions").insert({
+        db.table("interview_sessions").insert(
+            {
                 "id": session_id,
                 "user_id": user["user_id"],
                 "resume_id": payload.resume_id,
                 "target_role": payload.target_role,
-                "questions": json.dumps(serialized_questions),
-                "answers": json.dumps([]),
-                "feedback": json.dumps([]),
                 "overall_score": 0.0,
-            }).execute()
+            }
+        ).execute()
+    except Exception as minimal_insert_err:
+        try:
+            db.table("interview_sessions").insert(
+                {
+                    "id": session_id,
+                    "user_id": user["user_id"],
+                    "resume_id": payload.resume_id,
+                    "target_role": payload.target_role,
+                    "questions": json.dumps(serialized_questions),
+                    "answers": json.dumps([]),
+                    "feedback": json.dumps([]),
+                    "overall_score": 0.0,
+                }
+            ).execute()
         except Exception as legacy_insert_err:
             logger.error(
                 "⚠️  interview_sessions insert failed "
@@ -145,7 +149,9 @@ async def submit_answer(
         raise HTTPException(status_code=404, detail="Interview session not found.")
 
     questions = _get_session_questions(session_data, payload.session_id)
-    question = next((q for q in questions if q["question_id"] == payload.question_id), None)
+    question = next(
+        (q for q in questions if q["question_id"] == payload.question_id), None
+    )
     if not question:
         raise HTTPException(status_code=404, detail="Question not found in session.")
 
@@ -158,22 +164,24 @@ async def submit_answer(
     )
 
     try:
-        db.table("interview_answers").insert({
-            "session_id": payload.session_id,
-            "question_id": payload.question_id,
-            "question": question["question"],
-            "category": question.get("category"),
-            "difficulty": question.get("difficulty"),
-            "user_answer": payload.answer,
-            "score": feedback.score,
-            "clarity_score": feedback.clarity_score,
-            "technical_score": feedback.technical_score,
-            "depth_score": feedback.depth_score,
-            "communication_score": feedback.communication_score,
-            "strengths": feedback.strengths,
-            "improvements": feedback.improvements,
-            "model_answer_hint": feedback.model_answer_hint,
-        }).execute()
+        db.table("interview_answers").insert(
+            {
+                "session_id": payload.session_id,
+                "question_id": payload.question_id,
+                "question": question["question"],
+                "category": question.get("category"),
+                "difficulty": question.get("difficulty"),
+                "user_answer": payload.answer,
+                "score": feedback.score,
+                "clarity_score": feedback.clarity_score,
+                "technical_score": feedback.technical_score,
+                "depth_score": feedback.depth_score,
+                "communication_score": feedback.communication_score,
+                "strengths": feedback.strengths,
+                "improvements": feedback.improvements,
+                "model_answer_hint": feedback.model_answer_hint,
+            }
+        ).execute()
 
         answer_rows = (
             db.table("interview_answers")
@@ -181,25 +189,37 @@ async def submit_answer(
             .eq("session_id", payload.session_id)
             .execute()
         )
-        scores = [float(item["score"]) for item in (answer_rows.data or []) if item.get("score") is not None]
+        scores = [
+            float(item["score"])
+            for item in (answer_rows.data or [])
+            if item.get("score") is not None
+        ]
         if scores:
             avg_score = sum(scores) / len(scores) * 10
-            db.table("interview_sessions").update({
-                "overall_score": avg_score,
-            }).eq("id", payload.session_id).execute()
+            db.table("interview_sessions").update(
+                {
+                    "overall_score": avg_score,
+                }
+            ).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as structured_db_err:
         try:
             existing_answers = json.loads(session_data.get("answers", "[]") or "[]")
             existing_feedback = json.loads(session_data.get("feedback", "[]") or "[]")
-            existing_answers.append({"question_id": payload.question_id, "answer": payload.answer})
+            existing_answers.append(
+                {"question_id": payload.question_id, "answer": payload.answer}
+            )
             existing_feedback.append(feedback.model_dump())
-            avg_score = sum(f["score"] for f in existing_feedback) / len(existing_feedback) * 10
+            avg_score = (
+                sum(f["score"] for f in existing_feedback) / len(existing_feedback) * 10
+            )
 
-            db.table("interview_sessions").update({
-                "answers": json.dumps(existing_answers),
-                "feedback": json.dumps(existing_feedback),
-                "overall_score": avg_score,
-            }).eq("id", payload.session_id).execute()
+            db.table("interview_sessions").update(
+                {
+                    "answers": json.dumps(existing_answers),
+                    "feedback": json.dumps(existing_feedback),
+                    "overall_score": avg_score,
+                }
+            ).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
         except Exception as legacy_db_err:
             print(
                 "⚠️  interview answer persistence failed "
@@ -257,8 +277,12 @@ async def evaluate_session(
     scores_0_10 = [float(f.score) for f in feedback_items if f.score is not None]
     overall_score = (sum(scores_0_10) / len(scores_0_10)) * 10 if scores_0_10 else 0.0
 
-    overall_strengths = list({s for f in feedback_items for s in (f.strengths or [])})[:6]
-    overall_improvements = list({s for f in feedback_items for s in (f.improvements or [])})[:6]
+    overall_strengths = list({s for f in feedback_items for s in (f.strengths or [])})[
+        :6
+    ]
+    overall_improvements = list(
+        {s for f in feedback_items for s in (f.improvements or [])}
+    )[:6]
 
     # Best-effort persistence (won't fail request if schema differs)
     try:
@@ -267,7 +291,7 @@ async def evaluate_session(
                 "feedback": json.dumps([f.model_dump() for f in feedback_items]),
                 "overall_score": overall_score,
             }
-        ).eq("id", payload.session_id).execute()
+        ).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as e:
         logger.warning(f"interview_sessions update failed (evaluate-session): {e}")
 
@@ -303,8 +327,10 @@ async def submit_answer_stream(
 
     session_data = session_rows.data[0]
     questions = _get_session_questions(session_data, payload.session_id)
-    question = next((q for q in questions if q["question_id"] == payload.question_id), None)
-    
+    question = next(
+        (q for q in questions if q["question_id"] == payload.question_id), None
+    )
+
     if not question:
         raise HTTPException(status_code=404, detail="Question not found in session.")
 
@@ -340,9 +366,9 @@ async def save_proctor_report(
         raise HTTPException(status_code=404, detail="Interview session not found.")
 
     try:
-        db.table("interview_sessions").update({
-            "proctor_report": payload.report.model_dump_json()
-        }).eq("id", payload.session_id).execute()
+        db.table("interview_sessions").update(
+            {"proctor_report": payload.report.model_dump_json()}
+        ).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as db_err:
         logger.error(f"⚠️ interview_sessions update (proctor_report) failed: {db_err}")
         # The schema might not have the column yet, we just print the error and return success
