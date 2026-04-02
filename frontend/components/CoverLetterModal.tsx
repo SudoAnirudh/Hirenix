@@ -12,7 +12,7 @@ import {
   ChevronRight,
   Settings2,
 } from "lucide-react";
-import { generateCoverLetter, getCoverLetterExportUrl } from "@/lib/api";
+import { generateCoverLetter, downloadCoverLetter } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -60,6 +60,15 @@ export default function CoverLetterModal({
     navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleDownload(format: "pdf" | "docx") {
+    try {
+      await downloadCoverLetter(letterId, format);
+      toast.success(`Exporting as ${format.toUpperCase()}...`);
+    } catch (err: any) {
+      toast.error(err.message || "Download failed");
+    }
   }
 
   if (!isOpen) return null;
@@ -198,22 +207,21 @@ export default function CoverLetterModal({
 
           {content && (
             <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-end gap-3">
-              <a
-                href={getCoverLetterExportUrl(letterId, "docx")}
-                target="_blank"
-                className="inline-flex items-center px-6 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest hover:border-[#7C9ADD] hover:text-[#7C9ADD] transition-all"
+              <Button
+                variant="outline"
+                onClick={() => handleDownload("docx")}
+                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest hover:border-[#7C9ADD] hover:text-[#7C9ADD] transition-all h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 Word (.docx)
-              </a>
-              <a
-                href={getCoverLetterExportUrl(letterId, "pdf")}
-                target="_blank"
-                className="inline-flex items-center px-6 py-2.5 rounded-xl bg-[#1E293B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md"
+              </Button>
+              <Button
+                onClick={() => handleDownload("pdf")}
+                className="rounded-xl bg-[#1E293B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 PDF Export
-              </a>
+              </Button>
             </div>
           )}
         </div>

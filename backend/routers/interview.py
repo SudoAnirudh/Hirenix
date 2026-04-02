@@ -51,12 +51,28 @@ async def start_interview(
     """Generate interview questions tailored to the user's resume and target role."""
     # Fetch resume sections for context
     resume_context = ""
+    actual_resume_id = None
     if payload.resume_id:
+        # Resolve "default" to the latest resume ID if needed
+        actual_resume_id = payload.resume_id
+        if payload.resume_id == "default":
+            latest_r = (
+                db.table("resumes")
+                .select("id")
+                .eq("user_id", user["user_id"])
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if not latest_r.data:
+                raise HTTPException(status_code=404, detail="No resumes found.")
+            actual_resume_id = latest_r.data[0]["id"]
+
         # First verify the resume belongs to the user
         resume_check = (
             db.table("resumes")
             .select("id")
-            .eq("id", payload.resume_id)
+            .eq("id", actual_resume_id)
             .eq("user_id", user["user_id"])
             .single()
             .execute()
@@ -67,10 +83,11 @@ async def start_interview(
         sections_r = (
             db.table("resume_sections")
             .select("*")
-            .eq("resume_id", payload.resume_id)
+            .eq("resume_id", actual_resume_id)
             .execute()
         )
-        resume_context = " ".join([s["content"] for s in (sections_r.data or [])])
+        for s in (sections_r.data or []):
+            resume_context += s.get("content", "") + " "
 
     interview_plan, questions = await generate_questions(
         resume_context=resume_context,
@@ -88,7 +105,7 @@ async def start_interview(
         db.table("interview_sessions").insert({
             "id": session_id,
             "user_id": user["user_id"],
-            "resume_id": payload.resume_id,
+            "resume_id": actual_resume_id,
             "target_role": payload.target_role,
             "overall_score": 0.0,
         }).execute()
@@ -97,7 +114,7 @@ async def start_interview(
             db.table("interview_sessions").insert({
                 "id": session_id,
                 "user_id": user["user_id"],
-                "resume_id": payload.resume_id,
+                "resume_id": actual_resume_id,
                 "target_role": payload.target_role,
                 "questions": json.dumps(serialized_questions),
                 "answers": json.dumps([]),

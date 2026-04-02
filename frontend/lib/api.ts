@@ -352,11 +352,34 @@ export async function generateCoverLetter(
   });
 }
 
-export function getCoverLetterExportUrl(
+export async function downloadCoverLetter(
   letterId: string,
   format: "pdf" | "docx",
 ) {
-  return `${getBaseUrl()}/cover-letter/export/${letterId}?format=${format}`;
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${getBaseUrl()}/cover-letter/export/${letterId}?format=${format}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Download failed");
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cover_letter_${letterId.slice(0, 8)}.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 }
 
 // ─── Applications CRM ─────────────────────────────────────────────────────────
