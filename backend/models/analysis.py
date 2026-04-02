@@ -71,3 +71,30 @@ class CoverLetterResponse(BaseModel):
     content: str  # Markdown/Plaintext
     resume_id: str
     target_role: str
+
+class JobSuggestionRequest(BaseModel):
+    limit: int = 6
+
+
+class SuggestedJob(BaseModel):
+    id: str
+    title: str
+    company: str
+    location: str
+    remote: bool
+    job_type: str
+    tags: List[str]
+    apply_url: str
+    source: str
+    posted_at: str
+    description_snippet: str
+    match_score: float
+    reason: str
+    alignment_score: float # How well it matches user progress
+
+
+class JobSuggestionResponse(BaseModel):
+    user_id: str
+    suggestions: List[SuggestedJob]
+    evolution_score: float
+    readiness_summary: str

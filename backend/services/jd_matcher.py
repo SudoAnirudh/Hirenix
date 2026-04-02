@@ -1,16 +1,15 @@
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from services.embedding_engine import compare_texts
 from services.skill_gap import detect_skill_gap
 from services.groq_client import invoke_groq_llm
+from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import JobMatchResponse, SkillGapResult
 
 def _fit_verdict(match_score: float) -> str:
-    if match_score >= 80:
-        return "Strong fit"
-    if match_score >= 65:
-        return "Good fit"
-    if match_score >= 50:
-        return "Moderate fit"
+    if match_score >= 85: return "Exceptional fit"
+    if match_score >= 75: return "Strong fit"
+    if match_score >= 60: return "Good fit"
+    if match_score >= 40: return "Moderate fit"
     return "Low fit"
 
 async def _get_bridge_advice(resume_text: str, jd_text: str, missing_skills: List[str]) -> List[str]:
@@ -19,97 +18,107 @@ async def _get_bridge_advice(resume_text: str, jd_text: str, missing_skills: Lis
         return ["Your profile is already a strong match! Focus on tailoring your bullet points to the JD's specific verbs."]
 
     prompt = f"""
-    You are an expert Career Coach and ATS Specialist.
-    Resume: {resume_text[:2000]}
-    Job Description: {jd_text[:2000]}
-    Missing Skills: {", ".join(missing_skills)}
+    You are a Strategic Career Advisor.
+    Resume: {resume_text[:1500]}
+    Job Description: {jd_text[:1500]}
+    Specific Missing Skills: {", ".join(missing_skills)}
 
-    Based on the resume and job description, provide 3-4 specific, actionable "Bridge Advice" bullet points. 
-    A "Bridge" is how to frame existing experience to satisfy a requirement even if the exact keyword is missing, 
-    or a quick way to add the skill to the resume if they likely have it.
-    
-    Output ONLY as a JSON list of strings. Do not include any other text.
+    Provide 3 high-impact, brief "Bridge Advice" points. 
+    Explain how to pivot existing experience to cover these gaps or what specific micro-project to add.
+    Output ONLY as a JSON list of strings.
     """
     
-    messages = [{"role": "user", "content": prompt}]
-    response = await invoke_groq_llm(messages, temperature=0.3)
+    # Use NVIDIA for high-quality advice if possible
+    response = await invoke_nvidia_llm([{"role": "user", "content": prompt}], temperature=0.3)
+    if not response:
+        response = await invoke_groq_llm([{"role": "user", "content": prompt}], temperature=0.3)
     
     try:
         if response and response.get("choices"):
             content = response["choices"][0]["message"]["content"]
-            # Clean possible markdown wrap
-            if "```json" in content:
-                content = content.split("```json")[1].split("```")[0]
-            elif "```" in content:
-                content = content.split("```")[1].split("```")[0]
-            return eval(content.strip())
+            if "```json" in content: content = content.split("```json")[1].split("```")[0]
+            return json.loads(content.strip())
     except:
         pass
     
-    return [f"Add direct experience with {skill} to your professional summary." for skill in missing_skills[:3]]
+    return [f"Highlight your transferable proficiency in {skill} via recent projects." for skill in missing_skills[:3]]
 
 async def match_job_description(
     resume_text: str,
     jd_text: str,
     target_role: Optional[str] = None,
+    user_id: Optional[str] = None,
+    db: Optional[Any] = None
 ) -> JobMatchResponse:
     """
     Compare resume against a job description.
     Returns semantic match score, granular scoring, skill gap, and AI advice.
+    Incorporates 'Growth Potential' if user context is provided.
     """
-    # Semantic similarity via embeddings (Experience Score base)
+    # 1. Semantic similarity (Experience base)
     semantic_sim = compare_texts(resume_text, jd_text)
     
-    # Skill gap detection
+    # 2. Skill gap detection
     skill_gap_raw = {"mandatory_missing": [], "competitive_missing": [], "matched_skills": []}
     if target_role:
         skill_gap_raw = detect_skill_gap(resume_text, target_role)
 
-    # Multi-dimensional scoring
-    mandatory_total = len(skill_gap_raw["mandatory_missing"]) + len([s for s in skill_gap_raw["matched_skills"] if s in skill_gap_raw["mandatory_missing"]])
-    # Note: matched_skills includes both mandatory and competitive. 
-    # Let's fix the logic to get actual mandatory matched.
-    # Actually skill_gap.py returns them nicely.
-
-    # 1. Technical Score (Mandatory skill coverage)
-    mandatory_matched = [s for s in skill_gap_raw["matched_skills"] if s.lower() in [m.lower() for m in skill_gap_raw.get("mandatory_missing", []) + skill_gap_raw.get("matched_skills", [])]]
-    # wait, the logic above is slightly flawed because matched_skills is already detected.
+    # 3. Technical Score (Skill Coverage)
+    total_relevant = len(skill_gap_raw["matched_skills"]) + len(skill_gap_raw["mandatory_missing"])
+    technical_score = (len(skill_gap_raw["matched_skills"]) / max(total_relevant, 1)) * 100
     
-    # Let's use a simpler heuristic for dimensions:
-    technical_score = (len(skill_gap_raw["matched_skills"]) / max(len(skill_gap_raw["matched_skills"]) + len(skill_gap_raw["mandatory_missing"]), 1)) * 100
+    # 4. Experience Score (Semantic + Keywords)
     experience_score = semantic_sim * 100
-    soft_skills_score = min(100, (len(resume_text.split()) / 500) * 100) # Placeholder: improved by length & context
+    
+    # 5. Soft Skills (Contextual Analysis - Placeholder for deeper NLP)
+    soft_skills_score = min(100, (len(resume_text.split()) / 450) * 100)
 
-    # Composite match score: 40% technical + 40% experience + 20% soft skills (naive)
-    match_score = round((technical_score * 0.4 + experience_score * 0.4 + soft_skills_score * 0.2), 1)
+    # 6. Growth Alignment (Verified via Progress)
+    growth_score = 0.0
+    progress_notes = []
+    if user_id and db:
+        from services.job_suggester import get_user_readiness_context
+        ctx = await get_user_readiness_context(user_id, db)
+        
+        ready_skills = ctx.get("ready_skills", [])
+        verified_matches = [s for s in ready_skills if s.lower() in jd_text.lower() or s.lower() in [ms.lower() for ms in skill_gap_raw["matched_skills"]]]
+        
+        if verified_matches:
+            growth_score = min(100, (len(verified_matches) / 3) * 100)
+            progress_notes.append(f"Matching Verified Skills: {', '.join(verified_matches)}")
+        
+        if ctx.get("gpi_score", 0) > 70:
+            growth_score = (growth_score + 100) / 2
+            progress_notes.append("High GitHub Production Index detected.")
+
+    # Composite Score Logic
+    if user_id:
+        # Weighted: 35% Tech, 35% Exp, 10% Soft, 20% Growth
+        match_score = round((technical_score * 0.35 + experience_score * 0.35 + soft_skills_score * 0.10 + growth_score * 0.20), 1)
+    else:
+        # Standard: 40% Tech, 40% Exp, 20% Soft
+        match_score = round((technical_score * 0.4 + experience_score * 0.4 + soft_skills_score * 0.2), 1)
+
     fit_verdict = _fit_verdict(match_score)
+    keyword_heatmap = {s: "matched" for s in skill_gap_raw["matched_skills"]}
+    keyword_heatmap.update({s: "missing" for s in skill_gap_raw["mandatory_missing"]})
+    keyword_heatmap.update({s: "partial" for s in skill_gap_raw["competitive_missing"]})
 
-    # Heatmap
-    keyword_heatmap = {}
-    for s in skill_gap_raw["matched_skills"]:
-        keyword_heatmap[s] = "matched"
-    for s in skill_gap_raw["mandatory_missing"]:
-        keyword_heatmap[s] = "missing"
-    for s in skill_gap_raw["competitive_missing"]:
-        keyword_heatmap[s] = "partial"
-
-    # Bridge Advice (Async)
+    # AI Bridge Advice
     missing = skill_gap_raw["mandatory_missing"] + skill_gap_raw["competitive_missing"]
     bridge_advice = await _get_bridge_advice(resume_text, jd_text, missing)
 
-    pros = []
-    for skill in skill_gap_raw["matched_skills"][:4]:
-        pros.append(f"Strong technical match: {skill}")
-    if semantic_sim >= 0.75:
-        pros.append("Experience aligns with seniority and role scope.")
+    pros = [f"Direct match found for {s}" for s in skill_gap_raw["matched_skills"][:3]]
+    if semantic_sim > 0.7: pros.append("Strong narrative alignment with role requirements.")
+    if growth_score > 60: pros.append("Proven domain readiness from recent interview/coding activity.")
 
-    cons = []
-    if skill_gap_raw["mandatory_missing"]:
-        cons.append(f"Key skill gaps: {', '.join(skill_gap_raw['mandatory_missing'][:2])}")
-    if semantic_sim < 0.6:
-        cons.append("Core experience context differs significantly from the JD.")
+    cons = [f"Missing critical skill: {s}" for s in skill_gap_raw["mandatory_missing"][:2]]
+    if semantic_sim < 0.5: cons.append("Significant gap in core industry experience.")
 
-    recommendations = [f"Synthesize your results into a {fit_verdict} application strategy."]
+    recommendations = [
+        f"Leverage your {fit_verdict.lower()} to target this opening.",
+        "Apply the bridge advice to your resume before submitting."
+    ]
 
     return JobMatchResponse(
         match_id="",
