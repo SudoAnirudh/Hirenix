@@ -27,18 +27,34 @@ async def match_job(
     db=Depends(get_supabase_admin),
 ):
     """Compare a resume against a job description and return match score + skill gaps."""
-    r = (
-        db.table("resumes")
-        .select("raw_text")
-        .eq("id", payload.resume_id)
-        .eq("user_id", user["user_id"])
-        .single()
-        .execute()
-    )
-    if not r.data:
-        raise HTTPException(status_code=404, detail="Resume not found.")
+    # Fetch resume text
+    actual_resume_id = payload.resume_id
+    if payload.resume_id == "default":
+        r = (
+            db.table("resumes")
+            .select("id, raw_text")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if not r.data:
+            raise HTTPException(status_code=404, detail="No resumes found for this user.")
+        resume_text = r.data[0]["raw_text"]
+        actual_resume_id = r.data[0]["id"]
+    else:
+        r = (
+            db.table("resumes")
+            .select("raw_text")
+            .eq("id", payload.resume_id)
+            .eq("user_id", user["user_id"])
+            .single()
+            .execute()
+        )
+        if not r.data:
+            raise HTTPException(status_code=404, detail="Resume not found.")
+        resume_text = r.data["raw_text"]
 
-    resume_text = r.data["raw_text"]
     result = await match_job_description(
         resume_text, payload.jd_text, payload.target_role
     )
@@ -47,7 +63,7 @@ async def match_job(
     db.table("job_matches").insert(
         {
             "id": match_id,
-            "resume_id": payload.resume_id,
+            "resume_id": actual_resume_id,
             "user_id": user["user_id"],
             "target_role": payload.target_role or "Role",
             "jd_text": payload.jd_text[:3000],

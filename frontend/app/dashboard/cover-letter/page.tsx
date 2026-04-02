@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   generateCoverLetter,
-  getCoverLetterExportUrl,
+  downloadCoverLetter,
   getProgress,
 } from "@/lib/api";
 import { toast } from "sonner";
@@ -135,9 +135,14 @@ export default function CoverLetterPage() {
     }
   };
 
-  const handleExport = (format: "pdf" | "docx") => {
+  const handleExport = async (format: "pdf" | "docx") => {
     if (!letter?.id) return;
-    window.open(getCoverLetterExportUrl(letter.id, format), "_blank");
+    try {
+      await downloadCoverLetter(letter.id, format);
+      toast.success(`Exporting as ${format.toUpperCase()}...`);
+    } catch (err: any) {
+      toast.error(err.message || "Export failed");
+    }
   };
 
   const handleCopy = () => {
