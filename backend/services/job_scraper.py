@@ -132,9 +132,8 @@ async def _fetch_rss_jobs(
 ) -> List[JobListing]:
     # Use feedparser to get jobs from RSS feeds
     try:
-        # feedparser.parse is blocking, but for small feeds it's usually fine.
-        # In a high-perf app, we'd run this in a threadpool.
-        feed = feedparser.parse(url)
+        # feedparser.parse is blocking, so we run it in a threadpool to not block the event loop
+        feed = await asyncio.to_thread(feedparser.parse, url)
     except Exception:
         return []
 
