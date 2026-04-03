@@ -116,14 +116,15 @@ export default function CoverLetterModal({
                   <button
                     key={t}
                     onClick={() => setTone(t)}
-                    className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
+                    aria-pressed={tone === t}
+                    className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] ${
                       tone === t
                         ? "bg-white border-[#7C9ADD] text-[#7C9ADD] shadow-sm scale-[1.02]"
                         : "bg-transparent border-slate-200 text-slate-500 hover:border-slate-300"
                     }`}
                   >
                     {t}
-                    {tone === t && <Check size={14} />}
+                    {tone === t && <Check size={14} aria-hidden="true" />}
                   </button>
                 ),
               )}
@@ -151,9 +152,10 @@ export default function CoverLetterModal({
         <div className="flex-1 flex flex-col relative bg-white">
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10"
+            aria-label="Close modal"
+            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
 
           <div className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
@@ -171,13 +173,14 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all"
+                      aria-label={copied ? "Copied to Clipboard" : "Copy to Clipboard"}
+                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]"
                       title="Copy to Clipboard"
                     >
                       {copied ? (
-                        <Check size={18} className="text-emerald-500" />
+                        <Check size={18} className="text-emerald-500" aria-hidden="true" />
                       ) : (
-                        <Copy size={18} />
+                        <Copy size={18} aria-hidden="true" />
                       )}
                     </button>
                   </div>
