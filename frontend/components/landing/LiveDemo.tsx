@@ -51,6 +51,7 @@ export const LiveDemo = () => {
             </div>
             <input
               type="text"
+              aria-label="Job URL to analyze"
               placeholder="https://linkedin.com/jobs/..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
