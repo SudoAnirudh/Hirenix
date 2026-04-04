@@ -203,7 +203,7 @@ async def submit_answer(
             avg_score = sum(scores) / len(scores) * 10
             db.table("interview_sessions").update({
                 "overall_score": avg_score,
-            }).eq("id", payload.session_id).execute()
+            }).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as structured_db_err:
         try:
             existing_answers = json.loads(session_data.get("answers", "[]") or "[]")
@@ -216,7 +216,7 @@ async def submit_answer(
                 "answers": json.dumps(existing_answers),
                 "feedback": json.dumps(existing_feedback),
                 "overall_score": avg_score,
-            }).eq("id", payload.session_id).execute()
+            }).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
         except Exception as legacy_db_err:
             print(
                 "⚠️  interview answer persistence failed "
@@ -284,7 +284,7 @@ async def evaluate_session(
                 "feedback": json.dumps([f.model_dump() for f in feedback_items]),
                 "overall_score": overall_score,
             }
-        ).eq("id", payload.session_id).execute()
+        ).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as e:
         logger.warning(f"interview_sessions update failed (evaluate-session): {e}")
 
@@ -359,7 +359,7 @@ async def save_proctor_report(
     try:
         db.table("interview_sessions").update({
             "proctor_report": payload.report.model_dump_json()
-        }).eq("id", payload.session_id).execute()
+        }).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as db_err:
         logger.error(f"⚠️ interview_sessions update (proctor_report) failed: {db_err}")
         # The schema might not have the column yet, we just print the error and return success
