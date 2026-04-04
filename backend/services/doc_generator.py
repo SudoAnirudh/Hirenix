@@ -2,7 +2,7 @@ import io
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_LEFT
 from docx import Document
 from docx.shared import Pt
 
