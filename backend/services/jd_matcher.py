@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Any
 from services.embedding_engine import compare_texts
 from services.skill_gap import detect_skill_gap
 from services.groq_client import invoke_groq_llm

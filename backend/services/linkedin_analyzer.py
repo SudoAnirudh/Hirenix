@@ -1,7 +1,6 @@
 import json
 import logging
-import re
-from typing import Optional, Dict, Any
+from typing import Optional
 from models.linkedin import LinkedInAnalysisResponse
 from utils.pdf_extractor import extract_pdf_text
 from utils.text_cleaner import clean_text
@@ -107,6 +106,6 @@ async def analyze_linkedin_profile(content: bytes) -> Optional[LinkedInAnalysisR
         logger.error(f"No JSON block found in LLM response: {content_str[:500]}")
         return None
 
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in analyze_linkedin_profile")
         return None

@@ -1,14 +1,12 @@
-import asyncio
 import json
 import logging
 import uuid
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
-from services.embedding_engine import compare_texts
 from services.groq_client import invoke_groq_llm
 from services.nvidia_client import invoke_nvidia_llm
-from models.analysis import SuggestedJob, JobSuggestionResponse, JobListing
+from models.analysis import SuggestedJob, JobSuggestionResponse
 
 logger = logging.getLogger("hirenix.job_suggester")
 

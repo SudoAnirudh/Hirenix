@@ -16,7 +16,6 @@ from models.analysis import (
     JobSuggestionResponse,
 )
 from utils.pdf_extractor import extract_pdf_text
-from utils.text_cleaner import clean_text
 
 router = APIRouter()
 
