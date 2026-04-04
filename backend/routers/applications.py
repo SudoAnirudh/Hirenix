@@ -1,7 +1,6 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends
 from dependencies import get_current_user, get_supabase_admin
-from models.analysis import JobListing
 from pydantic import BaseModel
 from typing import List, Optional
 
