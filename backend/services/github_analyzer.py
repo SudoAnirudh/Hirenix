@@ -1,5 +1,6 @@
 import httpx
 import logging
+import re
 from datetime import datetime, timedelta
 from config import settings
 from models.github import GitHubAnalysisResponse, GitHubMetrics, RepoMetric
@@ -21,6 +22,11 @@ def _auth_headers() -> dict:
 
 async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
     """Fetch GitHub repos and compute a comprehensive AI-powered profile analysis."""
+    # Strict validation for GitHub usernames to prevent SSRF and path traversal
+    # Rules: max 39 characters, alphanumeric and single hyphens, cannot start or end with a hyphen
+    if not re.match(r"^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$", username):
+        raise ValueError("Invalid GitHub username provided.")
+
     logger.info(f"Starting GitHub analysis for user: {username}")
     async with httpx.AsyncClient(timeout=25) as client:
         try:
@@ -38,7 +44,7 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                 raise Exception("GitHub API rate limit reached. Please try again later.")
             
             user_r.raise_for_status()
-            user_data = user_r.json()
+            # user_data = user_r.json() # user_data currently unused, kept user_r.raise_for_status()
 
             # Repositories
             logger.debug(f"Fetching repos for {username}")
@@ -88,13 +94,12 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     link = commits_r.headers.get("Link", "")
                     if 'rel="last"' in link:
                         # Simple heuristic: last page number is the count if per_page=1
-                        import re
                         match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
                         if match:
                             commits_count = int(match.group(1))
                     else:
                         commits_count = len(commits_r.json())
-            except:
+            except Exception:
                 pass # Gracefully skip if commit fetch fails
 
             repo_metrics.append(RepoMetric(
