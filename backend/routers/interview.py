@@ -1,5 +1,6 @@
 import uuid
 import logging
+import asyncio
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -255,21 +256,26 @@ async def evaluate_session(
     by_id = {q["question_id"]: q for q in questions if "question_id" in q}
     feedback_items: List[AnswerFeedback] = []
 
+    evaluation_tasks = []
     for item in payload.answers:
         q = by_id.get(item.question_id)
         if not q:
             continue
-        fb = await evaluate_answer(
-            question_id=item.question_id,
-            question=q["question"],
-            answer=item.answer,
-            category=q.get("category", "technical"),
-            expected_topics=q.get("expected_topics", []) or [],
+        evaluation_tasks.append(
+            evaluate_answer(
+                question_id=item.question_id,
+                question=q["question"],
+                answer=item.answer,
+                category=q.get("category", "technical"),
+                expected_topics=q.get("expected_topics", []) or [],
+            )
         )
-        feedback_items.append(fb)
 
-    if not feedback_items:
+    if not evaluation_tasks:
         raise HTTPException(status_code=400, detail="No valid answers to evaluate.")
+
+    # Execute all answer evaluations concurrently for better performance
+    feedback_items = await asyncio.gather(*evaluation_tasks)
 
     scores_0_10 = [float(f.score) for f in feedback_items if f.score is not None]
     overall_score = (sum(scores_0_10) / len(scores_0_10)) * 10 if scores_0_10 else 0.0
