@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 from pydantic import Field
 
 class GitHubAnalysisRequest(BaseModel):
-    username: str = Field(..., pattern=r"^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$")
+    username: str = Field(..., min_length=1, max_length=39, pattern=r"^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 
 
 class RepoMetric(BaseModel):
