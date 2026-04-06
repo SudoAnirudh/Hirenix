@@ -1,8 +1,10 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict
 
+from pydantic import Field
+
 class GitHubAnalysisRequest(BaseModel):
-    username: str
+    username: str = Field(..., pattern=r"^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$")
 
 
 class RepoMetric(BaseModel):
