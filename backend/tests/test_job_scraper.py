@@ -11,9 +11,9 @@ class TestJobScraper(unittest.IsolatedAsyncioTestCase):
     })
     async def test_fetch_rss_jobs_uses_to_thread(self):
         # Import inside the test while the mocks are active
-        from backend.services.job_scraper import _fetch_rss_jobs
+        from services.job_scraper import _fetch_rss_jobs
 
-        with patch("backend.services.job_scraper.feedparser.parse") as mock_parse:
+        with patch("services.job_scraper.feedparser.parse") as mock_parse:
             # Arrange
             url = "http://test-url.com/rss"
             source_name = "TestSource"

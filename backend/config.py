@@ -37,9 +37,6 @@ class Settings(BaseSettings):
         "https://hirenix-h9ij1n4wf-anirudhs-projects-e6a6ef2f.vercel.app,"
         "https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
     )
-    allowed_origin_regex: Optional[str] = (
-        r"^https://hirenix-.*\.vercel\.app$|^https://hirenix-.*\.onrender\.com$|^https://hirenix-.*\.netlify\.app$"
-    )
 
     class Config:
         env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
