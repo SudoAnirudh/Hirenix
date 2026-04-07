@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 from dependencies import get_current_user, get_supabase_admin
 import json
+import logging
 from services.groq_client import invoke_groq_llm
+from services.nvidia_client import invoke_nvidia_llm
+
+logger = logging.getLogger("hirenix.routers.analytics")
 
 router = APIRouter()
 
@@ -129,7 +133,13 @@ async def get_ai_summary(
         {"role": "user", "content": prompt}
     ]
 
-    response = await invoke_groq_llm(messages)
+    # Try NVIDIA Gemma 4 (31B Dense) first for high-reasoning summaries
+    response = await invoke_nvidia_llm(messages)
+    
+    # Fallback to Groq Llama 3 if NVIDIA fails or is not configured
+    if not response:
+        logger.info("NVIDIA Gemma 4 failed or is not configured; falling back to Groq Llama 3.")
+        response = await invoke_groq_llm(messages)
     
     if not response:
         return {"summary": "Failed to generate summary. Please ensure your analyses are complete and try again."}
