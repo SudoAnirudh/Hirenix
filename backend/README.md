@@ -1,7 +1,7 @@
 # 🚀 Hirenix Backend
 
 > **Next-Gen AI Career Acceleration Platform - API & Services**
-> _Powered by FastAPI, Supabase (pgvector), and OpenAI GPT-4o._
+> _Powered by FastAPI, Supabase (pgvector), and Hirenix AI._
 
 The backend of Hirenix manages core business logic, AI operations, and data persistence. It exposes a fast, modern RESTful API for the frontend client, handling tasks from resume NLP to GitHub portfolio analysis and mock interview generation.
 
@@ -9,7 +9,7 @@ The backend of Hirenix manages core business logic, AI operations, and data pers
 
 - **Framework**: FastAPI (Python 3.11)
 - **Data Validation**: Pydantic
-- **AI/NLP**: OpenAI GPT-4o, spaCy (`en_core_web_sm`), Sentence-Transformers
+- **AI/NLP**: Hirenix AI, spaCy (`en_core_web_sm`), Sentence-Transformers
 - **Database**: Supabase (PostgreSQL 15) with `pgvector` extension
 - **Integration**: GitHub REST API
 - **Server**: Uvicorn
@@ -20,7 +20,7 @@ The backend of Hirenix manages core business logic, AI operations, and data pers
 
 - Python 3.11+
 - Supabase Account (with configured pgvector schema)
-- OpenAI API Key
+- Hirenix AI Key (Set as `OPENAI_API_KEY`)
 - GitHub Personal Access Token
 
 ### Installation
@@ -71,7 +71,7 @@ The backend of Hirenix manages core business logic, AI operations, and data pers
 
 - `main.py`: Application entry point and FastAPI app initialization.
 - `routers/`: API route definitions (controllers).
-- `services/`: Core business logic, integrating with OpenAI, GitHub, etc.
+- `services/`: Core business logic, integrating with Hirenix AI, GitHub, etc.
 - `models/`: Pydantic models for request/response validation.
 - `utils/`: Helper functions and shared utilities.
 - `config.py`: Environment variable loading and configuration management.

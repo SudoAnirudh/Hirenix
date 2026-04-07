@@ -14,7 +14,10 @@ from models.analysis import (
     JobScrapeRequest,
     JobScrapeResponse,
     JobSuggestionResponse,
+    OutreachDraftsRequest,
+    OutreachDraftsResponse,
 )
+from services.outreach_service import generate_outreach_drafts
 from utils.pdf_extractor import extract_pdf_text
 
 router = APIRouter()
@@ -196,3 +199,19 @@ async def get_suggestions(
 ):
     """Generate personalized job suggestions based on user readiness and progress."""
     return await generate_job_suggestions(user["user_id"], db, limit)
+
+
+@router.post("/outreach-drafts", response_model=OutreachDraftsResponse)
+async def get_outreach_drafts(
+    payload: OutreachDraftsRequest,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """Generate high-reasoning outreach drafts (LinkedIn/Email) for a job match."""
+    drafts = await generate_outreach_drafts(user["user_id"], payload.match_id, db, payload.tone)
+    if not drafts:
+        raise HTTPException(
+            status_code=500, 
+            detail="Failed to generate outreach drafts. Please try again later."
+        )
+    return drafts

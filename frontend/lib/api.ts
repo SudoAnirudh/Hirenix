@@ -190,6 +190,22 @@ export async function matchJobWithUpload(
   return res.json();
 }
 
+export async function generateOutreachDrafts(matchId: string, tone = "Formal") {
+  return request<{
+    match_id: string;
+    linkedin_request: string;
+    cold_email: string;
+    company_name?: string;
+  }>("/jobs/outreach-drafts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      match_id: matchId,
+      tone: tone,
+    }),
+  });
+}
+
 export async function scrapeJobs(
   fields: string[],
   location?: string,
