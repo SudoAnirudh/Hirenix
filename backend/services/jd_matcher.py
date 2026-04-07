@@ -32,7 +32,7 @@ async def _get_bridge_advice(resume_text: str, jd_text: str, missing_skills: Lis
     Output ONLY as a JSON list of strings.
     """
     
-    # Use NVIDIA for high-quality advice if possible
+    # Use Hirenix AI for high-quality advice if possible
     response = await invoke_nvidia_llm([{"role": "user", "content": prompt}], temperature=0.3)
     if not response:
         response = await invoke_groq_llm([{"role": "user", "content": prompt}], temperature=0.3)

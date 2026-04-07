@@ -98,3 +98,15 @@ class JobSuggestionResponse(BaseModel):
     suggestions: List[SuggestedJob]
     evolution_score: float
     readiness_summary: str
+
+
+class OutreachDraftsRequest(BaseModel):
+    match_id: str
+    tone: str = "Formal"
+
+
+class OutreachDraftsResponse(BaseModel):
+    match_id: str
+    linkedin_request: str
+    cold_email: str
+    company_name: Optional[str] = None

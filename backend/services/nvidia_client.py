@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Optional
 from config import settings
 from services.telemetry_service import telemetry
 
-logger = logging.getLogger("hirenix.nvidia")
+logger = logging.getLogger("hirenix.core_ai")
 
 async def invoke_nvidia_llm(
     messages: List[Dict[str, str]],
@@ -14,11 +14,11 @@ async def invoke_nvidia_llm(
     max_tokens: int = 4096,
 ) -> Optional[Dict[str, Any]]:
     """
-    Invokes the NVIDIA NIM (NGC) API with the provided messages and parameters.
+    Invokes the Hirenix AI engine for text generation and reasoning.
     Returns the JSON response or None if the request fails.
     """
     if not settings.nvidia_api_key:
-        logger.warning("NVIDIA_API_KEY is not set.")
+        logger.warning("Core AI API key is not set.")
         telemetry.track_call("nvidia", success=False, latency_ms=0)
         return None
 
@@ -40,7 +40,7 @@ async def invoke_nvidia_llm(
 
     start_time = time.time()
     try:
-        async with httpx.AsyncClient(timeout=45.0) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             response = await client.post(invoke_url, headers=headers, json=payload)
             response.raise_for_status()
             
@@ -55,6 +55,6 @@ async def invoke_nvidia_llm(
             
     except Exception as e:
         latency_ms = (time.time() - start_time) * 1000
-        logger.error(f"Error invoking NVIDIA LLM: {str(e)}")
+        logger.error(f"Error invoking Hirenix AI: {str(e)}")
         telemetry.track_call("nvidia", success=False, latency_ms=latency_ms)
         return None

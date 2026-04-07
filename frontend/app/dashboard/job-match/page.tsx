@@ -35,6 +35,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import CoverLetterModal from "@/components/CoverLetterModal";
+import OutreachModal from "@/components/OutreachModal";
+import { Mail as MailIcon } from "lucide-react";
 
 const ROLES = [
   "Software Engineer",
@@ -63,6 +65,7 @@ interface JobMatchResult {
   };
   recommendations: string[];
   bridge_advice?: string[];
+  match_id?: string;
 }
 
 interface ScrapedJob {
@@ -97,6 +100,7 @@ export default function JobMatchPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [jdFile, setJdFile] = useState<File | null>(null);
   const [isCLModalOpen, setIsCLModalOpen] = useState(false);
+  const [isOutreachModalOpen, setIsOutreachModalOpen] = useState(false);
 
   // New States
   const [suggestions, setSuggestions] = useState<SuggestedJob[]>([]);
@@ -556,6 +560,13 @@ export default function JobMatchPage() {
                     >
                       Optimize Cover Letter <ArrowUpRight size={16} />
                     </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full border-white/20 bg-transparent text-white hover:bg-white/5 rounded-2xl h-14 text-[10px] font-black uppercase tracking-widest gap-3"
+                      onClick={() => setIsOutreachModalOpen(true)}
+                    >
+                      Generate Outreach Drafts <MailIcon size={16} />
+                    </Button>
                   </motion.div>
                 )}
               </motion.div>
@@ -735,6 +746,17 @@ export default function JobMatchPage() {
             resumeId={resumeId || "default"}
             jdText={jdText}
             initialRole={role}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isOutreachModalOpen && result?.match_id && (
+          <OutreachModal
+            isOpen={isOutreachModalOpen}
+            onClose={() => setIsOutreachModalOpen(false)}
+            matchId={result.match_id}
+            tone="Formal"
           />
         )}
       </AnimatePresence>

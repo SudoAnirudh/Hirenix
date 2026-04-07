@@ -69,7 +69,7 @@ graph TD
 
     subgraph "Intelligent Backend"
         API -->|Embeddings| ST[Sentence Transformers]
-        API -->|LLM Tokens| OpenAI[OpenAI GPT-4o]
+        API -->|LLM Tokens| HirenixAI[Hirenix AI]
         API -->|PDF Context| PDF[pdfplumber · PyMuPDF]
         API -->|Payments| Stripe[Stripe]
     end
@@ -85,15 +85,15 @@ graph TD
 
 ## 🛠️ Tech Stack
 
-| Component      | Technology                         | Version              |
-| -------------- | ---------------------------------- | -------------------- |
-| **Core UI**    | Next.js, React, TypeScript         | 16.1.6 / 19.2.3      |
-| **Styling**    | Tailwind CSS v4, Framer Motion     | 4.0.0+               |
-| **API Server** | FastAPI, Python, Pydantic v2       | 0.115.0 / 3.11+      |
-| **Database**   | PostgreSQL, pgvector               | Managed via Supabase |
-| **AI/ML**      | sentence-transformers, NLP, OpenAI | 2.7.0 / GPT-4o       |
-| **Parsing**    | pdfplumber, PyMuPDF                | 0.11 / 1.24          |
-| **Payments**   | Stripe                             | 8.3.0                |
+| Component      | Technology                             | Version              |
+| -------------- | -------------------------------------- | -------------------- |
+| **Core UI**    | Next.js, React, TypeScript             | 16.1.6 / 19.2.3      |
+| **Styling**    | Tailwind CSS v4, Framer Motion         | 4.0.0+               |
+| **API Server** | FastAPI, Python, Pydantic v2           | 0.115.0 / 3.11+      |
+| **Database**   | PostgreSQL, pgvector                   | Managed via Supabase |
+| **AI/ML**      | sentence-transformers, NLP, Hirenix AI | 2.7.0 / Core         |
+| **Parsing**    | pdfplumber, PyMuPDF                    | 0.11 / 1.24          |
+| **Payments**   | Stripe                                 | 8.3.0                |
 
 ---
 
