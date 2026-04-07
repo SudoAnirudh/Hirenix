@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class Resource(BaseModel):
     title: str
@@ -16,10 +16,14 @@ class RoadmapSkill(BaseModel):
     resources: List[Resource]
 
 class Roadmap(BaseModel):
-    user_id: str
+    user_id: Optional[str] = None
     target_role: str
     current_level: str  # 'junior', 'mid', 'senior'
     skills: List[RoadmapSkill]
     next_step: str
     overall_progress: float  # 0 to 100
     future_opportunities: List[str]
+
+class RoadmapUpdate(BaseModel):
+    target_role: str
+    completed_skills: List[str]

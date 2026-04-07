@@ -374,6 +374,72 @@ export async function saveProctorReport(
   });
 }
 
+// ─── Roadmap ───────────────────────────────────────────────────────────────────
+export interface RoadmapResource {
+  title: string;
+  url: string;
+  type: "video" | "course" | "article";
+  is_free: boolean;
+}
+
+export interface RoadmapSkill {
+  name: string;
+  status: "completed" | "in_progress" | "to_learn";
+  priority: "high" | "medium" | "low";
+  difficulty: "easy" | "medium" | "hard";
+  estimated_time: string;
+  resources: RoadmapResource[];
+}
+
+export interface Roadmap {
+  user_id?: string;
+  target_role: string;
+  current_level: string;
+  skills: RoadmapSkill[];
+  next_step: string;
+  overall_progress: number;
+  future_opportunities: string[];
+}
+
+export async function getRoadmapRoles(): Promise<string[]> {
+  return request<string[]>("/roadmap/roles");
+}
+
+export async function getSavedRoadmap(): Promise<Roadmap | null> {
+  return request<Roadmap | null>("/roadmap/current");
+}
+
+export async function generateRoadmap(
+  targetRole: string,
+  username = "guest",
+): Promise<Roadmap> {
+  return request<Roadmap>(
+    `/roadmap/generate?target_role=${encodeURIComponent(targetRole)}&username=${encodeURIComponent(username)}`,
+    { method: "POST" },
+  );
+}
+
+export async function updateSkillStatus(
+  targetRole: string,
+  completedSkills: string[],
+): Promise<Roadmap> {
+  return request<Roadmap>("/roadmap/skills", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      target_role: targetRole,
+      completed_skills: completedSkills,
+    }),
+  });
+}
+
+// Deprecated: use getSavedRoadmap or generateRoadmap instead
+export async function getRoadmap(username: string, targetRole: string) {
+  return request<Roadmap>(
+    `/roadmap/${username}?target_role=${encodeURIComponent(targetRole)}`,
+  );
+}
+
 // ─── Analytics ────────────────────────────────────────────────────────────────
 export async function getProgress() {
   return request("/analytics/progress");
