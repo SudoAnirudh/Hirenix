@@ -1,0 +1,3 @@
+## 2024-04-07 - [Added Accessibility Labels to Editor]
+**Learning:** Native `<button>` elements in this specific codebase, particularly in custom toolbars like the Tiptap editor in `ResumeEditor.tsx`, don't inherit the `focus-visible` styles or `type` constraints defined in the global custom `Button` component. It's critical to manually specify `type="button"` to avoid implicit form submission, and attach Tailwind utilities like `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50` along with `aria-label` attributes to ensure they are accessible.
+**Action:** When adding or auditing standalone `<button>` tags outside the `ui/button.tsx` file, always double check for `type`, `aria-label`, and `focus-visible` classes.
