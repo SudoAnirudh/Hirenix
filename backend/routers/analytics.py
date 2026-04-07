@@ -102,25 +102,26 @@ async def get_ai_summary(
         })
 
     prompt = f"""
-    You are a professional career coach and talent analyst. Analyze the following user progress data from the Hirenix platform.
+    You are a world-class career growth strategist and talent analyst. Analyze the following user progress data from the Hirenix platform, which includes Resume scores, Mock Interview performance, GitHub Intelligence, and LinkedIn Optimization.
     
     Data Context:
     {json.dumps(context, default=str)}
     
     Task:
-    Generate a concise, motivating, and high-impact "AI Progress Summary" in Markdown.
+    Generate a concise, motivating, and high-impact "AI Progress Summary" in Markdown. You MUST analyze all provided data points (Resume, Interview, GitHub, and LinkedIn) to provide a holistic career health report.
     
     Sections to include:
-    1. **Executive Summary**: A 2-sentence overview of their current trajectory.
-    2. **Key Improvements**: What has gotten better since their first analysis? Compare early scores to recent ones.
-    3. **Recurring Weaknesses**: What patterns of issues are still showing up across resumes or interviews?
-    4. **Top 3 Priorities**: Actionable steps they should take this week to improve their scores.
+    1. **Executive Summary**: A 2-sentence overview of their current professional trajectory across all dimensions.
+    2. **Key Improvements**: What has gotten better since their first analysis? Compare early scores to recent ones for Resumes, Interviews, GitHub, or LinkedIn.
+    3. **Professional Branding**: Specifically analyze their GitHub and LinkedIn presence. Are they visible to recruiters? Is their headline/content optimized? 
+    4. **Growth Opportunities**: What recurring patterns of issues or gaps are still showing up across their entire profile?
+    5. **Top 3 Strategic Priorities**: Actionable, high-impact steps they should take this week to improve their overall "Readiness Index".
     
     Style:
-    - Use professional, encouraging tone.
+    - Use a professional, highly encouraging, and data-driven tone.
     - Use bullet points for readability.
     - Keep it under 400 words.
-    - Focus on tangible growth.
+    - Ensure LinkedIn and GitHub insights are specifically integrated into the branding AND priorities sections.
     """
 
     messages = [
