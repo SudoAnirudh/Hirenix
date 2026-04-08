@@ -6,7 +6,7 @@ from dependencies import get_current_user, get_supabase_admin
 from services.jd_matcher import match_job_description
 from services.job_scraper import scrape_jobs
 from services.resume_parser import parse_resume
-from services.embedding_engine import compare_texts
+from services.embedding_engine import compare_texts, get_embedding, cosine_similarity, _get_lightweight_similarity
 from services.job_suggester import generate_job_suggestions
 from models.analysis import (
     JobMatchRequest,
@@ -176,9 +176,16 @@ async def scrape_jobs_for_fields(
         resume_text = r.data[0]["raw_text"]
         
         # 3. Quick Match injection (Semantic Only for speed during browse)
+        # Bolt Optimization: Pre-compute invariant resume embedding to avoid N+1 API calls
+        resume_emb = await get_embedding(resume_text)
+
         async def _score_job(job):
             # Job description snippet is used for speed
-            score = await compare_texts(resume_text, job.description_snippet)
+            job_emb = await get_embedding(job.description_snippet)
+            if resume_emb is not None and job_emb is not None:
+                score = cosine_similarity(resume_emb, job_emb)
+            else:
+                score = _get_lightweight_similarity(resume_text, job.description_snippet)
             job.match_score = round(score * 100, 1)
             # Generate a unique ID if missing
             if not job.id:
