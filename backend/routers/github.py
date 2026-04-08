@@ -18,7 +18,10 @@ async def analyze_github(
     try:
         result = await analyze_github_profile(payload.username)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"GitHub analysis failed: {e}")
+        import logging
+        logger = logging.getLogger("hirenix.github")
+        logger.error(f"GitHub analysis failed: {e}")
+        raise HTTPException(status_code=400, detail="GitHub analysis failed. Please verify the username and try again.")
 
     analysis_id = str(uuid.uuid4())
     db.table("github_analyses").insert({
