@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 import logging
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException
@@ -255,18 +256,25 @@ async def evaluate_session(
     by_id = {q["question_id"]: q for q in questions if "question_id" in q}
     feedback_items: List[AnswerFeedback] = []
 
+    # ⚡ Bolt: Parallelize independent I/O-bound LLM evaluations to reduce latency
+    # What: Uses asyncio.gather to run answer evaluations concurrently.
+    # Why: evaluate_answer makes external network requests. Running them sequentially takes O(N) time.
+    # Impact: Reduces total evaluation time from ~N*t to ~max(t), significantly speeding up the final result screen.
+    tasks = []
     for item in payload.answers:
         q = by_id.get(item.question_id)
         if not q:
             continue
-        fb = await evaluate_answer(
+        tasks.append(evaluate_answer(
             question_id=item.question_id,
             question=q["question"],
             answer=item.answer,
             category=q.get("category", "technical"),
             expected_topics=q.get("expected_topics", []) or [],
-        )
-        feedback_items.append(fb)
+        ))
+
+    if tasks:
+        feedback_items.extend(await asyncio.gather(*tasks))
 
     if not feedback_items:
         raise HTTPException(status_code=400, detail="No valid answers to evaluate.")
