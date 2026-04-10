@@ -103,7 +103,8 @@ export default function OutreachModal({
           </div>
           <button
             onClick={onClose}
-            className="w-12 h-12 rounded-2xl hover:bg-[#F1F5F9] flex items-center justify-center text-[#A0AEC0] transition-colors"
+            aria-label="Close modal"
+            className="w-12 h-12 rounded-2xl hover:bg-[#F1F5F9] flex items-center justify-center text-[#A0AEC0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <X size={24} />
           </button>
@@ -114,7 +115,7 @@ export default function OutreachModal({
           <div className="w-full md:w-64 bg-[#F8FAFC] border-r border-[#F1F5F9] p-6 space-y-4">
             <button
               onClick={() => setActiveTab("linkedin")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50 ${
                 activeTab === "linkedin"
                   ? "bg-white shadow-lg text-[#0A66C2] border border-[#0A66C2]/10"
                   : "text-[#718096] hover:bg-white/50"
@@ -127,7 +128,7 @@ export default function OutreachModal({
             </button>
             <button
               onClick={() => setActiveTab("email")}
-              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${
+              className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50 ${
                 activeTab === "email"
                   ? "bg-white shadow-lg text-[#6366F1] border border-[#6366F1]/10"
                   : "text-[#718096] hover:bg-white/50"
