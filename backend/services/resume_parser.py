@@ -4,19 +4,23 @@ from models.resume import ResumeSection
 from utils.pdf_extractor import extract_pdf_text
 from utils.text_cleaner import clean_text
 
+# Pre-compile regexes to eliminate redundant compilation overhead
+_CLEAN_LINE_PATTERN = re.compile(r"\s+")
+_INLINE_STRIP_PATTERN = re.compile(r"^[:\-\s]+")
+
 # Section headers to detect (case-insensitive)
 SECTION_PATTERNS = {
-    "education": r"\b(education|academics?|qualifications?)\b",
-    "experience": r"\b(experience|work history|employment|internship)\b",
-    "skills": r"\b(skills?|technologies|tech stack|competencies|expertise)\b",
-    "projects": r"\b(projects?|portfolio|personal projects?)\b",
-    "certifications": r"\b(certifications?|certificates?|licenses?|credentials)\b",
-    "summary": r"\b(summary|profile|objective|about me)\b",
+    "education": re.compile(r"\b(education|academics?|qualifications?)\b", re.IGNORECASE),
+    "experience": re.compile(r"\b(experience|work history|employment|internship)\b", re.IGNORECASE),
+    "skills": re.compile(r"\b(skills?|technologies|tech stack|competencies|expertise)\b", re.IGNORECASE),
+    "projects": re.compile(r"\b(projects?|portfolio|personal projects?)\b", re.IGNORECASE),
+    "certifications": re.compile(r"\b(certifications?|certificates?|licenses?|credentials)\b", re.IGNORECASE),
+    "summary": re.compile(r"\b(summary|profile|objective|about me)\b", re.IGNORECASE),
 }
 
 
 def _clean_line(line: str) -> str:
-    return re.sub(r"\s+", " ", line).strip()
+    return _CLEAN_LINE_PATTERN.sub(" ", line).strip()
 
 
 def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
@@ -47,7 +51,7 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
     for line in lines:
         detected = None
         for label, pattern in SECTION_PATTERNS.items():
-            if re.search(pattern, line, re.IGNORECASE) and len(line) < 60:
+            if pattern.search(line) and len(line) < 60:
                 detected = label
                 break
         if detected:
@@ -55,8 +59,8 @@ def parse_resume(content: bytes) -> Tuple[List[ResumeSection], str]:
             current_section = detected
             current_lines = []
             # Keep inline text when header and content are on same line
-            inline = re.sub(SECTION_PATTERNS[detected], "", line, flags=re.IGNORECASE)
-            inline = re.sub(r"^[:\-\s]+", "", inline).strip()
+            inline = SECTION_PATTERNS[detected].sub("", line)
+            inline = _INLINE_STRIP_PATTERN.sub("", inline).strip()
             if inline:
                 current_lines.append(inline)
         else:
