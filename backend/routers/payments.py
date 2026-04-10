@@ -1,16 +1,18 @@
 import stripe
+import logging
 from fastapi import APIRouter, Request, Header, HTTPException
 from config import settings
 from dependencies import get_supabase_admin
 
 router = APIRouter()
+logger = logging.getLogger("hirenix.payments")
 
 stripe.api_key = settings.stripe_secret_key
 
 @router.post("/webhook")
 async def stripe_webhook(
     request: Request,
-    stripe_signature: str = Header(None)
+    stripe_signature: str = Header(...)
 ):
     """Handle Stripe webhooks for subscription updates."""
     if not settings.stripe_webhook_secret:
@@ -22,9 +24,11 @@ async def stripe_webhook(
             payload, stripe_signature, settings.stripe_webhook_secret
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"ValueError while constructing Stripe webhook event: {e}")
+        raise HTTPException(status_code=400, detail="Invalid payload")
     except stripe.error.SignatureVerificationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Signature verification failed for Stripe webhook: {e}")
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
 
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
