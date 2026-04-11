@@ -1,9 +1,8 @@
 import json
 import logging
-from typing import List, Optional
-from models.roadmap import Roadmap, RoadmapSkill, Resource
+from typing import Optional
+from models.roadmap import Roadmap
 from services.skill_gap import detect_skill_gap
-from services.github_analyzer import analyze_github_profile
 from services.nvidia_client import invoke_nvidia_llm
 from services.groq_client import invoke_groq_llm
 from services.cache_manager import cache_manager
