@@ -103,13 +103,13 @@ def cosine_similarity(vec_a: List[float], vec_b: List[float]) -> float:
         return 0.0
     return float(np.dot(a, b) / denom)
 
-async def compare_texts(text_a: str, text_b: str) -> float:
+async def compare_texts(text_a: str, text_b: str, precomputed_emb_a: Optional[List[float]] = None) -> float:
     """
     Compute semantic similarity between two texts.
     Returns a float in [0, 1]. Falls back to Jaccard similarity if needed.
     """
     # Prefer vector comparison (API-first)
-    emb_a = await get_embedding(text_a)
+    emb_a = precomputed_emb_a if precomputed_emb_a is not None else await get_embedding(text_a)
     emb_b = await get_embedding(text_b)
     
     if emb_a is not None and emb_b is not None:

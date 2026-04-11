@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Any
 from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import OutreachDraftsResponse
 
