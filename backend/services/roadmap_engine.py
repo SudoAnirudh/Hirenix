@@ -137,6 +137,33 @@ class RoadmapEngine:
                 cleaned_json = content.strip().lstrip("```json").rstrip("```").strip()
                 roadmap_dict = json.loads(cleaned_json)
                 
+                # 2. Link Validation and Filtering
+                all_urls = []
+                for skill in roadmap_dict.get("skills", []):
+                    for res in skill.get("resources", []):
+                        all_urls.append(res["url"])
+                
+                validity_map = await validate_links(all_urls)
+                
+                for skill in roadmap_dict.get("skills", []):
+                    original_resources = skill.get("resources", [])
+                    # Filter for only valid links
+                    valid_resources = [r for r in original_resources if validity_map.get(r["url"], False)]
+                    
+                    # If all links were invalid, inject a verified fallback
+                    if not valid_resources:
+                        logger.warning(f"All resources for {skill['name']} were invalid. Adding fallback.")
+                        valid_resources = [
+                            {
+                                "title": f"Mastering {skill['name']} (Verified Search)",
+                                "url": get_fallback_url(skill["name"]),
+                                "type": "video",
+                                "is_free": True
+                            }
+                        ]
+                    
+                    skill["resources"] = valid_resources
+
                 # Ensure user_id is injected
                 roadmap_dict["user_id"] = user_id
                 return Roadmap(**roadmap_dict)
