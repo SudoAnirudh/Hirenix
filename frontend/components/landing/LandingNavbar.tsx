@@ -21,7 +21,6 @@ export const LandingNavbar = () => {
           {[
             { name: "About", href: "/about" },
             { name: "Features", href: "/#features" },
-            { name: "Pricing", href: "/pricing" },
           ].map((item) => (
             <Link
               key={item.name}

@@ -165,11 +165,6 @@ export default function AccountPage() {
                 <h2 className="text-2xl font-black font-heading text-[#1E293B]">
                   {fullName}
                 </h2>
-                <div className="flex items-center justify-center gap-1.5 mt-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
-                    {plan} Plan
-                  </span>
-                </div>
               </div>
             </div>
 

@@ -176,22 +176,6 @@ export default function DashboardLayout({
         </nav>
 
         <div className="p-4 mt-auto">
-          <div className="p-5 rounded-[24px] bg-white/50 border border-white/80 mb-6 group/plan shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-[#7C9ADD]/10 rounded-full -mr-10 -mt-10 blur-xl group-hover/plan:bg-[#7C9ADD]/20 transition-colors" />
-            <div className="text-[11px] font-bold text-[#1E293B] mb-1 uppercase tracking-wider relative z-10">
-              Standard Plan
-            </div>
-            <div className="text-[10px] text-[#64748B] mb-4 leading-relaxed relative z-10">
-              Unlock advanced AI analysis and interview insights.
-            </div>
-            <Link
-              href="/pricing"
-              className="block w-full px-4 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-[10px] font-bold text-center transition-all hover:bg-[#6B89CC] hover:shadow-lg hover:shadow-[#7C9ADD]/30 relative z-10"
-            >
-              Upgrade Now
-            </Link>
-          </div>
-
           <button
             onClick={handleLogout}
             disabled={loggingOut}

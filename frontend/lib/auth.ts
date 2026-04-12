@@ -32,7 +32,7 @@ export async function signUp(
     options: {
       data: {
         full_name: fullName,
-        plan: "free",
+        plan: "pro",
       },
       ...(emailRedirectTo ? { emailRedirectTo } : {}),
     },

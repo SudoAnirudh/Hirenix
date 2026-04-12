@@ -194,9 +194,6 @@ export default function DashboardPage() {
             <div className="flex flex-col">
               <div className="text-sm font-bold text-[#1E293B] flex items-center gap-2">
                 {fullName}
-                <span className="text-[9px] uppercase font-extrabold tracking-widest px-2.5 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
-                  {plan}
-                </span>
               </div>
               <div className="text-xs text-[#64748B] opacity-70">{email}</div>
             </div>
