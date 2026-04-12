@@ -57,7 +57,7 @@ export const Footer = () => {
               </span>
             </Link>
             <p className="text-[#718096] text-lg font-medium leading-relaxed max-w-sm mb-10">
-              The high-fidelity AI studio for the modern engineer's career
+              The high-fidelity AI studio for the modern engineer&apos;s career
               trajectory. Engineering your path to elite roles.
             </p>
             <div className="flex gap-4">

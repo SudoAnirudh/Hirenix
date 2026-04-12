@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import AddApplicationModal from "@/components/dashboard/AddApplicationModal";
 
 const COLUMNS = [
   { id: "wishlist", title: "Wishlist", icon: Clock, color: "text-slate-400" },
@@ -47,6 +48,7 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchApps();
@@ -101,33 +103,42 @@ export default function ApplicationsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold text-[#1E293B]">
-            Applications CRM
+          <h1 className="text-4xl font-heading font-extrabold text-[#1E293B] dark:text-white">
+            Applications <span className="text-indigo-500">CRM</span>
           </h1>
-          <p className="text-[#64748B] mt-1">
-            Track your job search progress with precision.
+          <p className="text-[#64748B] mt-1 text-sm font-medium">
+            Strategic tracking for your pipeline of opportunities.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative">
+          <div className="relative group">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] transition-colors group-focus-within:text-indigo-500"
               size={18}
             />
             <input
               type="text"
-              placeholder="Search apps..."
-              className="pl-10 pr-4 py-2 bg-white/50 border border-white/80 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C9ADD]/20 transition-all w-64"
+              placeholder="Filter by company or role..."
+              className="pl-12 pr-4 py-3 bg-white/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all w-72 shadow-premium"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Button variant="primary">
-            <Plus size={18} className="mr-2" />
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="btn-primary h-12 px-6 flex items-center gap-2 font-bold shadow-lg shadow-indigo-600/20"
+          >
+            <Plus size={18} />
             Add Application
-          </Button>
+          </button>
         </div>
       </div>
+
+      <AddApplicationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchApps}
+      />
 
       {loading && applications.length === 0 ? (
         <div className="grid grid-cols-5 gap-6 h-64">
@@ -148,16 +159,16 @@ export default function ApplicationsPage() {
                     >
                       <col.icon size={16} />
                     </div>
-                    <h3 className="font-bold text-[#1E293B] text-sm uppercase tracking-wider">
+                    <h3 className="font-bold text-[#1E293B] dark:text-slate-200 text-[11px] uppercase tracking-[0.2em]">
                       {col.title}
                     </h3>
                   </div>
-                  <Badge variant="outline" className="bg-white/50">
+                  <div className="h-6 w-6 rounded-lg bg-white/80 dark:bg-slate-800 border border-white dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-slate-500 shadow-xs">
                     {colApps.length}
-                  </Badge>
+                  </div>
                 </div>
 
-                <div className="flex-1 rounded-[28px] bg-slate-100/40 p-3 space-y-3 border border-dashed border-slate-200 overflow-y-auto custom-scrollbar">
+                <div className="flex-1 rounded-[32px] bg-slate-100/40 dark:bg-slate-900/20 p-4 space-y-4 border border-dashed border-slate-200 dark:border-slate-800 overflow-y-auto custom-scrollbar backdrop-blur-3xl min-h-[400px]">
                   <AnimatePresence mode="popLayout">
                     {colApps.map((app) => (
                       <JobCard
@@ -197,12 +208,13 @@ function JobCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -2 }}
-      className="group p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-[#7C9ADD]/30 transition-all cursor-grab active:cursor-grabbing relative"
+      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+      whileHover={{ y: -4 }}
+      className="group p-5 bg-white dark:bg-slate-900 rounded-[24px] shadow-premium border border-white dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all cursor-grab active:cursor-grabbing relative overflow-hidden"
     >
+      <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="flex justify-between items-start mb-2">
         <h4 className="font-bold text-[#2D3748] text-sm leading-tight line-clamp-2">
           {app.role}

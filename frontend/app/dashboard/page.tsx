@@ -20,6 +20,7 @@ import { getProgress } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import CareerPulseChart from "@/components/dashboard/CareerPulseChart";
 
 const QUOTES = [
   "The only way to do great work is to love what you do. — Steve Jobs",
@@ -157,6 +158,12 @@ export default function DashboardPage() {
     },
   ];
 
+  const radarData = performanceMetrics.map((m) => ({
+    subject: m.name,
+    A: m.score,
+    fullMark: 100,
+  }));
+
   return (
     <div className="animate-fade-up w-full mx-auto space-y-12 pb-20 relative">
       {/* Decorative background orbs */}
@@ -170,7 +177,7 @@ export default function DashboardPage() {
             <Sparkles size={14} />
             Career Command Center
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight text-[#1E293B] font-heading">
+          <h1 className="text-5xl font-extrabold tracking-tight text-[#1E293B] font-heading dark:text-slate-100">
             {getGreeting()},{" "}
             <span className="text-indigo-500">{fullName.split(" ")[0]}</span>
           </h1>
@@ -186,13 +193,13 @@ export default function DashboardPage() {
         ) : (
           <Link
             href="/dashboard/account"
-            className="p-1 px-1.5 rounded-[40px] bg-white/50 border border-white/80 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group hover:bg-white/80 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 cursor-pointer"
+            className="p-1 px-1.5 rounded-[40px] bg-white/50 dark:bg-slate-900/40 border border-white/80 dark:border-slate-800 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group hover:bg-white/80 dark:hover:bg-slate-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 cursor-pointer"
           >
             <div className="h-14 w-14 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white">
               <User size={24} />
             </div>
             <div className="flex flex-col">
-              <div className="text-sm font-bold text-[#1E293B] flex items-center gap-2">
+              <div className="text-sm font-bold text-[#1E293B] dark:text-slate-200 flex items-center gap-2">
                 {fullName}
               </div>
               <div className="text-xs text-[#64748B] opacity-70">{email}</div>
@@ -202,72 +209,91 @@ export default function DashboardPage() {
       </div>
 
       {/* Performance Pulse Hub */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-4 flex items-center justify-between px-2">
+      <div className="relative z-10 space-y-6">
+        <div className="flex items-center justify-between px-2">
           <h2 className="text-xl font-bold font-heading flex items-center gap-2">
             <Zap className="w-5 h-5 text-indigo-500" />
-            Performance Pulse
+            Skill Equilibrium
           </h2>
           <Link
             href="/dashboard/progress-tracker"
             className="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
           >
-            View Detailed History →
+            Detailed Analytics →
           </Link>
         </div>
-        {performanceMetrics.map((m, i) => {
-          const trend = getScoreTrend(m.score, m.base);
-          const TrendIcon = trend.icon;
-          return (
-            <motion.div
-              key={m.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-              className="relative group h-full"
-            >
-              <Card className="p-6 h-full flex flex-col justify-between border-white/60 bg-white/40 group-hover:bg-white/80 transition-all duration-300">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1">
-                      {m.name}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-3xl font-black font-heading text-[#1E293B]">
-                        {progressLoading ? "—" : m.score}
-                      </span>
-                      {!progressLoading && (
-                        <div
-                          className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white border border-slate-100 text-[10px] font-bold ${trend.color} shadow-xs`}
-                        >
-                          <TrendIcon size={10} />
-                          {trend.text}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center border border-white shadow-xs bg-white text-slate-400 group-hover:scale-110 transition-transform"
-                    style={{ color: m.color }}
-                  >
-                    <m.icon size={20} />
-                  </div>
-                </div>
 
-                {/* Visual Progress Bar */}
-                <div className="relative w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${m.score}%` }}
-                    transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                    className="h-full rounded-full shadow-sm"
-                    style={{ backgroundColor: m.color }}
-                  />
-                </div>
-              </Card>
-            </motion.div>
-          );
-        })}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* Radar Chart Section */}
+          <div className="lg:col-span-5 glass-card rounded-[40px] p-8 flex flex-col items-center justify-center overflow-hidden">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-bold text-[#1E293B] dark:text-white">
+                Career Readiness
+              </h3>
+              <p className="text-xs text-[#64748B]">
+                Balance across core domains
+              </p>
+            </div>
+            <CareerPulseChart data={radarData} />
+          </div>
+
+          {/* Metric Cards Grid */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {performanceMetrics.map((m, i) => {
+              const trend = getScoreTrend(m.score, m.base);
+              const TrendIcon = trend.icon;
+              return (
+                <motion.div
+                  key={m.name}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="relative group h-full"
+                >
+                  <Card className="p-6 h-full flex flex-col justify-between glass-card group-hover:bg-white/60 dark:group-hover:bg-slate-800/60 transition-all duration-300">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748B] mb-1">
+                          {m.name}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-3xl font-black font-heading text-[#1E293B] dark:text-white">
+                            {progressLoading ? "—" : m.score}
+                          </span>
+                          {!progressLoading && (
+                            <div
+                              className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-[10px] font-bold ${trend.color} shadow-xs`}
+                            >
+                              <TrendIcon size={10} />
+                              {trend.text}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center border border-white dark:border-slate-800 shadow-xs bg-white dark:bg-slate-900 text-slate-400 group-hover:scale-110 transition-transform"
+                        style={{ color: m.color }}
+                      >
+                        <m.icon size={20} />
+                      </div>
+                    </div>
+
+                    {/* Visual Progress Bar */}
+                    <div className="relative w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${m.score}%` }}
+                        transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                        className="h-full rounded-full shadow-sm"
+                        style={{ backgroundColor: m.color }}
+                      />
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-8">

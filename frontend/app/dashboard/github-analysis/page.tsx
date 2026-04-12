@@ -3,6 +3,7 @@ import { useState } from "react";
 import { analyzeGithub } from "@/lib/api";
 import ScoreCard from "@/components/ScoreCard";
 import { Github, Search } from "lucide-react";
+import ImpactStoryteller from "@/components/github/ImpactStoryteller";
 
 interface AnalysisResult {
   gpi_score: number;
@@ -43,9 +44,10 @@ export default function GitHubAnalysisPage() {
     try {
       const data = await analyzeGithub(username.trim());
       setResult(data as AnalysisResult);
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Improved error message for user
-      const msg = e.message || "An unexpected error occurred";
+      const msg =
+        e instanceof Error ? e.message : "An unexpected error occurred";
       setError(msg);
     } finally {
       setLoading(false);
@@ -170,6 +172,11 @@ export default function GitHubAnalysisPage() {
               </div>
             </div>
           </div>
+
+          {/* New Impact Storyteller Section */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <ImpactStoryteller repos={result.metrics.top_repos} />
+          </section>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Lang Breakdown */}

@@ -9,6 +9,8 @@ import {
   Sparkles,
   RefreshCw,
   AlertCircle,
+  LayoutGrid,
+  Trees as TreeIcon,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { Card } from "@/components/ui/card";
@@ -20,6 +22,8 @@ import {
   Roadmap,
 } from "@/lib/api";
 import { toast } from "sonner";
+import TechTree from "@/components/dashboard/TechTree";
+import { motion } from "framer-motion";
 
 export default function RoadmapPage() {
   const [data, setData] = useState<Roadmap | null>(null);
@@ -28,6 +32,7 @@ export default function RoadmapPage() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"tree" | "list">("tree");
 
   useEffect(() => {
     async function init() {
@@ -243,6 +248,33 @@ export default function RoadmapPage() {
               />
               {generating ? "Refining..." : data ? "Regenerate" : "Generate"}
             </button>
+
+            {data && (
+              <div className="flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200 ml-2">
+                <button
+                  onClick={() => setViewMode("tree")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    viewMode === "tree"
+                      ? "bg-white text-indigo-500 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <TreeIcon size={14} />
+                  Mastery Tree
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    viewMode === "list"
+                      ? "bg-white text-indigo-500 shadow-sm"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <LayoutGrid size={14} />
+                  Detailed List
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -324,145 +356,151 @@ export default function RoadmapPage() {
               </div>
 
               {/* Roadmap Content */}
-              <div className="relative">
-                <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-[#7C9ADD] via-[#CBD5E0] to-transparent hidden md:block opacity-30" />
+              {viewMode === "tree" ? (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                  <TechTree skills={data.skills} onToggle={toggleSkill} />
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-[#7C9ADD] via-[#CBD5E0] to-transparent hidden md:block opacity-30" />
 
-                <div className="space-y-12 relative z-10">
-                  {data.skills.map((skill, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-col md:flex-row gap-8 group transition-all"
-                    >
-                      <div className="hidden md:flex flex-col items-center">
-                        <button
-                          onClick={() => toggleSkill(skill.name)}
-                          className={`w-12 h-12 rounded-2xl flex items-center justify-center border-4 transition-all shadow-md group-hover:scale-110 active:scale-90 ${
-                            skill.status === "completed"
-                              ? "bg-emerald-500 border-white text-white"
-                              : "bg-white border-[#EDF2F7] text-[#CBD5E0]"
-                          }`}
-                        >
-                          {skill.status === "completed" ? (
-                            <CheckCircle2 size={24} />
-                          ) : (
-                            <Circle size={24} />
-                          )}
-                        </button>
-                      </div>
+                  <div className="space-y-12 relative z-10">
+                    {data.skills.map((skill, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col md:flex-row gap-8 group transition-all"
+                      >
+                        <div className="hidden md:flex flex-col items-center">
+                          <button
+                            onClick={() => toggleSkill(skill.name)}
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center border-4 transition-all shadow-md group-hover:scale-110 active:scale-90 ${
+                              skill.status === "completed"
+                                ? "bg-emerald-500 border-white text-white"
+                                : "bg-white border-[#EDF2F7] text-[#CBD5E0]"
+                            }`}
+                          >
+                            {skill.status === "completed" ? (
+                              <CheckCircle2 size={24} />
+                            ) : (
+                              <Circle size={24} />
+                            )}
+                          </button>
+                        </div>
 
-                      <div className="flex-1">
-                        <Card
-                          className={`p-8 rounded-[32px] border transition-all hover:shadow-xl ${
-                            skill.status === "completed"
-                              ? "bg-emerald-50/20 border-emerald-100"
-                              : "bg-white border-white/80 shadow-glass"
-                          }`}
-                        >
-                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                            <div className="space-y-4 flex-1">
-                              <div className="flex flex-wrap items-center gap-3">
-                                <h3 className="text-2xl font-bold text-[#2D3748] font-display">
-                                  {skill.name}
-                                </h3>
-                                <span
-                                  className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                    skill.priority === "high"
-                                      ? "bg-red-100 text-red-500"
-                                      : skill.priority === "medium"
-                                        ? "bg-amber-100 text-amber-500"
-                                        : "bg-blue-100 text-blue-500"
-                                  }`}
-                                >
-                                  {skill.priority} Priority
-                                </span>
-                                {skill.status === "completed" && (
-                                  <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                    Mastered
+                        <div className="flex-1">
+                          <Card
+                            className={`p-8 rounded-[32px] border transition-all hover:shadow-xl ${
+                              skill.status === "completed"
+                                ? "bg-emerald-50/20 border-emerald-100"
+                                : "bg-white border-white/80 shadow-glass"
+                            }`}
+                          >
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                              <div className="space-y-4 flex-1">
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <h3 className="text-2xl font-bold text-[#2D3748] font-display">
+                                    {skill.name}
+                                  </h3>
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                      skill.priority === "high"
+                                        ? "bg-red-100 text-red-500"
+                                        : skill.priority === "medium"
+                                          ? "bg-amber-100 text-amber-500"
+                                          : "bg-blue-100 text-blue-500"
+                                    }`}
+                                  >
+                                    {skill.priority} Priority
                                   </span>
-                                )}
-                              </div>
+                                  {skill.status === "completed" && (
+                                    <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                      Mastered
+                                    </span>
+                                  )}
+                                </div>
 
-                              <div className="flex flex-wrap gap-6 text-sm text-[#718096] font-medium">
-                                <div className="flex items-center gap-2">
-                                  <Clock size={16} />
-                                  {skill.estimated_time}
+                                <div className="flex flex-wrap gap-6 text-sm text-[#718096] font-medium">
+                                  <div className="flex items-center gap-2">
+                                    <Clock size={16} />
+                                    {skill.estimated_time}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Sparkles size={16} />
+                                    {skill.difficulty} difficulty
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <Sparkles size={16} />
-                                  {skill.difficulty} difficulty
-                                </div>
-                              </div>
 
-                              <div className="space-y-3 pt-4 border-t border-[#EDF2F7]">
-                                <div className="text-xs font-bold text-[#A0AEC0] uppercase tracking-widest">
-                                  Expert-Curated Resources
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                  {skill.resources.map((res, ridx) => (
-                                    <a
-                                      key={ridx}
-                                      href={res.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#7C9ADD] hover:shadow-lg hover:shadow-[#7C9ADD]/10 transition-all group/res"
-                                    >
-                                      <div className="w-10 h-10 rounded-xl bg-[#F7FAFC] flex items-center justify-center text-[#7C9ADD] group-hover/res:bg-[#7C9ADD] group-hover/res:text-white transition-colors">
-                                        {res.type === "video" ? (
-                                          <Sparkles size={18} />
-                                        ) : res.type === "course" ? (
-                                          <MapIcon size={18} />
-                                        ) : (
-                                          <ChevronRight size={18} />
-                                        )}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-sm font-bold text-[#2D3748] truncate">
-                                          {res.title}
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-1">
-                                          <span className="text-[10px] text-[#A0AEC0] font-bold uppercase">
-                                            {res.type}
-                                          </span>
-                                          {res.is_free && (
-                                            <span className="text-[10px] text-emerald-500 font-bold uppercase">
-                                              FREE
-                                            </span>
+                                <div className="space-y-3 pt-4 border-t border-[#EDF2F7]">
+                                  <div className="text-xs font-bold text-[#A0AEC0] uppercase tracking-widest">
+                                    Expert-Curated Resources
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {skill.resources.map((res, ridx) => (
+                                      <a
+                                        key={ridx}
+                                        href={res.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-4 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#7C9ADD] hover:shadow-lg hover:shadow-[#7C9ADD]/10 transition-all group/res"
+                                      >
+                                        <div className="w-10 h-10 rounded-xl bg-[#F7FAFC] flex items-center justify-center text-[#7C9ADD] group-hover/res:bg-[#7C9ADD] group-hover/res:text-white transition-colors">
+                                          {res.type === "video" ? (
+                                            <Sparkles size={18} />
+                                          ) : res.type === "course" ? (
+                                            <MapIcon size={18} />
+                                          ) : (
+                                            <ChevronRight size={18} />
                                           )}
                                         </div>
-                                      </div>
-                                    </a>
-                                  ))}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-bold text-[#2D3748] truncate">
+                                            {res.title}
+                                          </div>
+                                          <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[10px] text-[#A0AEC0] font-bold uppercase">
+                                              {res.type}
+                                            </span>
+                                            {res.is_free && (
+                                              <span className="text-[10px] text-emerald-500 font-bold uppercase">
+                                                FREE
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </a>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            <button
-                              onClick={() => toggleSkill(skill.name)}
-                              className={`md:hidden px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
-                                skill.status === "completed"
-                                  ? "bg-emerald-100 text-emerald-600"
-                                  : "bg-[#7C9ADD] text-white"
-                              }`}
-                            >
-                              {skill.status === "completed" ? (
-                                <>
-                                  <CheckCircle2 size={18} />
-                                  Mastered
-                                </>
-                              ) : (
-                                <>
-                                  <Circle size={18} />
-                                  Mark Complete
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </Card>
+                              <button
+                                onClick={() => toggleSkill(skill.name)}
+                                className={`md:hidden px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
+                                  skill.status === "completed"
+                                    ? "bg-emerald-100 text-emerald-600"
+                                    : "bg-[#7C9ADD] text-white"
+                                }`}
+                              >
+                                {skill.status === "completed" ? (
+                                  <>
+                                    <CheckCircle2 size={18} />
+                                    Mastered
+                                  </>
+                                ) : (
+                                  <>
+                                    <Circle size={18} />
+                                    Mark Complete
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </Card>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Future Opportunities Section */}
               <div className="pt-10">

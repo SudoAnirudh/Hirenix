@@ -133,53 +133,75 @@ export default function DashboardLayout({
       style={{ background: "var(--bg-base)" }}
     >
       <aside
-        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-(--border) overflow-hidden z-20 relative"
+        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-(--border) overflow-hidden z-20 relative p-2"
         style={{
-          background: "var(--bg-surface)",
+          background: "var(--glass-bg)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
+          boxShadow: "var(--glass-shadow)",
         }}
       >
         <div className="h-20 flex items-center px-6 gap-3 relative z-10 mb-6">
-          <div className="p-2 rounded-2xl bg-[#7C9ADD] flex items-center justify-center shadow-lg shadow-[#7C9ADD]/30">
+          <div className="p-2.5 rounded-2xl bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Brain size={20} className="text-white" />
           </div>
-          <span className="font-heading font-extrabold text-2xl tracking-tight text-[#1E293B]">
+          <span className="font-heading font-extrabold text-2xl tracking-tighter text-[#1E293B] dark:text-white">
             Hirenix
           </span>
         </div>
 
-        <nav className="flex-1 px-3 py-2 flex flex-col gap-1.5 overflow-y-auto custom-scrollbar">
-          <div className="px-4 mb-4">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#64748B] uppercase px-1">
-              Main Menu
+        <nav className="flex-1 px-2 py-2 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+          <div className="px-4 mb-4 mt-2">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#64748B] uppercase px-1 opacity-60">
+              Command Center
             </span>
           </div>
           <AnimatePresence>
             {nav.map(({ href, icon: Icon, label }, index) => (
               <motion.div
                 key={href}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                transition={{ duration: 0.2, delay: index * 0.03 }}
               >
                 <Link
                   href={href}
-                  className={`sidebar-link ${pathname === href ? "active" : ""}`}
+                  className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
+                    pathname === href
+                      ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
+                      : "text-[#64748B] hover:bg-white/50 dark:hover:bg-white/5 hover:text-indigo-500"
+                  }`}
                 >
-                  <Icon size={18} strokeWidth={pathname === href ? 2.5 : 2} />
-                  <span>{label}</span>
+                  <Icon
+                    size={18}
+                    strokeWidth={pathname === href ? 2.5 : 2}
+                    className="relative z-10"
+                  />
+                  <span className="text-sm font-bold tracking-tight relative z-10">
+                    {label}
+                  </span>
+                  {pathname === href && (
+                    <motion.div
+                      layoutId="sidebar-active"
+                      className="absolute inset-0 bg-indigo-500 rounded-2xl -z-0"
+                      transition={{
+                        type: "spring",
+                        bounce: 0.2,
+                        duration: 0.6,
+                      }}
+                    />
+                  )}
                 </Link>
               </motion.div>
             ))}
           </AnimatePresence>
         </nav>
 
-        <div className="p-4 mt-auto">
+        <div className="p-2 mt-auto">
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all group font-heading text-sm font-medium text-[#64748B]"
+            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl hover:bg-red-500/10 hover:text-red-500 transition-all group font-heading text-sm font-bold text-[#64748B] border border-transparent hover:border-red-500/20"
           >
             <LogOut
               size={18}
