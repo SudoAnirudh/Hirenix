@@ -152,8 +152,8 @@ async def get_current_user(
             metadata = getattr(user, "user_metadata", {}) or {}
             print("✅ Supabase network verification succeeded.")
             return {
-                "user_id": user_id,
-                "email": email,
+                "user_id": user.id,
+                "email": user.email,
                 "plan": "pro"  # Hardcoded to 'pro' to bypass all feature gates
             }
         except Exception as net_e:
