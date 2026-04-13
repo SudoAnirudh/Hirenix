@@ -1,9 +1,12 @@
+import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from models.roadmap import Roadmap, RoadmapUpdate
 from services.roadmap_engine import roadmap_engine
 from services.skill_gap import _load_matrix
 from dependencies import get_current_user, get_supabase_admin
+
+logger = logging.getLogger("hirenix.routers.roadmap")
 
 router = APIRouter(tags=["roadmap"])
 
@@ -14,7 +17,8 @@ async def get_roles():
         matrix = _load_matrix()
         return list(matrix.keys())
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Failed to load roles: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load roles.")
 
 @router.get("/current", response_model=Optional[Roadmap])
 async def get_current_roadmap(
@@ -40,7 +44,8 @@ async def get_current_roadmap(
         
         return Roadmap(**roadmap_data)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch roadmap: {str(e)}")
+        logger.error(f"Failed to fetch roadmap: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch roadmap.")
 
 @router.post("/generate", response_model=Roadmap)
 async def generate_roadmap(
@@ -95,7 +100,8 @@ async def generate_roadmap(
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Roadmap generation failed: {str(e)}")
+        logger.error(f"Roadmap generation failed: {e}")
+        raise HTTPException(status_code=500, detail="Roadmap generation failed.")
 
 @router.patch("/skills", response_model=Optional[Roadmap])
 async def update_skill_status(
@@ -117,4 +123,5 @@ async def update_skill_status(
             
         return await get_current_roadmap(user, db)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to update skills: {str(e)}")
+        logger.error(f"Failed to update skills: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update skills.")

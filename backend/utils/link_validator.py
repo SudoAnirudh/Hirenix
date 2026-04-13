@@ -12,7 +12,7 @@ async def validate_url(client: httpx.AsyncClient, url: str) -> bool:
         # We use a short timeout because we don't want to block roadmap generation
         response = await client.head(url, timeout=2.0, follow_redirects=True)
         return response.status_code < 400
-    except Exception as e:
+    except Exception:
         # If HEAD fails, try GET with a tiny bit of content (some sites block HEAD)
         try:
             response = await client.get(url, timeout=2.0, follow_redirects=True, headers={"Range": "bytes=0-0"})
