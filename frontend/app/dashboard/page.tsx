@@ -196,7 +196,7 @@ export default function DashboardPage() {
         <motion.div
           animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-[120px] bg-[#7C9ADD]/10 pointer-events-none -z-10"
+          className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-[120px] bg-brand-blue/10 pointer-events-none -z-10"
         />
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
@@ -206,7 +206,7 @@ export default function DashboardPage() {
             ease: "easeInOut",
             delay: 1,
           }}
-          className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full blur-[150px] bg-[#B8C1EC]/10 pointer-events-none -z-10"
+          className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full blur-[150px] bg-brand-purple/10 pointer-events-none -z-10"
         />
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
@@ -216,7 +216,7 @@ export default function DashboardPage() {
             ease: "easeInOut",
             delay: 2,
           }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[180px] bg-[#98C9A3]/5 pointer-events-none -z-10"
+          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[180px] bg-brand-green/5 pointer-events-none -z-10"
         />
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-(--border) relative z-10 shrink-0">
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                 {fullName.split(" ")[0]}
               </span>
             </h1>
-            <p className="text-[#64748B] text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
+            <p className="text-slate-500 text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
               &quot;
               {quote || "Your career path is being optimized by Hirenix AI."}
               &quot;
@@ -251,10 +251,10 @@ export default function DashboardPage() {
                 <User size={24} />
               </div>
               <div className="flex flex-col">
-                <div className="text-sm font-bold text-[#1E293B] dark:text-slate-200 flex items-center gap-2">
+                <div className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   {fullName}
                 </div>
-                <div className="text-xs text-[#64748B] opacity-70">{email}</div>
+                <div className="text-xs text-slate-500 opacity-70">{email}</div>
               </div>
             </Link>
           )}
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
                   Career Readiness
                 </h3>
-                <p className="text-xs text-[#64748B] mt-1 lg:hidden block">
+                <p className="text-xs text-slate-500 mt-1 lg:hidden block">
                   Balance across core domains
                 </p>
               </div>
@@ -326,14 +326,14 @@ export default function DashboardPage() {
                         <m.icon size={18} strokeWidth={2} />
                       </div>
                       <div>
-                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#64748B] block mb-0.5">
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 block mb-0.5">
                           {m.name}
                         </span>
                         <div className="flex items-end gap-2">
                           {progressLoading ? (
                             <div className="w-8 h-6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
                           ) : (
-                            <span className="text-xl sm:text-2xl leading-none font-black font-heading text-[#1E293B] dark:text-slate-100">
+                            <span className="text-xl sm:text-2xl leading-none font-black font-heading text-slate-800 dark:text-slate-100">
                               {m.score}
                             </span>
                           )}
@@ -450,10 +450,10 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div className="flex flex-col lg:text-center">
-                    <span className="text-[13px] font-bold text-[#1E293B] dark:text-slate-100 leading-tight block">
+                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight block">
                       {tool.name}
                     </span>
-                    <span className="text-[10px] font-medium text-[#64748B] dark:text-slate-400 mt-0.5">
+                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
                       {tool.desc}
                     </span>
                   </div>

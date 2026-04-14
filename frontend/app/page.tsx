@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { Footer } from "@/components/landing/Footer";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 
 const features = [
   {
@@ -60,28 +61,23 @@ const staggerContainer = {
   },
 };
 
-const glitchItem = {
-  hidden: { opacity: 0, x: -20 },
+const fadeItem = {
+  hidden: { y: 20, opacity: 0 },
   show: {
+    y: 0,
     opacity: 1,
-    x: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 200,
-      damping: 20,
-      mass: 1,
-    },
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen relative bg-white overflow-hidden selection:bg-[#7C9ADD]/30 selection:text-[#2D3748]">
+    <main className="min-h-screen relative bg-white overflow-hidden selection:bg-brand-blue/30 selection:text-slate-800">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#7C9ADD]/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#98C9A3]/10 blur-[150px] rounded-full animate-pulse-slow" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#B8C1EC]/5 blur-[100px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/10 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-brand-purple/5 blur-[100px] rounded-full" />
       </div>
 
       <LandingNavbar />
@@ -93,44 +89,39 @@ export default function LandingPage() {
           animate="show"
           className="max-w-5xl mx-auto"
         >
-          <motion.div
-            variants={glitchItem}
-            className="flex justify-center mb-10"
-          >
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/40 backdrop-blur-md border border-white/60 text-[#7C9ADD] font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
+          <motion.div variants={fadeItem} className="flex justify-center mb-10">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/40 backdrop-blur-md border border-white/60 text-brand-blue font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
               <Zap size={14} className="animate-pulse" />
               Next-Gen AI Career Studio
             </div>
           </motion.div>
 
           <motion.h1
-            variants={glitchItem}
-            className="font-display font-bold text-6xl md:text-8xl mb-10 tracking-tighter leading-[0.9] text-[#2D3748]"
+            variants={fadeItem}
+            className="text-6xl sm:text-7xl md:text-8xl font-black font-display tracking-tight text-slate-800 dark:text-slate-100 flex flex-col mb-8 leading-tight"
           >
-            Design your{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-br from-[#7C9ADD] to-[#98C9A3]">
-              dream career
+            Supercharge Your
+            <span className="text-brand-blue tracking-tighter">
+              Career Trajectory.
             </span>
-            <br />
-            with AI intelligence.
           </motion.h1>
 
           <motion.p
-            variants={glitchItem}
-            className="text-xl md:text-2xl text-[#718096] mb-16 max-w-2xl mx-auto leading-relaxed font-medium"
+            variants={fadeItem}
+            className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto leading-relaxed font-medium"
           >
             The all-in-one studio for high-fidelity resume engineering, smart
             job matching, and immersive interview practice.
           </motion.p>
 
           <motion.div
-            variants={glitchItem}
+            variants={fadeItem}
             className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           >
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-[#7C9ADD] text-white text-lg font-bold shadow-xl shadow-[#7C9ADD]/20 group transition-all"
+                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 group transition-all"
               >
                 Get Started
                 <ArrowRight
@@ -139,8 +130,8 @@ export default function LandingPage() {
                 />
               </Button>
             </Link>
-            <div className="flex items-center gap-3 text-sm text-[#A0AEC0] font-bold uppercase tracking-widest">
-              <CheckCircle2 size={20} className="text-[#98C9A3]" />
+            <div className="flex items-center gap-3 text-sm text-slate-400 font-bold uppercase tracking-widest">
+              <CheckCircle2 size={20} className="text-brand-green" />
               Enterprise-Grade AI
             </div>
           </motion.div>
@@ -155,10 +146,10 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-24"
           >
-            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 tracking-tighter text-[#2D3748]">
+            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 tracking-tighter text-slate-800">
               The Full-Stack Career Engine
             </h2>
-            <p className="text-lg text-[#718096] font-medium max-w-xl mx-auto">
+            <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto">
               Replace messy spreadsheets and anxious job hunting with a
               streamlined, AI-optimized workflow.
             </p>
@@ -172,20 +163,22 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="glass-card p-10 rounded-[48px] border border-white/80 bg-white/60 shadow-glass group hover:-translate-y-2 transition-all duration-500"
+                className="group"
               >
-                <div className="w-16 h-16 rounded-3xl bg-white shadow-sm border border-white/80 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
-                  <Icon
-                    size={28}
-                    className="text-[#7C9ADD] group-hover:text-[#98C9A3] transition-colors"
-                  />
-                </div>
-                <h3 className="text-2xl font-display font-bold mb-4 text-[#2D3748] tracking-tight">
-                  {title}
-                </h3>
-                <p className="leading-relaxed font-medium text-[#718096]">
-                  {desc}
-                </p>
+                <SpotlightCard className="h-full p-10 rounded-[48px] border-white/80 bg-white/60 shadow-glass group-hover:-translate-y-2 transition-all duration-500">
+                  <div className="w-16 h-16 rounded-3xl bg-white shadow-sm border border-white/80 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                    <Icon
+                      size={28}
+                      className="text-brand-blue group-hover:text-brand-green transition-colors"
+                    />
+                  </div>
+                  <h3 className="text-2xl font-display font-bold mb-4 text-slate-800 tracking-tight">
+                    {title}
+                  </h3>
+                  <p className="leading-relaxed font-medium text-slate-500">
+                    {desc}
+                  </p>
+                </SpotlightCard>
               </motion.div>
             ))}
           </div>
@@ -199,22 +192,22 @@ export default function LandingPage() {
           viewport={{ once: true }}
           className="max-w-6xl mx-auto relative"
         >
-          <div className="absolute inset-0 bg-linear-to-br from-[#7C9ADD]/20 to-[#98C9A3]/20 blur-[100px] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/20 to-brand-green/20 blur-[100px] -z-10" />
           <div className="relative p-16 md:p-24 rounded-[64px] bg-white/40 border border-white/60 backdrop-blur-2xl shadow-glass text-center">
             <div className="w-20 h-20 rounded-[28px] bg-white shadow-lg flex items-center justify-center mx-auto mb-10">
-              <TrendingUp className="text-[#98C9A3]" size={32} />
+              <TrendingUp className="text-brand-green" size={32} />
             </div>
-            <h2 className="font-display font-bold text-5xl md:text-7xl mb-8 text-[#2D3748] tracking-tighter">
+            <h2 className="font-display font-bold text-5xl md:text-7xl mb-8 text-slate-800 tracking-tighter">
               Launch your career trajectory today.
             </h2>
-            <p className="text-xl md:text-2xl text-[#718096] mb-16 max-w-2xl mx-auto font-medium">
+            <p className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto font-medium">
               Join thousands of professionals using AI to craft irresistible
               resumes and ace complex interviews.
             </p>
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="h-20 px-16 rounded-[32px] bg-[#2D3748] text-white text-xl font-bold hover:bg-[#7C9ADD] transition-all shadow-xl active:scale-95"
+                className="h-20 px-16 rounded-[32px] bg-slate-800 text-white text-xl font-bold hover:bg-brand-blue transition-all shadow-xl active:scale-95"
               >
                 Initialize Free Access
               </Button>

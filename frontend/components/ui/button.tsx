@@ -3,11 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
-
-export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs);
-}
+import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "ghost" | "outline" | "shine" | "glow" | "glass";
@@ -33,16 +29,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 hover:shadow-xl hover:-translate-y-0.5",
+        "bg-brand-blue text-white shadow-sm hover:bg-brand-blue/90 hover:shadow-md active:scale-[0.98]",
       ghost:
-        "bg-transparent text-[#2D3748] hover:bg-[#7C9ADD]/10 hover:text-[#7C9ADD]",
+        "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800",
       outline:
-        "bg-transparent text-[#2D3748] border border-[#rgba(255,255,255,0.8)] hover:bg-white/50 hover:border-[#7C9ADD]/50 font-bold",
+        "bg-transparent text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-[0.98]",
       shine:
-        "relative overflow-hidden bg-[#2D3748] text-white shadow-lg before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2.2s_infinite] before:bg-linear-to-r before:from-transparent before:via-white/10 before:to-transparent hover:-translate-y-0.5 font-bold",
-      glow: "relative bg-[#98C9A3] text-white shadow-[0_0_20px_rgba(152,201,163,0.4)] hover:shadow-[0_0_30px_rgba(152,201,163,0.6)] hover:-translate-y-0.5 active:scale-95 font-bold",
+        "relative overflow-hidden bg-brand-blue text-white shadow-sm hover:bg-brand-blue/90 active:scale-[0.98]",
+      glow: "bg-brand-green text-white shadow-sm hover:bg-brand-green/90 active:scale-[0.98]",
       glass:
-        "bg-white/40 backdrop-blur-md border border-white/60 text-[#2D3748] shadow-sm hover:bg-white/60 hover:shadow-md active:scale-95 font-bold",
+        "bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white/60 dark:border-slate-800 text-slate-800 dark:text-slate-200 shadow-sm hover:bg-white/60 dark:hover:bg-slate-800/60 active:scale-[0.98]",
     };
 
     const sizes = {

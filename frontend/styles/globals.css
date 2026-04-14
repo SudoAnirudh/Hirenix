@@ -2,28 +2,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #7c9add;
-  --color-primary-dark: #6b89cc;
-  --color-primary-light: #9bb4e8;
-  --color-background: #f8fafc;
-  --color-surface: rgba(255, 255, 255, 0.7);
-  --color-text: #1e293b;
+  --color-brand-blue: #0f172a;
+  --color-brand-green: #10b981;
+  --color-brand-purple: #6366f1;
+  --color-background: #ffffff;
+  --color-surface: rgba(255, 255, 255, 0.9);
+  --color-text: #0f172a;
   --color-muted: #64748b;
-  --color-accent: #98c9a3;
-  --color-glass-border: rgba(255, 255, 255, 0.7);
+  --color-accent: #3b82f6;
+  --color-glass-border: rgba(0, 0, 0, 0.05);
 
   --font-heading: "Plus Jakarta Sans", "Space Grotesk", sans-serif;
   --font-body: "Outfit", "Manrope", sans-serif;
 
-  --radius-card: 32px;
-  --radius-button: 16px;
+  --radius-card: 20px;
+  --radius-button: 8px;
 
   --shadow-premium:
-    0 10px 40px -10px rgba(124, 154, 221, 0.12),
-    0 4px 12px -4px rgba(124, 154, 221, 0.08);
+    0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -4px rgba(0, 0, 0, 0.04);
   --shadow-glass:
-    0 4px 24px -1px rgba(0, 0, 0, 0.03),
-    0 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+    0 4px 24px -1px rgba(0, 0, 0, 0.02), 0 0 1px 0 rgba(0, 0, 0, 0.05) inset;
 }
 
 :root {
@@ -51,6 +49,26 @@
   --radius-xl: 32px;
 }
 
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-brand-blue: #ffffff;
+    --color-text: #ffffff;
+    --color-muted: #94a3b8;
+  }
+  :root {
+    --bg-base: #000000;
+    --bg-surface: rgba(10, 10, 10, 0.8);
+    --bg-elevated: #111111;
+    --bg-glass: rgba(10, 10, 10, 0.6);
+
+    --border: rgba(255, 255, 255, 0.1);
+
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -67,10 +85,8 @@ body {
   -webkit-font-smoothing: antialiased;
   background-color: var(--bg-base);
   background-image:
-    radial-gradient(at 0% 0%, rgba(124, 154, 221, 0.1) 0, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(152, 201, 163, 0.1) 0, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(165, 180, 252, 0.05) 0, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(147, 197, 253, 0.05) 0, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.03) 0, transparent 40%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.02) 0, transparent 40%);
 }
 
 .font-display {
@@ -206,23 +222,19 @@ body {
   font-family: "Space Grotesk", sans-serif;
   font-size: 0.875rem;
   color: var(--text-primary);
-  background: #ffffff;
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
 }
 
 .input-base:focus {
-  border-color: var(--indigo);
+  border-color: var(--border-accent);
   box-shadow:
-    0 0 0 4px rgba(99, 102, 241, 0.1),
-    inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-}
-
-.input-base::placeholder {
-  color: var(--text-muted);
+    0 0 0 1px var(--border-accent),
+    inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .input-base::placeholder {

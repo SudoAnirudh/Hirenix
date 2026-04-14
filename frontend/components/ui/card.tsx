@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, HTMLMotionProps } from "framer-motion";
-import { cn } from "./button";
+import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
   ({ className, ...props }, ref) => (
@@ -13,7 +13,7 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "rounded-[32px] border border-white/60 bg-white/70 backdrop-blur-xl shadow-glass overflow-hidden relative transition-all duration-500 hover:shadow-premium hover:-translate-y-1 group",
+        "rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl shadow-glass overflow-hidden relative transition-all duration-500 hover:shadow-premium hover:-translate-y-1 group",
         className,
       )}
       {...props}
@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-heading font-bold text-xl tracking-tight text-(--text) group-hover:text-(--indigo) transition-colors",
+      "font-heading font-bold text-xl tracking-tight text-slate-800 dark:text-slate-100 group-hover:text-brand-blue transition-colors",
       className,
     )}
     {...props}
@@ -53,7 +53,11 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("text-sm text-(--muted)", className)} {...props} />
+  <p
+    ref={ref}
+    className={cn("text-sm text-slate-500 dark:text-slate-400", className)}
+    {...props}
+  />
 ));
 CardDescription.displayName = "CardDescription";
 
@@ -63,7 +67,10 @@ const CardContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("p-6 pt-0 text-(--text)/80 leading-relaxed", className)}
+    className={cn(
+      "p-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed",
+      className,
+    )}
     {...props}
   />
 ));
@@ -76,7 +83,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex items-center p-6 pt-6 border-t border-(--border) mt-4",
+      "flex items-center p-6 pt-6 border-t border-slate-200 dark:border-slate-800 mt-4",
       className,
     )}
     {...props}
