@@ -9,12 +9,18 @@ from models.analysis import JobListing
 
 logger = logging.getLogger("hirenix.job_scraper")
 
+# ⚡ Bolt: Pre-compile regex for HTML stripping to reduce compilation overhead
+# What: Pre-compile the _HTML_TAG_PATTERN and _WHITESPACE_PATTERN at the module level.
+# Why: _strip_html is called repeatedly in scraping loops. Without pre-compiling, re.sub dynamically checks the regex cache or compiles the pattern on every call, increasing CPU overhead.
+# Impact: Reduces CPU time spent on repetitive regex initialization, speeding up job scraping and processing large JSON payloads.
+_HTML_TAG_PATTERN = re.compile(r"<[^>]+>")
+_WHITESPACE_PATTERN = re.compile(r"\s+")
 
 def _strip_html(text: str) -> str:
     if not text:
         return ""
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = re.sub(r"\s+", " ", text)
+    text = _HTML_TAG_PATTERN.sub(" ", text)
+    text = _WHITESPACE_PATTERN.sub(" ", text)
     return text.strip()
 
 
