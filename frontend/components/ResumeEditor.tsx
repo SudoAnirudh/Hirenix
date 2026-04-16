@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 const toolbarBtn =
-  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568]";
+  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568] focus-visible:ring-2 focus-visible:outline-none";
 
 const MenuBar = ({
   editor,
@@ -61,6 +61,7 @@ const MenuBar = ({
           disabled={!editor.can().chain().focus().undo().run()}
           className={`${toolbarBtn} ${idleClass}`}
           title="Undo"
+          aria-label="Undo"
         >
           <Undo className="w-4 h-4" />
         </button>
@@ -69,6 +70,7 @@ const MenuBar = ({
           disabled={!editor.can().chain().focus().redo().run()}
           className={`${toolbarBtn} ${idleClass}`}
           title="Redo"
+          aria-label="Redo"
         >
           <Redo className="w-4 h-4" />
         </button>
@@ -80,6 +82,7 @@ const MenuBar = ({
           disabled={!editor.can().chain().focus().toggleBold().run()}
           className={`${toolbarBtn} ${editor.isActive("bold") ? "bg-[#7C9ADD]/10 text-[#7C9ADD] shadow-sm" : "text-[#718096] hover:text-[#7C9ADD]"}`}
           title="Bold"
+          aria-label="Bold"
         >
           <Bold className="w-4 h-4" />
         </button>
@@ -88,6 +91,7 @@ const MenuBar = ({
           disabled={!editor.can().chain().focus().toggleItalic().run()}
           className={`${toolbarBtn} ${editor.isActive("italic") ? activeClass : idleClass}`}
           title="Italic"
+          aria-label="Italic"
         >
           <Italic className="w-4 h-4" />
         </button>
@@ -96,6 +100,7 @@ const MenuBar = ({
           disabled={!editor.can().chain().focus().toggleUnderline().run()}
           className={`${toolbarBtn} ${editor.isActive("underline") ? activeClass : idleClass}`}
           title="Underline"
+          aria-label="Underline"
         >
           <UnderlineIcon className="w-4 h-4" />
         </button>
@@ -108,6 +113,7 @@ const MenuBar = ({
           }
           className={`${toolbarBtn} ${editor.isActive("heading", { level: 1 }) ? activeClass : idleClass}`}
           title="Heading 1"
+          aria-label="Heading 1"
         >
           <Heading1 className="w-4 h-4" />
         </button>
@@ -117,6 +123,7 @@ const MenuBar = ({
           }
           className={`${toolbarBtn} ${editor.isActive("heading", { level: 2 }) ? activeClass : idleClass}`}
           title="Heading 2"
+          aria-label="Heading 2"
         >
           <Heading2 className="w-4 h-4" />
         </button>
@@ -127,6 +134,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={`${toolbarBtn} ${editor.isActive("bulletList") ? activeClass : idleClass}`}
           title="Bullet List"
+          aria-label="Bullet List"
         >
           <List className="w-4 h-4" />
         </button>
@@ -134,6 +142,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={`${toolbarBtn} ${editor.isActive("orderedList") ? activeClass : idleClass}`}
           title="Numbered List"
+          aria-label="Numbered List"
         >
           <ListOrdered className="w-4 h-4" />
         </button>
@@ -144,6 +153,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           className={`${toolbarBtn} ${editor.isActive({ textAlign: "left" }) ? activeClass : idleClass}`}
           title="Align Left"
+          aria-label="Align Left"
         >
           <AlignLeft className="w-4 h-4" />
         </button>
@@ -151,6 +161,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
           className={`${toolbarBtn} ${editor.isActive({ textAlign: "center" }) ? activeClass : idleClass}`}
           title="Align Center"
+          aria-label="Align Center"
         >
           <AlignCenter className="w-4 h-4" />
         </button>
@@ -158,6 +169,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
           className={`${toolbarBtn} ${editor.isActive({ textAlign: "right" }) ? activeClass : idleClass}`}
           title="Align Right"
+          aria-label="Align Right"
         >
           <AlignRight className="w-4 h-4" />
         </button>
@@ -165,6 +177,7 @@ const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("justify").run()}
           className={`${toolbarBtn} ${editor.isActive({ textAlign: "justify" }) ? activeClass : idleClass}`}
           title="Justify"
+          aria-label="Justify"
         >
           <AlignJustify className="w-4 h-4" />
         </button>
@@ -175,6 +188,7 @@ const MenuBar = ({
           onClick={setLink}
           className={`${toolbarBtn} ${editor.isActive("link") ? activeClass : idleClass}`}
           title="Add Link"
+          aria-label="Add Link"
         >
           <LinkIcon className="w-4 h-4" />
         </button>
