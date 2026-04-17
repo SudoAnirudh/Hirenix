@@ -66,14 +66,21 @@ async def upload_resume(
         }
     ).execute()
 
-    for section in sections:
+    # ⚡ Bolt: Batch database insertion to prevent N+1 API calls.
+    # What: Inserts all resume_sections in a single request instead of looping.
+    # Why: .insert().execute() inside a loop causes N network roundtrips.
+    # Impact: Reduces database queries from O(N) to O(1) for saving parsed sections, significantly improving upload performance.
+    if sections:
         db.table("resume_sections").insert(
-            {
-                "id": str(uuid.uuid4()),
-                "resume_id": resume_id,
-                "section_type": section.section_type,
-                "content": section.content,
-            }
+            [
+                {
+                    "id": str(uuid.uuid4()),
+                    "resume_id": resume_id,
+                    "section_type": section.section_type,
+                    "content": section.content,
+                }
+                for section in sections
+            ]
         ).execute()
 
     return ResumeUploadResponse(
