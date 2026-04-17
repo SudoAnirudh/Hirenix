@@ -151,7 +151,8 @@ export default function CoverLetterModal({
         <div className="flex-1 flex flex-col relative bg-white">
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10"
+            aria-label="Close modal"
+            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <X size={20} />
           </button>
@@ -171,7 +172,8 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all"
+                      aria-label="Copy to Clipboard"
+                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]"
                       title="Copy to Clipboard"
                     >
                       {copied ? (

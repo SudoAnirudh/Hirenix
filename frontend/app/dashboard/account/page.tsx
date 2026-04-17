@@ -157,7 +157,10 @@ export default function AccountPage() {
             <div className="flex flex-col items-center text-center space-y-4 relative z-10">
               <div className="h-28 w-28 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-xl border-4 border-white mb-2 relative group/avatar">
                 <User size={56} strokeWidth={1} />
-                <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-indigo-500 hover:scale-110 transition-transform">
+                <button
+                  aria-label="Edit public profile settings"
+                  className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-indigo-500 hover:scale-110 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
                   <Globe size={14} />
                 </button>
               </div>
