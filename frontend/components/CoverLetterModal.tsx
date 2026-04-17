@@ -151,7 +151,8 @@ export default function CoverLetterModal({
         <div className="flex-1 flex flex-col relative bg-white">
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10"
+            aria-label="Close modal"
+            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             <X size={20} />
           </button>
