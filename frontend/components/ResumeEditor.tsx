@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 const toolbarBtn =
-  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568]";
+  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568] focus-visible:ring-2 focus-visible:outline-none";
 
 const MenuBar = ({
   editor,
