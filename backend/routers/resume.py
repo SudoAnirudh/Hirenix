@@ -66,15 +66,21 @@ async def upload_resume(
         }
     ).execute()
 
-    for section in sections:
-        db.table("resume_sections").insert(
+    # ⚡ Bolt: Batch insert resume sections to avoid N+1 queries
+    # What: Replaced a loop of individual `.insert().execute()` calls with a single bulk insert list.
+    # Why: Executing queries inside a loop causes multiple synchronous network roundtrips to Supabase, slowing down resume upload.
+    # Impact: Reduces database calls from O(N) to O(1), improving upload latency by roughly N * ~50ms.
+    if sections:
+        sections_data = [
             {
                 "id": str(uuid.uuid4()),
                 "resume_id": resume_id,
                 "section_type": section.section_type,
                 "content": section.content,
             }
-        ).execute()
+            for section in sections
+        ]
+        db.table("resume_sections").insert(sections_data).execute()
 
     return ResumeUploadResponse(
         resume_id=resume_id,
