@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from dependencies import get_current_user, get_supabase_admin
 import json
 import logging
+import asyncio
 from services.groq_client import invoke_groq_llm
 from services.nvidia_client import invoke_nvidia_llm
 
@@ -16,17 +17,65 @@ async def get_progress(
     db=Depends(get_supabase_admin),
 ):
     """Return historical performance trends for trend visualization."""
-    resumes_r = db.table("resumes").select("ats_score, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    interviews_r = db.table("interview_sessions").select("overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    github_r = db.table("github_analyses").select("gpi_score, github_username, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    linkedin_r = db.table("linkedin_analyses").select("metrics, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
+    # ⚡ Bolt: Parallelize independent database queries
+    # What: Replaced sequential `db.table().execute()` calls with `asyncio.gather` and `asyncio.to_thread`.
+    # Why: Sequential synchronous I/O calls block the event loop and accumulate latency.
+    # Impact: Reduces total query latency from O(N) sequential queries to O(MAX(queries)), significantly speeding up data retrieval.
+    resumes_r, interviews_r, github_r, linkedin_r = await asyncio.gather(
+        asyncio.to_thread(
+            db.table("resumes")
+            .select("ats_score, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at")
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("interview_sessions")
+            .select("overall_score, target_role, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at")
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("github_analyses")
+            .select("gpi_score, github_username, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at")
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("linkedin_analyses")
+            .select("metrics, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at")
+            .execute
+        ),
+    )
 
-    ats_trend = [{"score": r["ats_score"], "date": r["created_at"]} for r in (resumes_r.data or [])]
-    interview_trend = [{"score": i["overall_score"], "role": i["target_role"], "date": i["created_at"]} for i in (interviews_r.data or [])]
-    github_trend = [{"gpi": g["gpi_score"], "username": g["github_username"], "date": g["created_at"]} for g in (github_r.data or [])]
+    ats_trend = [
+        {"score": r["ats_score"], "date": r["created_at"]}
+        for r in (resumes_r.data or [])
+    ]
+    interview_trend = [
+        {"score": i["overall_score"], "role": i["target_role"], "date": i["created_at"]}
+        for i in (interviews_r.data or [])
+    ]
+    github_trend = [
+        {
+            "gpi": g["gpi_score"],
+            "username": g["github_username"],
+            "date": g["created_at"],
+        }
+        for g in (github_r.data or [])
+    ]
     linkedin_trend = [
-        {"score": l["metrics"]["overall_score"] if isinstance(l["metrics"], dict) else 0, "date": l["created_at"]} 
-        for l in (linkedin_r.data or [])
+        {
+            "score": linkedin_item["metrics"]["overall_score"]
+            if isinstance(linkedin_item["metrics"], dict)
+            else 0,
+            "date": linkedin_item["created_at"],
+        }
+        for linkedin_item in (linkedin_r.data or [])
     ]
 
     # Evolution Score: weighted average of latest metrics
@@ -40,7 +89,7 @@ async def get_progress(
     if interview_trend:
         metrics.append(interview_trend[-1]["score"])
         weights.append(0.35)
-    
+
     # Github (15%)
     latest_gpi = github_trend[-1]["gpi"] if github_trend else 50.0
     metrics.append(latest_gpi)
@@ -52,7 +101,7 @@ async def get_progress(
     weights.append(0.15)
 
     evolution_score = None
-    if len(metrics) > 2: # At least core metrics + one optional
+    if len(metrics) > 2:  # At least core metrics + one optional
         total_weight = sum(weights)
         weighted_sum = sum(m * w for m, w in zip(metrics, weights))
         evolution_score = round(weighted_sum / total_weight, 1)
@@ -75,17 +124,57 @@ async def get_ai_summary(
     """
     Generate a comprehensive AI summary of the user's progress across all sections.
     """
+    # ⚡ Bolt: Parallelize independent database queries
+    # What: Replaced sequential `db.table().execute()` calls with `asyncio.gather` and `asyncio.to_thread`.
+    # Why: Sequential synchronous I/O calls block the event loop and accumulate latency.
+    # Impact: Reduces total query latency from O(N) sequential queries to O(MAX(queries)), significantly speeding up data retrieval.
     # Fetch detailed historical data
-    resumes = db.table("resumes").select("ats_score, feedback, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute()
-    interviews = db.table("interview_sessions").select("id, overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute()
-    github = db.table("github_analyses").select("gpi_score, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute()
-    linkedin = db.table("linkedin_analyses").select("metrics, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute()
+    resumes, interviews, github, linkedin = await asyncio.gather(
+        asyncio.to_thread(
+            db.table("resumes")
+            .select("ats_score, feedback, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .limit(5)
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("interview_sessions")
+            .select("id, overall_score, target_role, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .limit(5)
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("github_analyses")
+            .select("gpi_score, strengths, recommendations, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .limit(3)
+            .execute
+        ),
+        asyncio.to_thread(
+            db.table("linkedin_analyses")
+            .select("metrics, strengths, recommendations, created_at")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .limit(3)
+            .execute
+        ),
+    )
 
     # Get interview answers for more depth
     interview_ids = [i["id"] for i in (interviews.data or [])]
     answers = []
     if interview_ids:
-        answers = db.table("interview_answers").select("session_id, question, score, strengths, improvements").in_("session_id", interview_ids).execute().data or []
+        answers_r = await asyncio.to_thread(
+            db.table("interview_answers")
+            .select("session_id, question, score, strengths, improvements")
+            .in_("session_id", interview_ids)
+            .execute
+        )
+        answers = answers_r.data or []
 
     # Prepare context for LLM
     context = {
@@ -96,14 +185,18 @@ async def get_ai_summary(
     }
 
     # Group answers by session
-    for session in (interviews.data or []):
+    for session in interviews.data or []:
         session_answers = [a for a in answers if a["session_id"] == session["id"]]
-        context["interviews"].append({
-            "score": session["overall_score"],
-            "role": session["target_role"],
-            "date": session["created_at"],
-            "answers": session_answers[:3] # limit to 3 answers per session for context size
-        })
+        context["interviews"].append(
+            {
+                "score": session["overall_score"],
+                "role": session["target_role"],
+                "date": session["created_at"],
+                "answers": session_answers[
+                    :3
+                ],  # limit to 3 answers per session for context size
+            }
+        )
 
     prompt = f"""
     You are a world-class career growth strategist and talent analyst. Analyze the following user progress data from the Hirenix platform, which includes Resume scores, Mock Interview performance, GitHub Intelligence, and LinkedIn Optimization.
@@ -129,24 +222,30 @@ async def get_ai_summary(
     """
 
     messages = [
-        {"role": "system", "content": "You are a world-class career growth strategist."},
-        {"role": "user", "content": prompt}
+        {
+            "role": "system",
+            "content": "You are a world-class career growth strategist.",
+        },
+        {"role": "user", "content": prompt},
     ]
 
     # Try NVIDIA Gemma 4 (31B Dense) first for high-reasoning summaries
     response = await invoke_nvidia_llm(messages)
-    
+
     # Fallback to Groq Llama 3 if NVIDIA fails or is not configured
     if not response:
-        logger.info("NVIDIA Gemma 4 failed or is not configured; falling back to Groq Llama 3.")
+        logger.info(
+            "NVIDIA Gemma 4 failed or is not configured; falling back to Groq Llama 3."
+        )
         response = await invoke_groq_llm(messages)
-    
-    if not response:
-        return {"summary": "Failed to generate summary. Please ensure your analyses are complete and try again."}
 
-    summary_text = response.get("choices", [{}])[0].get("message", {}).get("content", "")
-    
-    return {
-        "summary": summary_text,
-        "generated_at": response.get("created")
-    }
+    if not response:
+        return {
+            "summary": "Failed to generate summary. Please ensure your analyses are complete and try again."
+        }
+
+    summary_text = (
+        response.get("choices", [{}])[0].get("message", {}).get("content", "")
+    )
+
+    return {"summary": summary_text, "generated_at": response.get("created")}
