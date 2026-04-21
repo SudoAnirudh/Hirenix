@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Brain, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
