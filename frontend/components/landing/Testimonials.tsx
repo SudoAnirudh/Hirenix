@@ -56,7 +56,7 @@ export const Testimonials = () => {
           <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.4em] mb-12">
             Trusted by builders at
           </p>
-          <div className="flex flex-wrap justify-center gap-x-20 gap-y-10 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+          <div className="flex flex-wrap justify-center gap-x-20 gap-y-10 opacity-30 grayscale transition-all duration-700">
             {logos.map((logo) => (
               <span
                 key={logo}
@@ -88,7 +88,7 @@ export const Testimonials = () => {
               </Link>
 
               <Quote
-                className="absolute top-8 right-8 text-hyper-lime/10 group-hover:text-hyper-lime/20 transition-colors"
+                className="absolute top-8 right-8 text-hyper-lime/10 group- transition-colors"
                 size={40}
               />
 
@@ -97,7 +97,7 @@ export const Testimonials = () => {
                   <Link
                     key={i}
                     href="#"
-                    className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-hyper-lime hover:border-hyper-lime/20 transition-all"
+                    className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 transition-all"
                   >
                     <Icon size={18} />
                   </Link>

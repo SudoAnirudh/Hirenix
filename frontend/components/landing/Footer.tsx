@@ -19,8 +19,8 @@ export const Footer = () => {
       links: [
         { name: "About Hirenix", href: "/about" },
         { name: "Blog", href: "#" },
-        { name: "Careers", href: "#" },
-        { name: "Contact", href: "#" },
+        { name: "Careers", href: "/careers" },
+        { name: "Contact", href: "/contact" },
       ],
     },
     {
@@ -36,9 +36,9 @@ export const Footer = () => {
     {
       title: "Legal",
       links: [
-        { name: "Privacy Policy", href: "#" },
-        { name: "Terms of Service", href: "#" },
-        { name: "Security", href: "#" },
+        { name: "Privacy Policy", href: "/privacy" },
+        { name: "Terms of Service", href: "/terms" },
+        { name: "Security", href: "/security" },
       ],
     },
   ];
@@ -49,7 +49,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-20">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-8 group">
-              <div className="w-12 h-12 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform group-hover:scale-110">
+              <div className="w-12 h-12 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform">
                 <Brain className="text-white" size={26} />
               </div>
               <span className="font-display font-black text-3xl text-foreground tracking-tighter uppercase italic">
@@ -72,7 +72,7 @@ export const Footer = () => {
                 <Link
                   key={i}
                   href={href}
-                  className="w-12 h-12 rounded-2xl bg-background/60 border border-border flex items-center justify-center text-muted-foreground hover:text-brand-blue hover:border-brand-blue/30 hover:shadow-lg transition-all"
+                  className="w-12 h-12 rounded-2xl bg-background/60 border border-border flex items-center justify-center text-muted-foreground transition-all"
                 >
                   <Icon size={22} />
                 </Link>
@@ -90,7 +90,7 @@ export const Footer = () => {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground hover:text-brand-blue transition-colors text-sm font-bold uppercase tracking-widest flex items-center group"
+                      className="text-muted-foreground transition-colors text-sm font-bold uppercase tracking-widest flex items-center group"
                     >
                       {link.name}
                     </Link>
@@ -102,35 +102,42 @@ export const Footer = () => {
         </div>
 
         <div className="pt-12 border-t border-border flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm font-bold text-[#A0AEC0] uppercase tracking-[0.2em]">
-            <span>© {currentYear} HIRENIX STUDIO.</span>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm font-bold text-muted-foreground tracking-widest">
+            <span>© {currentYear} Hirenix. All rights reserved.</span>
             <span className="hidden md:block text-border">|</span>
             <Link
               href="https://github.com/SudoAnirudh"
-              className="flex items-center gap-2 text-brand-blue hover:text-foreground transition-colors group"
+              className="flex items-center gap-2 text-muted-foreground transition-colors group"
             >
-              Built with{" "}
-              <Heart
-                size={14}
-                className="fill-current text-red-400 group-hover:scale-125 transition-transform"
-              />{" "}
-              by Anirudh S
+              Engineered by Anirudh S
               <ExternalLink
                 size={12}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0 transition-opacity"
               />
             </Link>
           </div>
 
-          <div className="flex gap-3">
-            {["Next.js 16", "Supabase", "FastAPI"].map((tech) => (
-              <span
-                key={tech}
-                className="text-[10px] font-black uppercase tracking-widest px-5 py-2 rounded-full bg-secondary/60 text-muted-foreground border border-border backdrop-blur-sm shadow-sm"
-              >
-                {tech}
-              </span>
-            ))}
+          <div className="flex gap-4 items-center">
+            <Link
+              href="/terms"
+              className="text-xs font-medium text-muted-foreground transition-colors"
+            >
+              Terms
+            </Link>
+            <span className="text-border text-xs">•</span>
+            <Link
+              href="/privacy"
+              className="text-xs font-medium text-muted-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <span className="text-border text-xs">•</span>
+            <Link
+              href="/security"
+              className="text-xs font-medium text-muted-foreground transition-colors"
+            >
+              Security
+            </Link>
           </div>
         </div>
       </div>

@@ -133,7 +133,7 @@ export default function ProctorToolbar() {
           <button
             type="button"
             onClick={() => void requestFullscreen()}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 text-[#7C9ADD] text-[10px] font-bold uppercase tracking-widest hover:bg-[#7C9ADD]/20 transition-all active:scale-95"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#7C9ADD]/10 border border-[#7C9ADD]/20 text-[#7C9ADD] text-[10px] font-bold uppercase tracking-widest #7C9ADD]/20 transition-all active:scale-95"
           >
             <Expand size={12} />
             Secure Fullscreen

@@ -104,7 +104,7 @@ export default function OutreachModal({
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="w-12 h-12 rounded-2xl hover:bg-[#F1F5F9] flex items-center justify-center text-[#A0AEC0] transition-colors"
+            className="w-12 h-12 rounded-2xl #F1F5F9] flex items-center justify-center text-[#A0AEC0] transition-colors"
           >
             <X size={24} />
           </button>
@@ -118,7 +118,7 @@ export default function OutreachModal({
               className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${
                 activeTab === "linkedin"
                   ? "bg-white shadow-lg text-[#0A66C2] border border-[#0A66C2]/10"
-                  : "text-[#718096] hover:bg-white/50"
+                  : "text-[#718096]"
               }`}
             >
               <Linkedin size={20} />
@@ -131,7 +131,7 @@ export default function OutreachModal({
               className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${
                 activeTab === "email"
                   ? "bg-white shadow-lg text-[#6366F1] border border-[#6366F1]/10"
-                  : "text-[#718096] hover:bg-white/50"
+                  : "text-[#718096]"
               }`}
             >
               <Mail size={20} />

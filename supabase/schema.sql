@@ -242,3 +242,51 @@ create policy "read own resumes"
   on storage.objects for select
   using (bucket_id = 'resumes' and auth.uid()::text = (storage.foldername(name))[1]);
 
+
+-- ============================================================
+-- SEMANTIC CACHE (LLM Optimization)
+-- ============================================================
+create table if not exists public.llm_semantic_cache (
+  id              uuid primary key default gen_random_uuid(),
+  document_type   text not null,          -- e.g., 'job_description', 'resume_analysis'
+  content_text    text not null,
+  embedding       vector(1536) not null,
+  llm_response    jsonb not null,
+  created_at      timestamptz not null default now()
+);
+
+-- Index for fast similarity search
+create index on public.llm_semantic_cache using ivfflat (embedding vector_cosine_ops) with (lists = 100);
+
+-- Note: This table is not user-specific, so we restrict read/write access to the service role (backend).
+-- Users should not be able to query this table directly.
+alter table public.llm_semantic_cache enable row level security;
+
+-- Function for similarity search
+create or replace function match_semantic_cache (
+  query_embedding vector(1536),
+  match_threshold float,
+  match_count int,
+  doc_type text
+)
+returns table (
+  id uuid,
+  content_text text,
+  llm_response jsonb,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    llm_semantic_cache.id,
+    llm_semantic_cache.content_text,
+    llm_semantic_cache.llm_response,
+    1 - (llm_semantic_cache.embedding <=> query_embedding) as similarity
+  from llm_semantic_cache
+  where llm_semantic_cache.document_type = doc_type
+    and 1 - (llm_semantic_cache.embedding <=> query_embedding) > match_threshold
+  order by llm_semantic_cache.embedding <=> query_embedding
+  limit match_count;
+$$;
+
+

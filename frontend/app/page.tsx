@@ -124,13 +124,10 @@ export default function LandingPage() {
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-brand-blue text-white hover:bg-brand-blue/90 text-lg font-bold shadow-xl shadow-brand-blue/20 group transition-all"
+                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 group transition-all"
               >
                 Get Started
-                <ArrowRight
-                  size={20}
-                  className="ml-3 group-hover:translate-x-1 transition-transform"
-                />
+                <ArrowRight size={20} className="ml-3 transition-transform" />
               </Button>
             </Link>
             <div className="flex items-center gap-3 text-sm text-muted-foreground font-bold uppercase tracking-widest">
@@ -168,11 +165,11 @@ export default function LandingPage() {
                 transition={{ delay: idx * 0.1 }}
                 className="group"
               >
-                <SpotlightCard className="h-full p-10 rounded-[48px] border-border bg-card/40 shadow-glass group-hover:-translate-y-2 transition-all duration-500">
-                  <div className="w-16 h-16 rounded-3xl bg-background shadow-sm border border-border flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                <SpotlightCard className="h-full p-10 rounded-[48px] border-border bg-card/40 shadow-glass transition-all duration-500">
+                  <div className="w-16 h-16 rounded-3xl bg-background shadow-sm border border-border flex items-center justify-center mb-10 transition-transform duration-500">
                     <Icon
                       size={28}
-                      className="text-brand-blue group-hover:text-brand-green transition-colors"
+                      className="text-brand-blue group- transition-colors"
                     />
                   </div>
                   <h3 className="text-2xl font-display font-bold mb-4 text-foreground tracking-tight">
@@ -210,7 +207,7 @@ export default function LandingPage() {
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="h-20 px-16 rounded-[32px] bg-primary text-primary-foreground text-xl font-bold hover:bg-brand-blue hover:text-white transition-all shadow-xl active:scale-95 border-none"
+                className="h-20 px-16 rounded-[32px] bg-primary text-primary-foreground text-xl font-bold transition-all shadow-xl active:scale-95 border-none"
               >
                 Initialize Free Access
               </Button>

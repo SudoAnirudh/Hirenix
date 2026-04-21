@@ -133,8 +133,8 @@ export default function LoginPage() {
           href="/"
           className="flex items-center gap-3 mb-10 group justify-center"
         >
-          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform group-hover:scale-110">
-            <Brain className="text-white" size={24} />
+          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform">
+            <Brain className="text-card-foreground" size={24} />
           </div>
           <span className="font-display font-black text-2xl text-foreground tracking-tighter uppercase italic">
             HIRENIX
@@ -193,7 +193,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleForgotPassword}
                   disabled={resetLoading}
-                  className="text-xs font-bold text-brand-blue hover:text-brand-blue/80 transition-colors disabled:opacity-60"
+                  className="text-xs font-bold text-brand-blue transition-colors disabled:opacity-60"
                 >
                   {resetLoading ? "Sending..." : "Forgot password?"}
                 </button>
@@ -211,7 +211,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors"
                 >
                   {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -222,7 +222,7 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
+              className="w-full h-16 rounded-2xl bg-brand-blue text-card-foreground text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
             >
               {loading ? (
                 <>
@@ -236,10 +236,10 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center mt-10 text-muted-foreground font-medium">
-            New to Hirenix?{" "}
+            New to Hirenix?{""}
             <Link
               href="/auth/register"
-              className="text-brand-blue font-bold hover:underline underline-offset-4"
+              className="text-brand-blue font-bold underline-offset-4"
             >
               Create an account
             </Link>

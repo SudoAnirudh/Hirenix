@@ -227,10 +227,10 @@ export default function DashboardPage() {
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight font-heading">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-slate-100 dark:to-slate-400">
-                {getGreeting()},{" "}
+                {getGreeting()},{""}
               </span>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-500">
-                {fullName.split(" ")[0]}
+                {fullName.split("")[0]}
               </span>
             </h1>
             <p className="text-slate-500 text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
@@ -245,7 +245,7 @@ export default function DashboardPage() {
           ) : (
             <Link
               href="/dashboard/account"
-              className="p-1 px-1.5 rounded-[40px] bg-white/50 dark:bg-slate-900/40 border border-white/80 dark:border-slate-800 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group hover:bg-white/80 dark:hover:bg-slate-900/60 hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 cursor-pointer"
+              className="p-1 px-1.5 rounded-[40px] bg-white/50 dark:bg-slate-900/40 border border-white/80 dark:border-slate-800 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group dark: active:scale-[0.98] transition-all duration-500 cursor-pointer"
             >
               <div className="h-14 w-14 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white">
                 <User size={24} />
@@ -269,7 +269,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/dashboard/progress-tracker"
-              className="text-xs font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
+              className="text-xs font-bold text-indigo-500 transition-colors"
             >
               Detailed Analytics →
             </Link>
@@ -313,11 +313,11 @@ export default function DashboardPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 hover:bg-white/90 dark:hover:bg-slate-900/90 hover:scale-[1.02] shadow-sm hover:shadow-md transition-all duration-300"
+                    className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 dark: shadow-sm transition-all duration-300"
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-xl flex shrink-0 items-center justify-center border border-white dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105"
+                        className="w-10 h-10 rounded-xl flex shrink-0 items-center justify-center border border-white dark:border-slate-800 shadow-sm transition-transform"
                         style={{
                           backgroundColor: `${m.color}15`,
                           color: m.color,
@@ -438,10 +438,10 @@ export default function DashboardPage() {
               >
                 <Link
                   href={tool.href}
-                  className={`group flex items-center lg:flex-col lg:justify-center gap-3 p-3 lg:p-4 rounded-[24px] bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-900 shadow-sm hover:shadow-md transition-all duration-300 h-full`}
+                  className={`group flex items-center lg:flex-col lg:justify-center gap-3 p-3 lg:p-4 rounded-[24px] bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-slate-800 dark: shadow-sm transition-all duration-300 h-full`}
                 >
                   <div
-                    className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 border ${tool.border} ${tool.bg} ${tool.darkBg} ${tool.color} transition-transform group-hover:scale-105 group-hover:-rotate-3`}
+                    className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 border ${tool.border} ${tool.bg} ${tool.darkBg} ${tool.color} transition-transform`}
                   >
                     <tool.icon
                       size={20}

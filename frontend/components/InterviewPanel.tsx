@@ -354,7 +354,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
               <button
                 type="button"
                 onClick={() => void requestFullscreen()}
-                className="px-10 py-4 rounded-[28px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white font-display font-black shadow-2xl hover:scale-[1.01] active:scale-[0.98] transition-all"
+                className="px-10 py-4 rounded-[28px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white font-display font-black shadow-2xl active:scale-[0.98] transition-all"
               >
                 Enter fullscreen
               </button>
@@ -419,7 +419,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
                   : "bg-white/40 text-[#718096] border-white/60"
               }`}
             >
-              Warnings:{" "}
+              Warnings:{""}
               <span className="tabular-nums">{malpracticeWarnings}</span>/3
             </div>
           </div>
@@ -432,7 +432,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
           <div className="glass-card p-12 md:p-16 relative overflow-hidden group rounded-[48px] shadow-glass bg-white/40 border border-white/60 backdrop-blur-xl">
             {/* Ambient Background Aura */}
             <div
-              className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-all duration-1000 group-hover:opacity-20 translate-y-[-20%] translate-x-[20%]"
+              className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-all duration-1000 translate-y-[-20%] translate-x-[20%]"
               style={{ background: categoryColor }}
             />
 
@@ -441,7 +441,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
                 className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.25em] rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm border border-white"
                 style={{ color: categoryColor }}
               >
-                {q.category.replace("_", " ")}
+                {q.category.replace("_", "")}
               </span>
               <span className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.25em] rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm border border-white text-[#718096]">
                 {q.difficulty}
@@ -466,7 +466,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
                   {q.expected_topics.map((topic) => (
                     <span
                       key={topic}
-                      className="px-5 py-2.5 rounded-2xl bg-white/60 text-[11px] font-bold uppercase tracking-wider text-[#4A5568] border border-white shadow-sm hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all cursor-default"
+                      className="px-5 py-2.5 rounded-2xl bg-white/60 text-[11px] font-bold uppercase tracking-wider text-[#4A5568] border border-white shadow-sm transition-all cursor-default"
                     >
                       {topic}
                     </span>
@@ -517,7 +517,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
                     className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${
                       isListening
                         ? "bg-red-50 text-red-600 border-red-100"
-                        : "bg-white/60 text-[#2D3748] border-white/60 hover:bg-white/80"
+                        : "bg-white/60 text-[#2D3748] border-white/60"
                     } disabled:opacity-50`}
                     aria-pressed={isListening}
                   >
@@ -565,22 +565,19 @@ export default function InterviewPanel({ session, onComplete }: Props) {
               {!isLast ? (
                 <button
                   type="button"
-                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#7C9ADD] to-[#6b89cc] text-white shadow-2xl shadow-[#7C9ADD]/40 hover:scale-[1.02] hover:shadow-indigo-300/50 active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
+                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#7C9ADD] to-[#6b89cc] text-white shadow-2xl shadow-[#7C9ADD]/40 active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
                   onClick={() => handleNext(false)}
                   disabled={submitting || needsFullscreen || terminated}
                 >
                   <span className="font-display font-black text-2xl tracking-tighter">
                     Next Question
                   </span>
-                  <ChevronRight
-                    size={28}
-                    className="group-hover:translate-x-1.5 transition-transform"
-                  />
+                  <ChevronRight size={28} className=" transition-transform" />
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
+                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
                   onClick={() => void handleFinish()}
                   disabled={submitting || needsFullscreen || terminated}
                 >
@@ -588,10 +585,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
                     {submitting ? "Evaluating Session..." : "Finish & Evaluate"}
                   </span>
                   {!submitting && (
-                    <ChevronRight
-                      size={28}
-                      className="group-hover:translate-x-1.5 transition-transform"
-                    />
+                    <ChevronRight size={28} className=" transition-transform" />
                   )}
                 </button>
               )}

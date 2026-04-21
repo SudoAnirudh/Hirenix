@@ -67,7 +67,7 @@ export default function RegisterPage() {
               </strong>
             </p>
             <Link href="/auth/login" className="block w-full">
-              <Button className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all border-none">
+              <Button className="w-full h-16 rounded-2xl bg-brand-blue text-card-foreground text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all border-none">
                 Go to Login
               </Button>
             </Link>
@@ -90,8 +90,8 @@ export default function RegisterPage() {
           href="/"
           className="flex items-center gap-3 mb-10 group justify-center"
         >
-          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform group-hover:scale-110">
-            <Brain className="text-white" size={24} />
+          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform">
+            <Brain className="text-card-foreground" size={24} />
           </div>
           <span className="font-display font-black text-2xl text-foreground tracking-tighter uppercase italic">
             HIRENIX
@@ -161,7 +161,7 @@ export default function RegisterPage() {
               id="reg-submit"
               type="submit"
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
+              className="w-full h-16 rounded-2xl bg-brand-blue text-card-foreground text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
             >
               {loading ? (
                 <>
@@ -175,10 +175,10 @@ export default function RegisterPage() {
           </form>
 
           <p className="text-center mt-10 text-muted-foreground font-medium">
-            Already have an account?{" "}
+            Already have an account?{""}
             <Link
               href="/auth/login"
-              className="text-brand-blue font-bold hover:underline underline-offset-4"
+              className="text-brand-blue font-bold underline-offset-4"
             >
               Sign in
             </Link>

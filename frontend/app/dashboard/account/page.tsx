@@ -152,12 +152,12 @@ export default function AccountPage() {
         {/* Left Column: Profile & Summary */}
         <div className="lg:col-span-4 space-y-6">
           <Card className="p-8 border-white/80 bg-white/60 shadow-premium backdrop-blur-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-2xl group- transition-colors" />
 
             <div className="flex flex-col items-center text-center space-y-4 relative z-10">
               <div className="h-28 w-28 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-xl border-4 border-white mb-2 relative group/avatar">
                 <User size={56} strokeWidth={1} />
-                <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-indigo-500 hover:scale-110 transition-transform">
+                <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-indigo-500 transition-transform">
                   <Globe size={14} />
                 </button>
               </div>
@@ -208,23 +208,25 @@ export default function AccountPage() {
             <div className="mt-8 space-y-3">
               <Button
                 variant="outline"
-                className="w-full justify-between h-12 border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 group/btn transition-all"
+                className="w-full justify-between h-12 border-slate-200 group/btn transition-all"
               >
                 <span className="flex items-center gap-3 text-slate-600">
                   <Shield
                     size={18}
                     className="group-hover/btn:text-indigo-500"
-                  />{" "}
+                  />
+                  {""}
                   Security Settings
                 </span>
                 <ChevronRight size={16} className="text-slate-300" />
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-between h-12 border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 group/btn transition-all"
+                className="w-full justify-between h-12 border-slate-200 group/btn transition-all"
               >
                 <span className="flex items-center gap-3 text-slate-600">
-                  <Bell size={18} className="group-hover/btn:text-indigo-500" />{" "}
+                  <Bell size={18} className="group-hover/btn:text-indigo-500" />
+                  {""}
                   Notification Preferences
                 </span>
                 <ChevronRight size={16} className="text-slate-300" />
@@ -238,7 +240,7 @@ export default function AccountPage() {
               <Zap size={20} className="text-amber-500" /> Power-Ups
             </h3>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-colors">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white rounded-lg shadow-sm">
                     <Github size={20} className="text-[#1E293B]" />
@@ -253,7 +255,7 @@ export default function AccountPage() {
                 <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-indigo-200 transition-colors">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white rounded-lg shadow-sm">
                     <Linkedin size={20} className="text-[#0A66C2]" />
@@ -268,7 +270,7 @@ export default function AccountPage() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-indigo-600 font-bold hover:bg-indigo-50 text-xs"
+                  className="text-indigo-600 font-bold text-xs"
                 >
                   Connect
                 </Button>
@@ -278,7 +280,7 @@ export default function AccountPage() {
 
           <Button
             onClick={handleSignOut}
-            className="w-full h-14 bg-white hover:bg-rose-50 border border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-200 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-sm"
+            className="w-full h-14 bg-white border border-slate-200 text-slate-500 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-sm"
           >
             <LogOut size={20} /> Terminate Session
           </Button>
@@ -357,7 +359,7 @@ export default function AccountPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-indigo-600 font-bold hover:bg-indigo-50"
+                className="text-indigo-600 font-bold"
               >
                 View All
               </Button>
@@ -367,16 +369,16 @@ export default function AccountPage() {
                 activityLog.map((log, i) => (
                   <div
                     key={i}
-                    className="p-6 flex items-center justify-between hover:bg-white/40 transition-colors group"
+                    className="p-6 flex items-center justify-between transition-colors group"
                   >
                     <div className="flex items-center gap-4">
                       <div
-                        className={`h-12 w-12 rounded-2xl ${log.bg} flex items-center justify-center transition-transform group-hover:scale-110`}
+                        className={`h-12 w-12 rounded-2xl ${log.bg} flex items-center justify-center transition-transform`}
                       >
                         <log.icon size={22} className={log.color} />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-[#1E293B] group-hover:text-indigo-600 transition-colors">
+                        <p className="text-sm font-bold text-[#1E293B] group- transition-colors">
                           {log.action}
                         </p>
                         <p className="text-xs text-[#64748B]">{log.date}</p>

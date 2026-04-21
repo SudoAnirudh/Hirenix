@@ -81,7 +81,7 @@ export default function ResumeUploader({ onResult }: Props) {
       className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-[32px] bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group ${
         isDragActive
           ? "bg-[#7C9ADD]/5 border-[#7C9ADD] scale-[0.99] shadow-inner"
-          : "hover:bg-white/60 hover:border-[#7C9ADD]/40 hover:shadow-xl hover:-translate-y-1"
+          : " #7C9ADD]/40"
       }`}
       style={{
         borderColor: isDragActive
@@ -98,7 +98,7 @@ export default function ResumeUploader({ onResult }: Props) {
 
       {status === "idle" && (
         <>
-          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#7C9ADD]/10 text-[#7C9ADD] transition-transform group-hover:scale-110">
+          <div className="w-20 h-20 flex items-center justify-center rounded-3xl bg-[#7C9ADD]/10 text-[#7C9ADD] transition-transform">
             <Upload size={32} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-3">
@@ -106,11 +106,12 @@ export default function ResumeUploader({ onResult }: Props) {
               {isDragActive ? "Drop it here!" : "Upload your resume"}
             </p>
             <p className="text-sm font-medium text-[#718096]">
-              or{" "}
-              <span className="text-[#7C9ADD] font-bold cursor-pointer hover:underline">
+              or{""}
+              <span className="text-[#7C9ADD] font-bold cursor-pointer">
                 browse files
-              </span>{" "}
-              <span className="mx-2 opacity-30">|</span> PDF{" "}
+              </span>
+              {""}
+              <span className="mx-2 opacity-30">|</span> PDF{""}
               <span className="mx-2 opacity-30">|</span> Max 10MB
             </p>
           </div>

@@ -35,14 +35,14 @@ export default function LinkedinAnalysisPage() {
     <div className="animate-fade-up space-y-10 pb-20">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0A66C2]/10 text-[#0A66C2] text-[10px] font-black uppercase tracking-[0.2em] border border-[#0A66C2]/20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-blue/10 text-brand-blue text-[10px] font-black uppercase tracking-[0.2em] border border-brand-blue/20">
             <Sparkles size={14} />
             Professional Optimization
           </div>
-          <h1 className="font-display font-black text-5xl text-[#1E293B] tracking-tight">
-            LinkedIn <span className="text-[#0A66C2]">Intelligence</span>
+          <h1 className="font-display font-black text-5xl text-foreground tracking-tight">
+            LinkedIn <span className="text-brand-blue">Intelligence</span>
           </h1>
-          <p className="max-w-2xl text-lg font-medium text-[#64748B] leading-relaxed">
+          <p className="max-w-2xl text-lg font-medium text-muted-foreground leading-relaxed">
             Unleash the full potential of your professional brand. Upload your
             LinkedIn profile PDF for an AI-powered deep dive into your
             profile&apos;s impact.
@@ -80,17 +80,17 @@ export default function LinkedinAnalysisPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i }}
-                className="p-8 rounded-[32px] bg-white shadow-premium border border-slate-100 hover:border-blue-100 transition-all hover:shadow-premium-hover group"
+                className="p-8 rounded-[32px] bg-white shadow-premium border border-slate-100 transition-all group"
               >
                 <div
-                  className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-sm`}
+                  className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-6 transition-transform shadow-sm`}
                 >
                   <feature.icon size={24} />
                 </div>
-                <h3 className="font-display font-bold text-lg text-[#1E293B] mb-3">
+                <h3 className="font-display font-bold text-lg text-foreground mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-sm font-medium text-[#64748B] leading-relaxed">
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                   {feature.desc}
                 </p>
               </motion.div>
@@ -107,7 +107,7 @@ export default function LinkedinAnalysisPage() {
           <div className="xl:col-span-8 space-y-8">
             {/* Overall Score Banner */}
             <div className="relative overflow-hidden p-10 rounded-[48px] bg-white border border-slate-100 shadow-premium flex flex-col md:flex-row items-center gap-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#0A66C2]/10 rounded-full -mr-32 -mt-32 blur-[80px]" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/10 rounded-full -mr-32 -mt-32 blur-[80px]" />
 
               <div className="relative z-10">
                 <MatchGauge
@@ -120,15 +120,15 @@ export default function LinkedinAnalysisPage() {
               <div className="flex-1 space-y-6 relative z-10">
                 <div className="flex flex-wrap gap-3">
                   <div className="px-4 py-2 rounded-2xl bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                    <CheckCircle2 size={14} /> Profile Completeness:{" "}
+                    <CheckCircle2 size={14} /> Profile Completeness:{""}
                     {analysis.completeness_score}%
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h2 className="font-display font-black text-3xl text-[#1E293B]">
+                  <h2 className="font-display font-black text-3xl text-foreground">
                     Professional Outlook
                   </h2>
-                  <p className="text-[#64748B] font-medium leading-relaxed">
+                  <p className="text-muted-foreground font-medium leading-relaxed">
                     Based on your analysis, your profile is exceptionally strong
                     in technical depth but could benefit from more specific,
                     metric-driven achievements in your Experience section.
@@ -138,7 +138,7 @@ export default function LinkedinAnalysisPage() {
                 <div className="pt-2 flex flex-wrap gap-4">
                   <button
                     onClick={() => setAnalysis(null)}
-                    className="px-6 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-2"
+                    className="px-6 py-3 rounded-2xl border-2 border-slate-100 text-sm font-bold text-slate-500 transition-all flex items-center gap-2"
                   >
                     Analyze New Profile
                   </button>
@@ -150,7 +150,7 @@ export default function LinkedinAnalysisPage() {
             <div className="p-10 rounded-[48px] bg-white border border-slate-100 shadow-premium space-y-10">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <h2 className="font-display font-black text-2xl text-[#1E293B]">
+                  <h2 className="font-display font-black text-2xl text-foreground">
                     Headline Optimization
                   </h2>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A0AEC0]">
@@ -167,7 +167,7 @@ export default function LinkedinAnalysisPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#64748B] flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     CURRENT VERSION
                   </span>
                   <div className="p-6 rounded-[32px] bg-slate-50 border border-slate-100 italic text-slate-600 text-sm font-medium leading-relaxed">
@@ -176,16 +176,16 @@ export default function LinkedinAnalysisPage() {
                 </div>
 
                 <div className="space-y-4 relative">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#0A66C2] flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-blue flex items-center gap-2">
                     <Sparkles size={14} /> AI IMPROVED VERSION
                   </span>
-                  <div className="group relative p-6 rounded-[32px] bg-blue-50/50 border border-blue-100 text-[#0A66C2] text-sm font-black leading-relaxed shadow-sm">
+                  <div className="group relative p-6 rounded-[32px] bg-blue-50/50 border border-blue-100 text-brand-blue text-sm font-black leading-relaxed shadow-sm">
                     &quot;{analysis.headline.improved}&quot;
                     <button
                       onClick={() =>
                         copyToClipboard(analysis.headline.improved || "")
                       }
-                      className="absolute bottom-4 right-4 p-3 rounded-xl bg-white shadow-md text-[#0A66C2] hover:scale-110 transition-transform active:scale-95"
+                      className="absolute bottom-4 right-4 p-3 rounded-xl bg-white shadow-md text-brand-blue transition-transform active:scale-95"
                     >
                       <Copy size={16} />
                     </button>
@@ -197,9 +197,9 @@ export default function LinkedinAnalysisPage() {
                 {analysis.headline.tips.map((tip, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white border border-slate-100 text-xs font-bold text-[#64748B] shadow-xs"
+                    className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white border border-slate-100 text-xs font-bold text-muted-foreground shadow-xs"
                   >
-                    <ChevronRight size={14} className="text-[#0A66C2]" />
+                    <ChevronRight size={14} className="text-brand-blue" />
                     {tip}
                   </div>
                 ))}
@@ -210,7 +210,7 @@ export default function LinkedinAnalysisPage() {
             <div className="p-10 rounded-[48px] bg-white border border-slate-100 shadow-premium space-y-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <h2 className="font-display font-black text-2xl text-[#1E293B]">
+                  <h2 className="font-display font-black text-2xl text-foreground">
                     Executive Summary (About)
                   </h2>
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#A0AEC0]">
@@ -227,10 +227,10 @@ export default function LinkedinAnalysisPage() {
 
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#0A66C2] flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-brand-blue flex items-center gap-2">
                     <Sparkles size={14} /> OPTIMIZED BIO PREVIEW
                   </span>
-                  <div className="p-8 rounded-[40px] bg-slate-50 border border-slate-100 text-[#1E293B] text-sm font-medium leading-[1.8] relative group">
+                  <div className="p-8 rounded-[40px] bg-slate-50 border border-slate-100 text-foreground text-sm font-medium leading-[1.8] relative group">
                     <div className="line-clamp-6">
                       {analysis.about.improved}
                     </div>
@@ -239,7 +239,7 @@ export default function LinkedinAnalysisPage() {
                         onClick={() =>
                           copyToClipboard(analysis.about.improved || "")
                         }
-                        className="px-6 py-2.5 rounded-xl bg-white shadow-lg text-[#0A66C2] text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2"
+                        className="px-6 py-2.5 rounded-xl bg-white shadow-lg text-brand-blue text-xs font-black uppercase tracking-widest transition-transform flex items-center gap-2"
                       >
                         <Copy size={14} /> Copy Full BIO
                       </button>
@@ -253,10 +253,10 @@ export default function LinkedinAnalysisPage() {
                       key={i}
                       className="flex gap-4 p-5 rounded-[24px] bg-white border border-slate-100"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0A66C2] flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-brand-blue flex items-center justify-center shrink-0">
                         <Zap size={14} />
                       </div>
-                      <p className="text-xs font-bold text-[#64748B] leading-relaxed">
+                      <p className="text-xs font-bold text-muted-foreground leading-relaxed">
                         {tip}
                       </p>
                     </div>
@@ -270,7 +270,7 @@ export default function LinkedinAnalysisPage() {
           <div className="xl:col-span-4 space-y-8">
             {/* Suggested Roles */}
             <div className="p-8 rounded-[40px] bg-linear-to-br from-indigo-900 to-slate-900 shadow-premium relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full bg-[#0A66C2]/10 opacity-50" />
+              <div className="absolute top-0 left-0 w-full h-full bg-brand-blue/10 opacity-50" />
               <div className="relative z-10 space-y-6">
                 <h3 className="font-display font-black text-xl text-white">
                   Target Market
@@ -279,7 +279,7 @@ export default function LinkedinAnalysisPage() {
                   {analysis.suggested_roles.map((role, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/20 transition-all cursor-default"
+                      className="flex items-center justify-between p-4 rounded-2xl bg-white/10 border border-white/10 transition-all cursor-default"
                     >
                       <span className="text-sm font-bold text-blue-100">
                         {role}
@@ -293,12 +293,12 @@ export default function LinkedinAnalysisPage() {
 
             {/* Keyword Intelligence */}
             <div className="p-8 rounded-[40px] bg-white border border-slate-100 shadow-premium space-y-8">
-              <h3 className="font-display font-black text-xl text-[#1E293B]">
+              <h3 className="font-display font-black text-xl text-foreground">
                 Keyword Gap
               </h3>
               <div className="space-y-6">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#F59E0B] mb-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-4">
                     CRITICAL MISSING TERMS
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -319,11 +319,12 @@ export default function LinkedinAnalysisPage() {
                 </div>
 
                 <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100">
-                  <h4 className="text-xs font-bold text-[#1E293B] mb-2 flex items-center gap-2">
-                    <AlertCircle size={14} className="text-amber-500" />{" "}
+                  <h4 className="text-xs font-bold text-foreground mb-2 flex items-center gap-2">
+                    <AlertCircle size={14} className="text-amber-500" />
+                    {""}
                     Improvement Strategy
                   </h4>
-                  <p className="text-[11px] font-medium text-[#64748B] leading-relaxed">
+                  <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
                     Integration of these terms into your Headline and Skills
                     section will increase your recruiter search visibility by an
                     estimated 40%.
@@ -334,7 +335,7 @@ export default function LinkedinAnalysisPage() {
 
             {/* General tips list */}
             <div className="p-8 rounded-[40px] bg-white border border-slate-100 shadow-premium">
-              <h3 className="font-display font-black text-xl text-[#1E293B] mb-6">
+              <h3 className="font-display font-black text-xl text-foreground mb-6">
                 Action Plan
               </h3>
               <div className="space-y-6">
@@ -343,7 +344,7 @@ export default function LinkedinAnalysisPage() {
                     <div className="w-6 h-6 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 font-display font-black text-[10px]">
                       {i + 1}
                     </div>
-                    <p className="text-xs font-bold text-[#64748B] leading-relaxed mt-0.5">
+                    <p className="text-xs font-bold text-muted-foreground leading-relaxed mt-0.5">
                       {tip}
                     </p>
                   </div>

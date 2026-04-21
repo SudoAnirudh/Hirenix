@@ -171,8 +171,8 @@ const stripHttp = (u: string) => u.replace(/https?:\/\/(www\.)?/, "");
 
 function sec(title: string, body: string) {
   return `<h2 style="font-size:9.5pt;font-weight:800;text-transform:uppercase;
-    letter-spacing:.9px;border-bottom:1.5px solid #111;
-    padding-bottom:2px;margin:14px 0 5px;">${title}</h2>${body}`;
+ letter-spacing:.9px;border-bottom:1.5px solid #111;
+ padding-bottom:2px;margin:14px 0 5px;">${title}</h2>${body}`;
 }
 
 function generateHTML(d: ResumeData, order: SectionId[]): string {
@@ -186,7 +186,7 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
     p.portfolio && `<a href="${p.portfolio}">${stripHttp(p.portfolio)}</a>`,
   ]
     .filter(Boolean)
-    .join(" &nbsp;|&nbsp; ");
+    .join(" &nbsp;|&nbsp;");
 
   const blocks: Record<SectionId, string> = {
     summary: d.summary
@@ -200,14 +200,14 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
             .filter((e) => e.title || e.company)
             .map(
               (e) => `
-          <div style="margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;">
-              <strong style="font-size:10.5pt;">${e.title || "[Job Title]"}</strong>
-              <span style="font-size:9pt;color:#555;font-style:italic;">${[e.startDate, e.current ? "Present" : e.endDate].filter(Boolean).join(" – ")}</span>
-            </div>
-            <div style="font-size:9.5pt;color:#555;margin-bottom:2px;">${e.company || "[Company]"}${e.location ? " &mdash; " + e.location : ""}</div>
-            ${e.bullets ? `<ul style="margin:3px 0 0;padding-left:17px;font-size:10pt;">${toBullets(e.bullets)}</ul>` : ""}
-          </div>`,
+ <div style="margin-bottom:10px;">
+ <div style="display:flex;justify-content:space-between;align-items:baseline;">
+ <strong style="font-size:10.5pt;">${e.title || "[Job Title]"}</strong>
+ <span style="font-size:9pt;color:#555;font-style:italic;">${[e.startDate, e.current ? "Present" : e.endDate].filter(Boolean).join(" –")}</span>
+ </div>
+ <div style="font-size:9.5pt;color:#555;margin-bottom:2px;">${e.company || "[Company]"}${e.location ? " &mdash;" + e.location : ""}</div>
+ ${e.bullets ? `<ul style="margin:3px 0 0;padding-left:17px;font-size:10pt;">${toBullets(e.bullets)}</ul>` : ""}
+ </div>`,
             )
             .join(""),
         )
@@ -220,13 +220,13 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
             .filter((e) => e.school || e.degree)
             .map(
               (e) => `
-          <div style="margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;">
-              <strong>${e.degree || "[Degree]"}${e.major ? " in " + e.major : ""}</strong>
-              <span style="font-size:9pt;color:#555;font-style:italic;">${e.graduationDate}</span>
-            </div>
-            <div style="font-size:9.5pt;color:#555;">${e.school || "[School]"}${e.location ? ", " + e.location : ""}${e.gpa ? " &nbsp;|&nbsp; GPA: " + e.gpa : ""}${e.honors ? " &nbsp;|&nbsp; " + e.honors : ""}</div>
-          </div>`,
+ <div style="margin-bottom:8px;">
+ <div style="display:flex;justify-content:space-between;align-items:baseline;">
+ <strong>${e.degree || "[Degree]"}${e.major ? " in" + e.major : ""}</strong>
+ <span style="font-size:9pt;color:#555;font-style:italic;">${e.graduationDate}</span>
+ </div>
+ <div style="font-size:9.5pt;color:#555;">${e.school || "[School]"}${e.location ? "," + e.location : ""}${e.gpa ? " &nbsp;|&nbsp; GPA:" + e.gpa : ""}${e.honors ? " &nbsp;|&nbsp;" + e.honors : ""}</div>
+ </div>`,
             )
             .join(""),
         )
@@ -239,14 +239,14 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
             .filter((p) => p.name)
             .map(
               (p) => `
-          <div style="margin-bottom:8px;">
-            <div>
-              <strong>${p.name}</strong>
-              ${p.tech ? `<span style="font-size:9.5pt;color:#555;"> | ${p.tech}</span>` : ""}
-              ${p.link ? `<a href="${p.link}" style="font-size:9pt;color:#0b7c76;margin-left:6px;">${stripHttp(p.link)}</a>` : ""}
-            </div>
-            ${p.bullets ? `<ul style="margin:3px 0 0;padding-left:17px;font-size:10pt;">${toBullets(p.bullets)}</ul>` : ""}
-          </div>`,
+ <div style="margin-bottom:8px;">
+ <div>
+ <strong>${p.name}</strong>
+ ${p.tech ? `<span style="font-size:9.5pt;color:#555;"> | ${p.tech}</span>` : ""}
+ ${p.link ? `<a href="${p.link}" style="font-size:9pt;color:#0b7c76;margin-left:6px;">${stripHttp(p.link)}</a>` : ""}
+ </div>
+ ${p.bullets ? `<ul style="margin:3px 0 0;padding-left:17px;font-size:10pt;">${toBullets(p.bullets)}</ul>` : ""}
+ </div>`,
             )
             .join(""),
         )
@@ -259,13 +259,13 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
             .filter((a) => a.title)
             .map(
               (a) => `
-          <div style="margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;">
-            <div>
-              <strong>${a.title}</strong>
-              ${a.description ? ` <span style="font-size:9.5pt;color:#555;">&mdash; ${a.description}</span>` : ""}
-            </div>
-            ${a.date ? `<span style="font-size:9pt;color:#555;font-style:italic;white-space:nowrap;margin-left:12px;">${a.date}</span>` : ""}
-          </div>`,
+ <div style="margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;">
+ <div>
+ <strong>${a.title}</strong>
+ ${a.description ? ` <span style="font-size:9.5pt;color:#555;">&mdash; ${a.description}</span>` : ""}
+ </div>
+ ${a.date ? `<span style="font-size:9pt;color:#555;font-style:italic;white-space:nowrap;margin-left:12px;">${a.date}</span>` : ""}
+ </div>`,
             )
             .join(""),
         )
@@ -275,11 +275,11 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
       ? sec(
           "Technical Skills",
           `<div style="font-size:10pt;">
-          ${d.skills.languages ? `<p style="margin:2px 0;"><strong>Languages:</strong> ${d.skills.languages}</p>` : ""}
-          ${d.skills.frameworks ? `<p style="margin:2px 0;"><strong>Frameworks:</strong> ${d.skills.frameworks}</p>` : ""}
-          ${d.skills.tools ? `<p style="margin:2px 0;"><strong>Tools:</strong> ${d.skills.tools}</p>` : ""}
-          ${d.skills.soft ? `<p style="margin:2px 0;"><strong>Soft Skills:</strong> ${d.skills.soft}</p>` : ""}
-        </div>`,
+ ${d.skills.languages ? `<p style="margin:2px 0;"><strong>Languages:</strong> ${d.skills.languages}</p>` : ""}
+ ${d.skills.frameworks ? `<p style="margin:2px 0;"><strong>Frameworks:</strong> ${d.skills.frameworks}</p>` : ""}
+ ${d.skills.tools ? `<p style="margin:2px 0;"><strong>Tools:</strong> ${d.skills.tools}</p>` : ""}
+ ${d.skills.soft ? `<p style="margin:2px 0;"><strong>Soft Skills:</strong> ${d.skills.soft}</p>` : ""}
+ </div>`,
         )
       : "",
 
@@ -296,16 +296,16 @@ function generateHTML(d: ResumeData, order: SectionId[]): string {
   };
 
   return `
-    <div style="font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;
-      line-height:1.45;color:#111;padding:36px 44px;min-height:100%;">
-      <h1 style="text-align:center;font-size:18pt;font-weight:800;margin:0 0 3px;letter-spacing:-.3px;">
-        ${p.name || `<span style="color:#ccc">[Your Full Name]</span>`}
-      </h1>
-      <p style="text-align:center;font-size:9pt;color:#555;margin:0 0 2px;">
-        ${contact || `<span style="color:#bbb">Email · Phone · LinkedIn · GitHub</span>`}
-      </p>
-      ${order.map((id) => blocks[id]).join("")}
-    </div>`;
+ <div style="font-family:Arial,Helvetica,sans-serif;font-size:10.5pt;
+ line-height:1.45;color:#111;padding:36px 44px;min-height:100%;">
+ <h1 style="text-align:center;font-size:18pt;font-weight:800;margin:0 0 3px;letter-spacing:-.3px;">
+ ${p.name || `<span style="color:#ccc">[Your Full Name]</span>`}
+ </h1>
+ <p style="text-align:center;font-size:9pt;color:#555;margin:0 0 2px;">
+ ${contact || `<span style="color:#bbb">Email · Phone · LinkedIn · GitHub</span>`}
+ </p>
+ ${order.map((id) => blocks[id]).join("")}
+ </div>`;
 }
 
 // ─── Form helpers ─────────────────────────────────────────────────────────────
@@ -608,7 +608,7 @@ export default function ResumeBuilderPage() {
                       experience: d.experience.filter((e) => e.id !== exp.id),
                     }))
                   }
-                  className="p-1 rounded hover:bg-red-50 transition-colors"
+                  className="p-1 rounded transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
@@ -711,7 +711,7 @@ export default function ResumeBuilderPage() {
                       education: d.education.filter((e) => e.id !== edu.id),
                     }))
                   }
-                  className="p-1 rounded hover:bg-red-50 transition-colors"
+                  className="p-1 rounded transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
@@ -804,7 +804,7 @@ export default function ResumeBuilderPage() {
                       projects: d.projects.filter((p) => p.id !== proj.id),
                     }))
                   }
-                  className="p-1 rounded hover:bg-red-50 transition-colors"
+                  className="p-1 rounded transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
@@ -873,7 +873,7 @@ export default function ResumeBuilderPage() {
                       achievements: d.achievements.filter((x) => x.id !== a.id),
                     }))
                   }
-                  className="p-1 rounded hover:bg-red-50 transition-colors"
+                  className="p-1 rounded transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 </button>
@@ -1015,7 +1015,7 @@ export default function ResumeBuilderPage() {
             className="text-xs mt-0.5"
             style={{ color: "var(--text-secondary)" }}
           >
-            Fill in your details · Drag{" "}
+            Fill in your details · Drag{""}
             <GripVertical className="w-3 h-3 inline" /> to reorder sections ·
             Preview updates live
           </p>

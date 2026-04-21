@@ -26,11 +26,11 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
     // Pattern 1: Authority & Scale
     if (repo.stars > 10) {
       points.push(
-        `Architected and scaled "${repo.name}" (${repo.language}), achieving a top-tier rating of ${repo.stars} stars through community-driven open source excellence.`,
+        `Architected and scaled"${repo.name}" (${repo.language}), achieving a top-tier rating of ${repo.stars} stars through community-driven open source excellence.`,
       );
     } else {
       points.push(
-        `Engineered a robust ${repo.language || "software"} ecosystem in "${repo.name}", focusing on modular architecture and production-ready code patterns.`,
+        `Engineered a robust ${repo.language || "software"} ecosystem in"${repo.name}", focusing on modular architecture and production-ready code patterns.`,
       );
     }
 
@@ -78,7 +78,7 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
         {repos.slice(0, 3).map((repo, repoIdx) => (
           <div
             key={repo.name}
-            className="glass-card p-6 border-violet-500/10 hover:border-violet-500/30 transition-all group"
+            className="glass-card p-6 border-violet-500/10 transition-all group"
           >
             <h4 className="flex items-center gap-2 font-bold text-sm text-violet-500 uppercase tracking-widest mb-4">
               <BookOpen size={14} />
@@ -95,15 +95,12 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
                     </p>
                     <button
                       onClick={() => copyToClipboard(point, globalIdx)}
-                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 items-center justify-center transition-all hover:scale-105"
+                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 items-center justify-center transition-all"
                     >
                       {copiedIndex === globalIdx ? (
                         <Check size={14} className="text-emerald-500" />
                       ) : (
-                        <Copy
-                          size={14}
-                          className="text-slate-400 group-hover:text-indigo-500"
-                        />
+                        <Copy size={14} className="text-slate-400 group-" />
                       )}
                     </button>
                   </div>

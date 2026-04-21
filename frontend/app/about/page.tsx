@@ -34,11 +34,11 @@ const fadeInUp: Variants = {
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen relative bg-white overflow-hidden selection:bg-[#7C9ADD]/30 selection:text-[#2D3748]">
+    <main className="min-h-screen relative bg-background overflow-hidden selection:bg-brand-blue/30 selection:text-brand-blue">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#7C9ADD]/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#98C9A3]/10 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/10 blur-[150px] rounded-full animate-pulse-slow" />
       </div>
 
       <LandingNavbar />
@@ -52,7 +52,7 @@ export default function AboutPage() {
           className="max-w-4xl mx-auto"
         >
           <motion.div variants={fadeInUp} className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/40 backdrop-blur-md border border-white/60 text-[#7C9ADD] font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-card/40 backdrop-blur-md border border-border text-brand-blue font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
               <Brain size={14} className="animate-pulse" />
               Our Mission
             </div>
@@ -60,10 +60,10 @@ export default function AboutPage() {
 
           <motion.h1
             variants={fadeInUp}
-            className="font-display font-bold text-6xl md:text-8xl mb-10 tracking-tighter leading-[0.9] text-[#2D3748]"
+            className="font-display font-bold text-6xl md:text-8xl mb-10 tracking-tighter leading-[0.9] text-foreground"
           >
-            Engineering the{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-br from-[#7C9ADD] to-[#98C9A3]">
+            Engineering the{""}
+            <span className="text-transparent bg-clip-text bg-linear-to-br from-brand-blue to-brand-green">
               future of work
             </span>
             .
@@ -71,7 +71,7 @@ export default function AboutPage() {
 
           <motion.p
             variants={fadeInUp}
-            className="text-xl md:text-2xl text-[#718096] mb-12 max-w-2xl mx-auto leading-relaxed font-medium"
+            className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed font-medium"
           >
             Hirenix is built on the belief that career growth should be
             data-driven, transparent, and powered by the world&apos;s most
@@ -106,15 +106,15 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass-card p-10 rounded-[40px] border border-white/80 bg-white/60 shadow-glass"
+              className="glass-card p-10 rounded-[40px] border border-border bg-card/60 shadow-glass"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#7C9ADD]/10 flex items-center justify-center mb-8">
-                <value.icon className="text-[#7C9ADD]" size={28} />
+              <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 flex items-center justify-center mb-8">
+                <value.icon className="text-brand-blue" size={28} />
               </div>
-              <h3 className="text-2xl font-display font-bold mb-4 text-[#2D3748]">
+              <h3 className="text-2xl font-display font-bold mb-4 text-foreground">
                 {value.title}
               </h3>
-              <p className="text-[#718096] font-medium leading-relaxed">
+              <p className="text-muted-foreground font-medium leading-relaxed">
                 {value.desc}
               </p>
             </motion.div>
@@ -125,8 +125,8 @@ export default function AboutPage() {
       {/* Founder Section */}
       <section className="relative z-10 py-32 px-6 overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="glass-card rounded-[64px] p-12 md:p-20 bg-white/40 border border-white/80 flex flex-col md:flex-row items-center gap-16 shadow-glass relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#7C9ADD]/5 blur-[100px] rounded-full -mr-32 -mt-32" />
+          <div className="glass-card rounded-[64px] p-12 md:p-20 bg-card/40 border border-border flex flex-col md:flex-row items-center gap-16 shadow-glass relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/5 blur-[100px] rounded-full -mr-32 -mt-32" />
 
             <div className="w-48 h-48 md:w-64 md:h-64 rounded-[48px] overflow-hidden shadow-2xl relative group shrink-0">
               <Image
@@ -134,19 +134,19 @@ export default function AboutPage() {
                 alt="Anirudh S"
                 width={256}
                 height={256}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-[#2D3748]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-6">
+              <div className="absolute inset-0 bg-linear-to-t from-background/80 to-transparent opacity-0 transition-opacity duration-500 flex items-end justify-center pb-6">
                 <div className="flex gap-4">
                   <Link
                     href="https://github.com/SudoAnirudh"
-                    className="text-white hover:scale-110 transition-transform"
+                    className="text-white transition-transform"
                   >
                     <Github size={20} />
                   </Link>
                   <Link
                     href="https://portfolio-blue-five-10.vercel.app/"
-                    className="text-white hover:scale-110 transition-transform"
+                    className="text-white transition-transform"
                   >
                     <Globe size={20} />
                   </Link>
@@ -155,14 +155,14 @@ export default function AboutPage() {
             </div>
 
             <div className="flex-1 text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#7C9ADD]/10 text-[#7C9ADD] font-bold text-[10px] uppercase tracking-widest mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-blue/10 text-brand-blue font-bold text-[10px] uppercase tracking-widest mb-6">
                 Founder&apos;s Note
               </div>
-              <h2 className="font-display font-bold text-4xl md:text-5xl text-[#2D3748] mb-8 tracking-tighter">
+              <h2 className="font-display font-bold text-4xl md:text-5xl text-foreground mb-8 tracking-tighter">
                 Built by a developer, <br />
-                <span className="text-[#7C9ADD]">for developers.</span>
+                <span className="text-brand-blue">for developers.</span>
               </h2>
-              <p className="text-lg text-[#718096] font-medium leading-relaxed mb-10 max-w-xl">
+              <p className="text-lg text-muted-foreground font-medium leading-relaxed mb-10 max-w-xl">
                 &quot;Hirenix started as a project to solve my own frustrations
                 with the job market. I wanted a studio that wasn&apos;t just
                 about &apos;applying&apos;, but about &apos;understanding&apos;
@@ -171,10 +171,10 @@ export default function AboutPage() {
                 roles.&quot;
               </p>
               <div className="flex flex-col gap-1">
-                <span className="font-display font-black text-xl text-[#2D3748]">
+                <span className="font-display font-black text-xl text-foreground">
                   Anirudh S
                 </span>
-                <span className="text-sm font-bold text-[#A0AEC0] uppercase tracking-widest">
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
                   Creator of Hirenix
                 </span>
               </div>
@@ -185,13 +185,13 @@ export default function AboutPage() {
 
       {/* CTA Section */}
       <section className="relative z-10 py-32 px-6">
-        <div className="max-w-4xl mx-auto p-16 rounded-[48px] bg-[#2D3748] text-center shadow-2xl relative overflow-hidden group">
-          <div className="absolute inset-0 bg-linear-to-br from-[#7C9ADD]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-8 tracking-tight relative z-10">
+        <div className="max-w-4xl mx-auto p-16 rounded-[48px] bg-primary text-center shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-linear-to-br from-brand-blue/20 to-transparent opacity-0 transition-opacity duration-1000" />
+          <h2 className="text-4xl md:text-5xl font-display font-bold text-primary-foreground mb-8 tracking-tight relative z-10">
             Ready to optimize your path?
           </h2>
           <Link href="/auth/register" className="relative z-10">
-            <Button className="h-16 px-12 rounded-2xl bg-white text-[#2D3748] hover:bg-[#7C9ADD] hover:text-white transition-all text-lg font-bold shadow-xl active:scale-95 group/btn">
+            <Button className="h-16 px-12 rounded-2xl bg-background text-foreground transition-all text-lg font-bold shadow-xl active:scale-95 group/btn">
               Get Started Now
               <ArrowRight
                 size={20}

@@ -60,22 +60,23 @@ export const Hero = () => {
           <Link href="/auth/register">
             <Button
               size="lg"
-              className="h-16 px-10 rounded-xl bg-hyper-lime text-obsidian text-lg font-black hover:scale-105 transition-transform shadow-[0_0_30px_rgba(212,255,0,0.3)] group border-none"
+              className="h-16 px-10 rounded-xl bg-hyper-lime text-obsidian text-lg font-black transition-transform shadow-[0_0_30px_rgba(212,255,0,0.3)] group border-none"
             >
               INITIALIZE ACCESS
-              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 transition-transform" />
             </Button>
           </Link>
 
           <div className="flex items-center gap-3 px-6 py-4 rounded-xl glass-morphism border-white/5 text-white/50 text-xs font-bold uppercase tracking-widest group cursor-default">
             <Command
               size={18}
-              className="text-hyper-lime group-hover:rotate-180 transition-transform duration-500"
+              className="text-hyper-lime transition-transform duration-500"
             />
-            Press{" "}
+            Press{""}
             <span className="text-white bg-white/20 px-2 py-0.5 rounded mx-1">
               /
-            </span>{" "}
+            </span>
+            {""}
             to query AI
           </div>
         </motion.div>

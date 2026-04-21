@@ -38,7 +38,7 @@ const MatchGauge: React.FC<MatchGaugeProps> = ({
     <div className="relative flex flex-col items-center justify-center select-none group">
       {/* Background Glow */}
       <div
-        className="absolute w-full h-full rounded-full blur-[40px] opacity-10 transition-all duration-1000 group-hover:opacity-20"
+        className="absolute w-full h-full rounded-full blur-[40px] opacity-10 transition-all duration-1000"
         style={{ backgroundColor: currentColor }}
       />
 
@@ -61,7 +61,7 @@ const MatchGauge: React.FC<MatchGaugeProps> = ({
           stroke={currentColor}
           fill="transparent"
           strokeWidth={strokeWidth}
-          strokeDasharray={circumference + " " + circumference}
+          strokeDasharray={circumference + "" + circumference}
           style={{ strokeDashoffset }}
           strokeLinecap="round"
           r={normalizedRadius}

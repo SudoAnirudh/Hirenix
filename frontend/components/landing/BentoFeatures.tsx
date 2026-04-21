@@ -140,9 +140,9 @@ export const BentoFeatures = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
-              className={`${f.size} ${f.bg} rounded-2xl p-8 border border-white/5 bento-item group hover:border-hyper-lime/20 transition-all cursor-default overflow-hidden relative shadow-2xl`}
+              className={`${f.size} ${f.bg} rounded-2xl p-8 border border-white/5 bento-item group transition-all cursor-default overflow-hidden relative shadow-2xl`}
             >
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-30 transition-opacity">
+              <div className="absolute top-0 right-0 p-8 opacity-10 transition-opacity">
                 <f.icon className={f.color} size={120} />
               </div>
 

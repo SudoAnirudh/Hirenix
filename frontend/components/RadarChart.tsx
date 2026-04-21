@@ -15,7 +15,7 @@ interface Props {
 
 export default function RadarChart({ data, title }: Props) {
   return (
-    <div className="glass-card p-8 rounded-[2rem] border-0 bg-white/70 shadow-xl shadow-indigo-500/5 h-full transition-all duration-500 hover:shadow-indigo-500/10">
+    <div className="glass-card p-8 rounded-[2rem] border-0 bg-white/70 shadow-xl shadow-indigo-500/5 h-full transition-all duration-500">
       {title && (
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#718096]">

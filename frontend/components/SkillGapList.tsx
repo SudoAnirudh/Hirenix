@@ -60,7 +60,7 @@ export default function SkillGapList({ skillGap }: Props) {
                 <motion.span
                   variants={item}
                   key={s}
-                  className="px-6 py-2.5 bg-white/80 text-[#4A5568] text-[11px] font-bold rounded-xl border border-white shadow-sm hover:border-[#98C9A3]/30 hover:bg-[#98C9A3]/5 transition-all cursor-default"
+                  className="px-6 py-2.5 bg-white/80 text-[#4A5568] text-[11px] font-bold rounded-xl border border-white shadow-sm #98C9A3]/30 #98C9A3]/5 transition-all cursor-default"
                 >
                   {s}
                 </motion.span>
@@ -80,7 +80,7 @@ export default function SkillGapList({ skillGap }: Props) {
                 <motion.span
                   variants={item}
                   key={s}
-                  className="px-6 py-2.5 bg-[#F28C8C]/5 text-[#F28C8C] text-[11px] font-extrabold rounded-xl border border-[#F28C8C]/20 shadow-sm hover:bg-[#F28C8C]/10 transition-all cursor-default"
+                  className="px-6 py-2.5 bg-[#F28C8C]/5 text-[#F28C8C] text-[11px] font-extrabold rounded-xl border border-[#F28C8C]/20 shadow-sm #F28C8C]/10 transition-all cursor-default"
                 >
                   {s}
                 </motion.span>
@@ -100,7 +100,7 @@ export default function SkillGapList({ skillGap }: Props) {
                 <motion.span
                   variants={item}
                   key={s}
-                  className="px-6 py-2.5 bg-[#7C9ADD]/5 text-[#7C9ADD] text-[11px] font-bold rounded-xl border border-[#7C9ADD]/20 shadow-sm hover:bg-[#7C9ADD]/10 transition-all cursor-default"
+                  className="px-6 py-2.5 bg-[#7C9ADD]/5 text-[#7C9ADD] text-[11px] font-bold rounded-xl border border-[#7C9ADD]/20 shadow-sm #7C9ADD]/10 transition-all cursor-default"
                 >
                   {s}
                 </motion.span>

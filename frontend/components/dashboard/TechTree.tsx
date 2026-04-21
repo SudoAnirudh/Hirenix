@@ -170,7 +170,7 @@ export default function TechTree({ skills, onToggle }: TechTreeProps) {
       <div className="absolute inset-0 pointer-events-none">
         {nodePositions.map((pos, i) => {
           const skill = skills.find((s) => s.name === pos.id)!;
-          // A node is "reachable" if it's Tier 0 OR if any parent in Tier N-1 is completed
+          // A node is"reachable" if it's Tier 0 OR if any parent in Tier N-1 is completed
           const reachable =
             pos.tier === 0 ||
             connections.some((c) => c.to.id === pos.id && c.active);

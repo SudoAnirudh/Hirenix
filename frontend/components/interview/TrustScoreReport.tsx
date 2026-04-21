@@ -385,7 +385,7 @@ export default function TrustScoreReport({
                     <Icon size={14} className="text-red-600" />
                     <span className="text-sm font-medium">
                       {type
-                        .replace(/_/g, " ")
+                        .replace(/_/g, "")
                         .replace(/\b\w/g, (c) => c.toUpperCase())}
                     </span>
                   </div>

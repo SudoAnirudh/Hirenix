@@ -32,7 +32,15 @@ async def _get_bridge_advice(resume_text: str, jd_text: str, missing_skills: Lis
     Output ONLY as a JSON list of strings.
     """
     
-    # Use Hirenix AI for high-quality advice if possible
+    from services.semantic_cache import check_semantic_cache, set_semantic_cache
+    
+    # 1. Check Semantic Cache
+    cache_key_text = f"Resume: {resume_text[:1000]} | JD: {jd_text[:1000]}"
+    cached_response = await check_semantic_cache("jd_bridge_advice", cache_key_text)
+    if cached_response and "bridge_advice" in cached_response:
+        return cached_response["bridge_advice"]
+    
+    # 2. Use Hirenix AI for high-quality advice if possible
     response = await invoke_nvidia_llm([{"role": "user", "content": prompt}], temperature=0.3)
     if not response:
         response = await invoke_groq_llm([{"role": "user", "content": prompt}], temperature=0.3)
@@ -41,7 +49,12 @@ async def _get_bridge_advice(resume_text: str, jd_text: str, missing_skills: Lis
         if response and response.get("choices"):
             content = response["choices"][0]["message"]["content"]
             if "```json" in content: content = content.split("```json")[1].split("```")[0]
-            return json.loads(content.strip())
+            parsed_advice = json.loads(content.strip())
+            
+            # Save to Cache
+            await set_semantic_cache("jd_bridge_advice", cache_key_text, {"bridge_advice": parsed_advice})
+            
+            return parsed_advice
     except:
         pass
     

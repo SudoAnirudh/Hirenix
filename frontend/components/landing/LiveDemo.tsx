@@ -44,7 +44,7 @@ export const LiveDemo = () => {
         </p>
 
         <div className="relative group max-w-2xl mx-auto">
-          <div className="absolute -inset-1 bg-gradient-to-r from-hyper-lime/20 to-electric-orchid/20 rounded-3xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+          <div className="absolute -inset-1 bg-gradient-to-r from-hyper-lime/20 to-electric-orchid/20 rounded-3xl blur opacity-25 transition duration-1000" />
           <div className="relative flex items-center p-2 rounded-xl glass-morphism border-white/10 shadow-2xl overflow-hidden">
             <div className="pl-6 pr-4 text-slate-500">
               <Search size={20} />
@@ -60,7 +60,7 @@ export const LiveDemo = () => {
             <Button
               onClick={handleAnalyze}
               disabled={status === "analyzing"}
-              className="h-14 px-8 rounded-lg bg-white text-obsidian font-black hover:bg-hyper-lime transition-all border-none"
+              className="h-14 px-8 rounded-lg bg-white text-obsidian font-black transition-all border-none"
             >
               {status === "analyzing" ? (
                 <Loader2 className="animate-spin" />
@@ -126,7 +126,7 @@ export const LiveDemo = () => {
                   </p>
                   <Button
                     variant="ghost"
-                    className="text-hyper-lime p-0 h-auto font-black italic hover:no-underline flex items-center gap-1 hover:bg-transparent"
+                    className="text-hyper-lime p-0 h-auto font-black italic flex items-center gap-1"
                   >
                     VIEW FULL DEEP DIVE <ChevronRight size={16} />
                   </Button>

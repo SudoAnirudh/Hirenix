@@ -81,10 +81,10 @@ export default function OnboardingWizard({
             </p>
             <Button
               onClick={handleNext}
-              className="bg-white text-slate-950 hover:bg-slate-200 h-12 px-8 rounded-full font-bold text-lg group transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+              className="bg-white text-slate-950 h-12 px-8 rounded-full font-bold text-lg group transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
               Initialize Profile
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="ml-2 w-5 h-5 transition-transform" />
             </Button>
           </motion.div>
         )}
@@ -136,13 +136,12 @@ export default function OnboardingWizard({
                 return (
                   <motion.button
                     key={item.id}
-                    whileHover={{ scale: 1.02, y: -5 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setGoal(item.id)}
                     className={`relative p-8 rounded-[32px] border text-left transition-all duration-300 ${
                       isSelected
                         ? `${item.border} bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)]`
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                        : "border-white/10 bg-white/5"
                     }`}
                   >
                     {isSelected && (
@@ -167,7 +166,7 @@ export default function OnboardingWizard({
               <Button
                 onClick={handleNext}
                 disabled={!goal}
-                className="bg-white text-slate-950 hover:bg-slate-200 disabled:opacity-50 h-12 px-10 rounded-full font-bold text-lg group transition-all"
+                className="bg-white text-slate-950 disabled:opacity-50 h-12 px-10 rounded-full font-bold text-lg group transition-all"
               >
                 Continue
               </Button>
@@ -229,13 +228,13 @@ export default function OnboardingWizard({
             <div className="mt-10 flex justify-between items-center">
               <button
                 onClick={() => setStep(2)}
-                className="text-slate-400 hover:text-white font-medium transition-colors"
+                className="text-slate-400 font-medium transition-colors"
               >
                 Back
               </button>
               <Button
                 onClick={handleComplete}
-                className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white hover:from-indigo-400 hover:to-violet-400 h-14 px-10 rounded-full font-bold text-lg shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all"
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 text-white h-14 px-10 rounded-full font-bold text-lg shadow-[0_0_30px_rgba(99,102,241,0.3)] transition-all"
               >
                 Launch Dashboard
                 <Zap className="ml-2 w-5 h-5" />

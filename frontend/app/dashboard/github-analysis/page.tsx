@@ -242,9 +242,9 @@ export default function GitHubAnalysisPage() {
               {(result.metrics.top_repos || []).map((repo) => (
                 <div
                   key={repo.name}
-                  className="p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-violet/30 transition-all group"
+                  className="p-5 rounded-2xl bg-white/5 border border-white/5 transition-all group"
                 >
-                  <h4 className="font-bold text-lg mb-2 group-hover:text-violet transition-colors truncate">
+                  <h4 className="font-bold text-lg mb-2 group- transition-colors truncate">
                     {repo.name}
                   </h4>
                   <p className="text-sm line-clamp-2 h-10 mb-4 opacity-60 leading-snug">

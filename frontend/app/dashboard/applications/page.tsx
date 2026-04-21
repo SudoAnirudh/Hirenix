@@ -103,7 +103,7 @@ export default function ApplicationsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-heading font-extrabold text-[#1E293B] dark:text-white">
+          <h1 className="text-4xl font-heading font-extrabold text-[#1E293B] dark:text-card-foreground">
             Applications <span className="text-indigo-500">CRM</span>
           </h1>
           <p className="text-[#64748B] mt-1 text-sm font-medium">
@@ -119,7 +119,7 @@ export default function ApplicationsPage() {
             <input
               type="text"
               placeholder="Filter by company or role..."
-              className="pl-12 pr-4 py-3 bg-white/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all w-72 shadow-premium"
+              className="pl-12 pr-4 py-3 bg-card/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all w-72 shadow-premium"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -155,7 +155,7 @@ export default function ApplicationsPage() {
                 <div className="flex items-center justify-between mb-4 px-2">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`p-1.5 rounded-lg bg-white shadow-sm ${col.color}`}
+                      className={`p-1.5 rounded-lg bg-card shadow-sm ${col.color}`}
                     >
                       <col.icon size={16} />
                     </div>
@@ -163,7 +163,7 @@ export default function ApplicationsPage() {
                       {col.title}
                     </h3>
                   </div>
-                  <div className="h-6 w-6 rounded-lg bg-white/80 dark:bg-slate-800 border border-white dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-slate-500 shadow-xs">
+                  <div className="h-6 w-6 rounded-lg bg-card/80 dark:bg-slate-800 border border-white dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-slate-500 shadow-xs">
                     {colApps.length}
                   </div>
                 </div>
@@ -211,18 +211,17 @@ function JobCard({
       initial={{ opacity: 0, scale: 0.95, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-      whileHover={{ y: -4 }}
-      className="group p-5 bg-white dark:bg-slate-900 rounded-[24px] shadow-premium border border-white dark:border-slate-800 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 transition-all cursor-grab active:cursor-grabbing relative overflow-hidden"
+      className="group p-5 bg-card dark:bg-slate-900 rounded-[24px] shadow-premium border border-white dark:border-slate-800 dark: transition-all cursor-grab active:cursor-grabbing relative overflow-hidden"
     >
-      <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute top-0 left-0 w-1 h-full bg-linear-to-b from-indigo-500 to-violet-500 opacity-0 transition-opacity" />
       <div className="flex justify-between items-start mb-2">
-        <h4 className="font-bold text-[#2D3748] text-sm leading-tight line-clamp-2">
+        <h4 className="font-bold text-foreground text-sm leading-tight line-clamp-2">
           {app.role}
         </h4>
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 px-1.5 hover:bg-slate-50 rounded-lg text-slate-400 group-hover:text-[#7C9ADD] transition-colors"
+            className="p-1 px-1.5 rounded-lg text-slate-400 group- transition-colors"
           >
             <MoreVertical size={14} />
           </button>
@@ -237,7 +236,7 @@ function JobCard({
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                  className="absolute right-0 top-full mt-1 w-32 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50"
+                  className="absolute right-0 top-full mt-1 w-32 bg-card rounded-xl shadow-xl border border-slate-100 py-1 z-50"
                 >
                   {COLUMNS.filter((c) => c.id !== app.status).map((c) => (
                     <button
@@ -246,7 +245,7 @@ function JobCard({
                         onMove(c.id);
                         setShowMenu(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-[#7C9ADD]/5 hover:text-[#7C9ADD] transition-colors"
+                      className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-slate-600 transition-colors"
                     >
                       Move to {c.title}
                     </button>
@@ -257,7 +256,7 @@ function JobCard({
                       onDelete();
                       setShowMenu(false);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-rose-500 hover:bg-rose-50 transition-colors"
+                    className="w-full text-left px-3 py-1.5 text-[11px] font-bold text-rose-500 transition-colors"
                   >
                     Delete
                   </button>
@@ -268,7 +267,9 @@ function JobCard({
         </div>
       </div>
 
-      <p className="text-xs text-[#718096] mb-3 font-medium">{app.company}</p>
+      <p className="text-xs text-muted-foreground mb-3 font-medium">
+        {app.company}
+      </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {app.location && (
@@ -295,7 +296,7 @@ function JobCard({
             href={app.apply_url}
             target="_blank"
             rel="noreferrer"
-            className="p-1 px-1.5 bg-[#7C9ADD]/10 text-[#7C9ADD] rounded-lg hover:bg-[#7C9ADD] hover:text-white transition-all transform hover:scale-110"
+            className="p-1 px-1.5 bg-brand-blue/10 text-brand-blue rounded-lg transition-all transform"
           >
             <ExternalLink size={12} />
           </a>

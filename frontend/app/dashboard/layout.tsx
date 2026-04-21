@@ -153,14 +153,14 @@ export default function DashboardLayout({
           <div className="p-2.5 rounded-2xl bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Brain size={20} className="text-white" />
           </div>
-          <span className="font-heading font-extrabold text-2xl tracking-tighter text-[#1E293B] dark:text-white">
+          <span className="font-heading font-extrabold text-2xl tracking-tighter text-foreground dark:text-white">
             Hirenix
           </span>
         </div>
 
         <nav className="flex-1 px-2 py-2 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
           <div className="px-4 mb-4 mt-2">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#64748B] uppercase px-1 opacity-60">
+            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase px-1 opacity-60">
               Command Center
             </span>
           </div>
@@ -170,6 +170,7 @@ export default function DashboardLayout({
                 key={href}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
+                whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2, delay: index * 0.03 }}
               >
                 <Link
@@ -177,15 +178,15 @@ export default function DashboardLayout({
                   className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
                     pathname === href
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
-                      : "text-[#64748B] hover:bg-white/50 dark:hover:bg-white/5 hover:text-indigo-500"
+                      : "text-muted-foreground dark:"
                   }`}
                 >
                   <Icon
                     size={18}
                     strokeWidth={pathname === href ? 2.5 : 2}
-                    className="relative z-10"
+                    className="relative z-10 transition-transform duration-300"
                   />
-                  <span className="text-sm font-bold tracking-tight relative z-10">
+                  <span className="text-sm font-bold tracking-tight relative z-10 transition-all duration-300">
                     {label}
                   </span>
                   {pathname === href && (
@@ -209,13 +210,12 @@ export default function DashboardLayout({
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl hover:bg-red-500/10 hover:text-red-500 transition-all group font-heading text-sm font-bold text-[#64748B] border border-transparent hover:border-red-500/20"
+            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all group font-heading text-sm font-bold text-muted-foreground border border-transparent"
           >
-            <LogOut
-              size={18}
-              className="group-hover:-translate-x-1 transition-transform"
-            />
-            <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
+            <LogOut size={18} className=" group- transition-all duration-300" />
+            <span className=" transition-all duration-300">
+              {loggingOut ? "Signing out..." : "Sign Out"}
+            </span>
           </button>
         </div>
       </aside>
@@ -244,9 +244,7 @@ export default function DashboardLayout({
                 href={href}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
-                  isActive
-                    ? "text-indigo-500"
-                    : "text-[#64748B] hover:text-indigo-400"
+                  isActive ? "text-indigo-500" : "text-muted-foreground"
                 }`}
               >
                 {isActive && (
@@ -262,7 +260,7 @@ export default function DashboardLayout({
                   className="relative z-10"
                 />
                 <span className="text-[9px] font-bold mt-1 tracking-tight truncate w-full text-center">
-                  {label.split(" ")[0]}
+                  {label.split("")[0]}
                 </span>
               </Link>
             );
@@ -274,7 +272,7 @@ export default function DashboardLayout({
             className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
               isMobileMenuOpen
                 ? "text-indigo-500 bg-indigo-500/10"
-                : "text-[#64748B]"
+                : "text-muted-foreground"
             }`}
           >
             {isMobileMenuOpen ? (
@@ -300,7 +298,7 @@ export default function DashboardLayout({
             className="md:hidden fixed inset-x-0 bottom-0 top-[10%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl z-40 rounded-t-[40px] shadow-[0_-20px_40px_rgba(0,0,0,0.1)] border-t border-white/20 dark:border-white/5 overflow-hidden flex flex-col pt-8 pb-32 px-6"
           >
             <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
-            <h2 className="text-2xl font-black font-heading mb-6 tracking-tight text-[#1E293B] dark:text-white mt-4 px-2">
+            <h2 className="text-2xl font-black font-heading mb-6 tracking-tight text-foreground dark:text-white mt-4 px-2">
               All Tools
             </h2>
             <div className="flex-1 overflow-y-auto w-full grid grid-cols-2 gap-3 auto-rows-max custom-scrollbar pb-8 px-1">
@@ -309,12 +307,12 @@ export default function DashboardLayout({
                   key={href}
                   href={href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex flex-col items-start gap-4 p-5 rounded-[28px] bg-slate-50 dark:bg-slate-800/40 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-500/20 transition-all duration-300"
+                  className="flex flex-col items-start gap-4 p-5 rounded-[28px] bg-slate-50 dark:bg-slate-800/40 dark: border border-transparent dark: transition-all duration-300"
                 >
                   <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm text-indigo-500 dark:text-indigo-400">
                     <Icon size={20} strokeWidth={2} />
                   </div>
-                  <span className="text-[13px] leading-tight font-bold text-[#1E293B] dark:text-slate-200">
+                  <span className="text-[13px] leading-tight font-bold text-foreground dark:text-slate-200">
                     {label}
                   </span>
                 </Link>
@@ -328,7 +326,7 @@ export default function DashboardLayout({
                   handleLogout();
                 }}
                 disabled={loggingOut}
-                className="flex items-center justify-center gap-3 w-full p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 font-bold hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-[0.98]"
+                className="flex items-center justify-center gap-3 w-full p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 font-bold dark: transition-all active:scale-[0.98]"
               >
                 <LogOut size={20} />
                 <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>

@@ -38,7 +38,6 @@ export default function TechTreeNode({
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05, y: -5 }}
       whileTap={{ scale: 0.95 }}
       className={`relative p-4 rounded-2xl border backdrop-blur-md shadow-glass transition-all duration-500 w-64 ${getIntensityColor()}`}
     >
@@ -82,7 +81,7 @@ export default function TechTreeNode({
           className={`flex-1 text-[10px] font-black uppercase tracking-widest py-2 rounded-xl transition-all ${
             isCompleted
               ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-              : "bg-white/60 text-slate-600 hover:bg-white hover:text-indigo-500"
+              : "bg-white/60 text-slate-600"
           }`}
         >
           {isCompleted ? "Mastered" : "Mark Done"}
@@ -90,7 +89,7 @@ export default function TechTreeNode({
 
         {skill.resources && skill.resources.length > 0 && (
           <div className="group/res relative">
-            <div className="p-2 rounded-xl bg-white/40 border border-white hover:bg-white transition-colors cursor-pointer text-slate-400 hover:text-indigo-500">
+            <div className="p-2 rounded-xl bg-white/40 border border-white transition-colors cursor-pointer text-slate-400">
               <ExternalLink size={14} />
             </div>
 
@@ -111,7 +110,7 @@ export default function TechTreeNode({
         )}
       </div>
 
-      {/* Decorative "branch connection" points */}
+      {/* Decorative"branch connection" points */}
       <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white border border-slate-200" />
       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-white border border-slate-200" />
     </motion.div>

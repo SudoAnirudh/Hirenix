@@ -140,10 +140,10 @@ export default function ResetPasswordPage() {
             className="text-sm text-center mt-8"
             style={{ color: "var(--text-secondary)" }}
           >
-            Back to{" "}
+            Back to{""}
             <Link
               href="/auth/login"
-              className="font-medium hover:underline underline-offset-4"
+              className="font-medium underline-offset-4"
               style={{ color: "var(--indigo)" }}
             >
               Sign in

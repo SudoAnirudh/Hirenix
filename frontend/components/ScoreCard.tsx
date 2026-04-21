@@ -32,7 +32,7 @@ export default function ScoreCard({ title, score, subtitle }: Props) {
   const progress = CIRC - (score / 100) * CIRC;
 
   return (
-    <div className="glass-card p-8 flex flex-col items-center text-center gap-7 rounded-[40px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-glass relative overflow-hidden transition-all hover:translate-y-[-4px] hover:shadow-2xl">
+    <div className="glass-card p-8 flex flex-col items-center text-center gap-7 rounded-[40px] bg-white/60 backdrop-blur-xl border border-white/60 shadow-glass relative overflow-hidden transition-all">
       <div className="relative flex items-center justify-center group/score">
         <div
           className="absolute inset-0 rounded-full scale-125 blur-3xl opacity-20 transition-all duration-500 group-hover/score:opacity-30"

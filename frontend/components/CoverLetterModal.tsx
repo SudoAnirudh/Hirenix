@@ -119,7 +119,7 @@ export default function CoverLetterModal({
                     className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
                       tone === t
                         ? "bg-white border-[#7C9ADD] text-[#7C9ADD] shadow-sm scale-[1.02]"
-                        : "bg-transparent border-slate-200 text-slate-500 hover:border-slate-300"
+                        : "bg-transparent border-slate-200 text-slate-500"
                     }`}
                   >
                     {t}
@@ -138,7 +138,7 @@ export default function CoverLetterModal({
           </div>
 
           <Button
-            className="w-full h-14 rounded-2xl bg-linear-to-r from-[#7C9ADD] to-[#6366F1] text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-[#7C9ADD]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+            className="w-full h-14 rounded-2xl bg-linear-to-r from-[#7C9ADD] to-[#6366F1] text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-[#7C9ADD]/20 transition-all"
             onClick={handleGenerate}
             disabled={loading || !resumeId}
           >
@@ -152,7 +152,7 @@ export default function CoverLetterModal({
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="absolute right-6 top-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all z-10"
+            className="absolute right-6 top-6 p-2 text-slate-400 rounded-full transition-all z-10"
           >
             <X size={20} />
           </button>
@@ -172,7 +172,7 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all"
+                      className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
                       title="Copy to Clipboard"
                     >
                       {copied ? (
@@ -211,14 +211,14 @@ export default function CoverLetterModal({
               <Button
                 variant="outline"
                 onClick={() => handleDownload("docx")}
-                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest hover:border-[#7C9ADD] hover:text-[#7C9ADD] transition-all h-11 px-6"
+                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest #7C9ADD] #7C9ADD] transition-all h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 Word (.docx)
               </Button>
               <Button
                 onClick={() => handleDownload("pdf")}
-                className="rounded-xl bg-[#1E293B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-md h-11 px-6"
+                className="rounded-xl bg-[#1E293B] text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-md h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 PDF Export

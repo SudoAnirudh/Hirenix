@@ -23,7 +23,7 @@ export default function Navbar() {
         }}
       >
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-[#7C9ADD]/10 flex items-center justify-center transition-transform group-hover:scale-110">
+          <div className="w-10 h-10 rounded-xl bg-[#7C9ADD]/10 flex items-center justify-center transition-transform">
             <Brain size={22} className="text-[#7C9ADD]" />
           </div>
           <span className="font-display font-bold text-xl tracking-tight text-[#2D3748]">
@@ -36,7 +36,7 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className={`text-sm font-semibold transition-colors hover:text-[#7C9ADD] ${
+              className={`text-sm font-semibold transition-colors #7C9ADD] ${
                 pathname === href ? "text-[#7C9ADD]" : "text-[#4A5568]"
               }`}
             >
@@ -47,13 +47,13 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="hidden sm:block">
-            <button className="text-sm font-bold text-[#4A5568] hover:text-[#7C9ADD] transition-colors px-4">
+            <button className="text-sm font-bold text-[#4A5568] #7C9ADD] transition-colors px-4">
               Dashboard
             </button>
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-sm font-bold shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-sm font-bold shadow-lg shadow-[#7C9ADD]/20 #7C9ADD]/90 transition-all"
           >
             Start Studio
           </Link>

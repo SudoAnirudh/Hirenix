@@ -77,10 +77,10 @@ export default function LinkedinUploader({ onResult }: Props) {
   return (
     <div
       {...getRootProps()}
-      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed border-2 rounded-[40px] bg-white/50 border-white/60 shadow-premium hover:shadow-premium-hover backdrop-blur-xl group ${
+      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed border-2 rounded-[40px] bg-white/50 border-white/60 shadow-premium backdrop-blur-xl group ${
         isDragActive
           ? "bg-[#0A66C2]/5 border-[#0A66C2] scale-[0.99] shadow-inner"
-          : "hover:bg-white/80 hover:border-[#0A66C2]/40 hover:-translate-y-1"
+          : " #0A66C2]/40"
       }`}
       style={{
         borderColor: isDragActive
@@ -97,7 +97,7 @@ export default function LinkedinUploader({ onResult }: Props) {
 
       {status === "idle" && (
         <>
-          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#0A66C2]/10 text-[#0A66C2] transition-transform group-hover:scale-110 group-hover:rotate-3 shadow-sm border border-white/50">
+          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#0A66C2]/10 text-[#0A66C2] transition-transform shadow-sm border border-white/50">
             <Linkedin size={40} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-4">
@@ -109,7 +109,7 @@ export default function LinkedinUploader({ onResult }: Props) {
               analyze your headline, about, and experience.
             </p>
             <div className="flex items-center justify-center gap-4 pt-2">
-              <span className="text-[#0A66C2] font-bold cursor-pointer hover:underline text-sm">
+              <span className="text-[#0A66C2] font-bold cursor-pointer text-sm">
                 Browse PDF
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-300" />

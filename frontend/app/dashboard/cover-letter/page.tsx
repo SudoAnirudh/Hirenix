@@ -191,7 +191,7 @@ export default function CoverLetterPage() {
                     className={`p-5 rounded-2xl border-2 transition-all text-left flex items-center justify-between group ${
                       resumeId === r.id
                         ? "border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-500/10"
-                        : "border-slate-100 bg-white hover:border-indigo-200"
+                        : "border-slate-100 bg-white"
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -251,7 +251,7 @@ export default function CoverLetterPage() {
                     className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 text-center group ${
                       tone === t.id
                         ? "border-indigo-500 bg-indigo-50"
-                        : "border-slate-50 bg-slate-50/50 hover:border-slate-200"
+                        : "border-slate-50 bg-slate-50/50"
                     }`}
                   >
                     <t.icon
@@ -271,7 +271,7 @@ export default function CoverLetterPage() {
             </div>
 
             <Button
-              className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg shadow-xl shadow-indigo-500/20 gap-3 group"
+              className="w-full h-16 rounded-2xl bg-indigo-600 text-white font-black text-lg shadow-xl shadow-indigo-500/20 gap-3 group"
               onClick={handleGenerate}
               disabled={isGenerating}
             >
@@ -281,11 +281,8 @@ export default function CoverLetterPage() {
                 </>
               ) : (
                 <>
-                  Generate Cover Letter{" "}
-                  <Sparkles
-                    size={20}
-                    className="group-hover:rotate-12 transition-transform"
-                  />
+                  Generate Cover Letter{""}
+                  <Sparkles size={20} className=" transition-transform" />
                 </>
               )}
             </Button>
@@ -333,7 +330,8 @@ export default function CoverLetterPage() {
                       className="h-10 rounded-xl gap-2 text-slate-600"
                       onClick={handleCopy}
                     >
-                      <Copy size={16} />{" "}
+                      <Copy size={16} />
+                      {""}
                       <span className="hidden sm:inline">Copy</span>
                     </Button>
                     <Button
@@ -341,11 +339,12 @@ export default function CoverLetterPage() {
                       className="h-10 rounded-xl gap-2 border-slate-200 text-slate-600"
                       onClick={() => handleExport("docx")}
                     >
-                      <Download size={16} />{" "}
+                      <Download size={16} />
+                      {""}
                       <span className="hidden sm:inline">Word</span>
                     </Button>
                     <Button
-                      className="h-10 rounded-xl gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                      className="h-10 rounded-xl gap-2 bg-indigo-600 text-white"
                       onClick={() => handleExport("pdf")}
                     >
                       <Printer size={16} /> Export PDF
