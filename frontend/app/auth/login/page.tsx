@@ -119,54 +119,60 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-fade-up">
-        <div className="glass-card p-8 md:p-10 rounded-3xl">
-          <div className="flex justify-center mb-8">
-            <div
-              className="h-12 w-12 rounded-xl flex items-center justify-center"
-              style={{
-                background: "rgba(11, 124, 118, 0.12)",
-                color: "var(--indigo)",
-              }}
-            >
-              <Brain size={24} />
-            </div>
-          </div>
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-background text-foreground overflow-hidden">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/10 blur-[150px] rounded-full animate-pulse-slow" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-brand-purple/5 blur-[100px] rounded-full" />
+      </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold tracking-tight mb-2">
+      <div className="w-full max-w-md animate-fade-up relative z-10">
+        <Link
+          href="/"
+          className="flex items-center gap-3 mb-10 group justify-center"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform group-hover:scale-110">
+            <Brain className="text-white" size={24} />
+          </div>
+          <span className="font-display font-black text-2xl text-foreground tracking-tighter uppercase italic">
+            HIRENIX
+          </span>
+        </Link>
+
+        <div className="glass-card p-10 md:p-12 rounded-[48px] border-border shadow-premium bg-card/40 backdrop-blur-3xl">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-display font-bold tracking-tight mb-3 text-foreground">
               Welcome back
             </h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Enter your credentials to access your account
+            <p className="text-muted-foreground font-medium">
+              Access your career analytics dashboard
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl text-sm border border-red-200 bg-red-50 text-red-700">
+            <div className="mb-8 p-4 rounded-2xl text-sm border border-destructive/20 bg-destructive/10 text-destructive font-medium animate-in fade-in slide-in-from-top-2">
               {error}
             </div>
           )}
           {resetMessage && (
-            <div className="mb-6 p-4 rounded-xl text-sm border border-emerald-200 bg-emerald-50 text-emerald-700">
+            <div className="mb-8 p-4 rounded-2xl text-sm border border-brand-green/20 bg-brand-green/10 text-brand-green font-medium animate-in fade-in slide-in-from-top-2">
               {resetMessage}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1.5">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
               <label
                 htmlFor="login-email"
-                className="text-sm font-medium"
-                style={{ color: "var(--text-primary)" }}
+                className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
               >
-                Email
+                Email Address
               </label>
               <input
                 id="login-email"
                 type="email"
-                className="input-base"
+                className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -174,12 +180,11 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
                 <label
                   htmlFor="login-password"
-                  className="text-sm font-medium"
-                  style={{ color: "var(--text-primary)" }}
+                  className="text-xs font-black uppercase tracking-widest text-muted-foreground"
                 >
                   Password
                 </label>
@@ -187,24 +192,16 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleForgotPassword}
                   disabled={resetLoading}
-                  className="text-xs font-medium hover:underline underline-offset-4 disabled:opacity-60 disabled:cursor-not-allowed flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] rounded-sm"
-                  style={{ color: "var(--indigo)" }}
+                  className="text-xs font-bold text-brand-blue hover:text-brand-blue/80 transition-colors disabled:opacity-60"
                 >
-                  {resetLoading ? (
-                    <>
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    "Forgot password?"
-                  )}
+                  {resetLoading ? "Sending..." : "Forgot password?"}
                 </button>
               </div>
               <div className="relative">
                 <input
                   id="login-password"
                   type={showPass ? "text" : "password"}
-                  className="input-base pr-11"
+                  className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium pr-14"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -213,44 +210,37 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  aria-label={showPass ? "Hide password" : "Show password"}
-                  aria-pressed={showPass}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] rounded-sm"
-                  style={{ color: "var(--text-muted)" }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            <button
+            <Button
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full mt-2 btn-primary py-2.5 rounded-xl text-sm disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD] focus-visible:ring-offset-2"
+              className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 hover:bg-brand-blue/90 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Authenticating...
                 </>
               ) : (
                 "Sign In"
               )}
-            </button>
+            </Button>
           </form>
 
-          <p
-            className="text-sm text-center mt-8"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            Don&apos;t have an account?{" "}
+          <p className="text-center mt-10 text-muted-foreground font-medium">
+            New to Hirenix?{" "}
             <Link
               href="/auth/register"
-              className="font-medium hover:underline underline-offset-4"
-              style={{ color: "var(--indigo)" }}
+              className="text-brand-blue font-bold hover:underline underline-offset-4"
             >
-              Sign up free
+              Create an account
             </Link>
           </p>
         </div>

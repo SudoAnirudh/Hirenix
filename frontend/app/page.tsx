@@ -66,13 +66,16 @@ const fadeItem = {
   show: {
     y: 0,
     opacity: 1,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
   },
 };
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen relative bg-white overflow-hidden selection:bg-brand-blue/30 selection:text-slate-800">
+    <main className="min-h-screen relative bg-background text-foreground overflow-hidden selection:bg-brand-blue/20 selection:text-brand-blue">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 blur-[120px] rounded-full animate-pulse" />
@@ -90,7 +93,7 @@ export default function LandingPage() {
           className="max-w-5xl mx-auto"
         >
           <motion.div variants={fadeItem} className="flex justify-center mb-10">
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/40 backdrop-blur-md border border-white/60 text-brand-blue font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-secondary/50 backdrop-blur-md border border-border text-brand-blue font-bold text-xs uppercase tracking-[0.2em] shadow-sm">
               <Zap size={14} className="animate-pulse" />
               Next-Gen AI Career Studio
             </div>
@@ -98,17 +101,17 @@ export default function LandingPage() {
 
           <motion.h1
             variants={fadeItem}
-            className="text-6xl sm:text-7xl md:text-8xl font-black font-display tracking-tight text-slate-800 dark:text-slate-100 flex flex-col mb-8 leading-tight"
+            className="text-6xl sm:text-7xl md:text-8xl font-black font-display tracking-tight text-foreground flex flex-col mb-8 leading-[0.9]"
           >
             Supercharge Your
-            <span className="text-brand-blue tracking-tighter">
+            <span className="text-brand-blue tracking-tighter drop-shadow-sm">
               Career Trajectory.
             </span>
           </motion.h1>
 
           <motion.p
             variants={fadeItem}
-            className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto leading-relaxed font-medium"
+            className="text-xl md:text-2xl text-muted-foreground mb-16 max-w-2xl mx-auto leading-relaxed font-medium"
           >
             The all-in-one studio for high-fidelity resume engineering, smart
             job matching, and immersive interview practice.
@@ -121,7 +124,7 @@ export default function LandingPage() {
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 group transition-all"
+                className="w-full sm:w-auto h-16 px-12 rounded-[24px] bg-brand-blue text-white hover:bg-brand-blue/90 text-lg font-bold shadow-xl shadow-brand-blue/20 group transition-all"
               >
                 Get Started
                 <ArrowRight
@@ -130,7 +133,7 @@ export default function LandingPage() {
                 />
               </Button>
             </Link>
-            <div className="flex items-center gap-3 text-sm text-slate-400 font-bold uppercase tracking-widest">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground font-bold uppercase tracking-widest">
               <CheckCircle2 size={20} className="text-brand-green" />
               Enterprise-Grade AI
             </div>
@@ -138,7 +141,7 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      <section className="relative z-10 py-32 px-6">
+      <section className="relative z-10 py-32 px-6" id="features">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -146,10 +149,10 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-24"
           >
-            <h2 className="font-display font-bold text-4xl md:text-5xl mb-6 tracking-tighter text-slate-800">
+            <h2 className="font-display font-bold text-4xl md:text-6xl mb-6 tracking-tighter text-foreground">
               The Full-Stack Career Engine
             </h2>
-            <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto">
+            <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto">
               Replace messy spreadsheets and anxious job hunting with a
               streamlined, AI-optimized workflow.
             </p>
@@ -165,17 +168,17 @@ export default function LandingPage() {
                 transition={{ delay: idx * 0.1 }}
                 className="group"
               >
-                <SpotlightCard className="h-full p-10 rounded-[48px] border-white/80 bg-white/60 shadow-glass group-hover:-translate-y-2 transition-all duration-500">
-                  <div className="w-16 h-16 rounded-3xl bg-white shadow-sm border border-white/80 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                <SpotlightCard className="h-full p-10 rounded-[48px] border-border bg-card/40 shadow-glass group-hover:-translate-y-2 transition-all duration-500">
+                  <div className="w-16 h-16 rounded-3xl bg-background shadow-sm border border-border flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
                     <Icon
                       size={28}
                       className="text-brand-blue group-hover:text-brand-green transition-colors"
                     />
                   </div>
-                  <h3 className="text-2xl font-display font-bold mb-4 text-slate-800 tracking-tight">
+                  <h3 className="text-2xl font-display font-bold mb-4 text-foreground tracking-tight">
                     {title}
                   </h3>
-                  <p className="leading-relaxed font-medium text-slate-500">
+                  <p className="leading-relaxed font-medium text-muted-foreground">
                     {desc}
                   </p>
                 </SpotlightCard>
@@ -193,21 +196,21 @@ export default function LandingPage() {
           className="max-w-6xl mx-auto relative"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/20 to-brand-green/20 blur-[100px] -z-10" />
-          <div className="relative p-16 md:p-24 rounded-[64px] bg-white/40 border border-white/60 backdrop-blur-2xl shadow-glass text-center">
-            <div className="w-20 h-20 rounded-[28px] bg-white shadow-lg flex items-center justify-center mx-auto mb-10">
+          <div className="relative p-16 md:p-24 rounded-[64px] bg-card/40 border border-border backdrop-blur-2xl shadow-glass text-center">
+            <div className="w-20 h-20 rounded-[28px] bg-background shadow-lg flex items-center justify-center mx-auto mb-10 border border-border">
               <TrendingUp className="text-brand-green" size={32} />
             </div>
-            <h2 className="font-display font-bold text-5xl md:text-7xl mb-8 text-slate-800 tracking-tighter">
+            <h2 className="font-display font-bold text-5xl md:text-7xl mb-8 text-foreground tracking-tighter leading-none">
               Launch your career trajectory today.
             </h2>
-            <p className="text-xl md:text-2xl text-slate-500 mb-16 max-w-2xl mx-auto font-medium">
+            <p className="text-xl md:text-2xl text-muted-foreground mb-16 max-w-2xl mx-auto font-medium">
               Join thousands of professionals using AI to craft irresistible
               resumes and ace complex interviews.
             </p>
             <Link href="/auth/register">
               <Button
                 size="lg"
-                className="h-20 px-16 rounded-[32px] bg-slate-800 text-white text-xl font-bold hover:bg-brand-blue transition-all shadow-xl active:scale-95"
+                className="h-20 px-16 rounded-[32px] bg-primary text-primary-foreground text-xl font-bold hover:bg-brand-blue hover:text-white transition-all shadow-xl active:scale-95 border-none"
               >
                 Initialize Free Access
               </Button>

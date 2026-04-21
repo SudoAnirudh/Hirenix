@@ -1,0 +1,88 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/account/page.tsx
+  23:10  warning  'getProgress' is defined but never used    @typescript-eslint/no-unused-vars
+  97:9   warning  'plan' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/applications/page.tsx
+  24:10  warning  'Badge' is defined but never used   @typescript-eslint/no-unused-vars
+  25:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+  78:14  warning  'err' is defined but never used     @typescript-eslint/no-unused-vars
+  90:14  warning  'err' is defined but never used     @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/job-match/page.tsx
+    8:3   warning  'createApplication' is defined but never used            @typescript-eslint/no-unused-vars
+   17:3   warning  'ChevronRight' is defined but never used                 @typescript-eslint/no-unused-vars
+   18:3   warning  'Search' is defined but never used                       @typescript-eslint/no-unused-vars
+   21:3   warning  'ExternalLink' is defined but never used                 @typescript-eslint/no-unused-vars
+   27:3   warning  'Info' is defined but never used                         @typescript-eslint/no-unused-vars
+   29:3   warning  'FileEdit' is defined but never used                     @typescript-eslint/no-unused-vars
+   36:10  warning  'toast' is defined but never used                        @typescript-eslint/no-unused-vars
+   90:16  warning  'setRole' is assigned a value but never used             @typescript-eslint/no-unused-vars
+   99:10  warning  'jobsError' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  101:18  warning  'setJdFile' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  107:10  warning  'suggestionsLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  291:38  warning  'idx' is defined but never used                          @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/page.tsx
+    9:3   warning  'ArrowRight' is defined but never used     @typescript-eslint/no-unused-vars
+   19:10  warning  'getProgress' is defined but never used    @typescript-eslint/no-unused-vars
+   20:10  warning  'Card' is defined but never used           @typescript-eslint/no-unused-vars
+   21:10  warning  'Button' is defined but never used         @typescript-eslint/no-unused-vars
+  105:9   warning  'plan' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/progress-tracker/page.tsx
+  2:17  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/app/dashboard/roadmap/page.tsx
+  26:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/InterviewPanel.tsx
+   6:3   warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+   9:3   warning  'TrendingUp' is defined but never used   @typescript-eslint/no-unused-vars
+  14:10  warning  'motion' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/SkillGapList.tsx
+  3:10  warning  'CheckCircle' is defined but never used  @typescript-eslint/no-unused-vars
+  3:23  warning  'AlertCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/dashboard/TechTreeNode.tsx
+  6:3  warning  'Circle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/github/ImpactStoryteller.tsx
+  4:10  warning  'motion' is defined but never used           @typescript-eslint/no-unused-vars
+  4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/PreInterviewChecks.tsx
+  7:3  warning  'MicOff' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/ProctorToolbar.tsx
+  53:9  warning  'riskColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/interview/WebcamMonitor.tsx
+  39:9  warning  'riskColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/landing/BentoFeatures.tsx
+  11:3  warning  'BarChart3' is defined but never used    @typescript-eslint/no-unused-vars
+  12:3  warning  'Fingerprint' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/landing/Footer.tsx
+  11:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/landing/Hero.tsx
+  4:22  warning  'Zap' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/landing/LiveDemo.tsx
+  3:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/landing/Testimonials.tsx
+  7:3  warning  'Star' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/anirudhs/Documents/Boredom/Hirenix/frontend/components/ui/button.tsx
+  4:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 43 problems (0 errors, 43 warnings)
+
