@@ -5,7 +5,7 @@ import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
-  ({ className, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
@@ -19,7 +19,7 @@ const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
       {...props}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none" />
-      {props.children}
+      {children as React.ReactNode}
     </motion.div>
   ),
 );
