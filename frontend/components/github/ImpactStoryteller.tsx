@@ -1,7 +1,6 @@
 "use client";
 import { Copy, Check, Sparkles, BookOpen } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 interface Repo {
@@ -95,7 +94,9 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
                     </p>
                     <button
                       onClick={() => copyToClipboard(point, globalIdx)}
-                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 items-center justify-center transition-all hover:scale-105"
+                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 items-center justify-center transition-all hover:scale-105"
+                      aria-label={copiedIndex === globalIdx ? "Copied" : "Copy impact statement"}
+                      title={copiedIndex === globalIdx ? "Copied" : "Copy impact statement"}
                     >
                       {copiedIndex === globalIdx ? (
                         <Check size={14} className="text-emerald-500" />
