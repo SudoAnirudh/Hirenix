@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from dependencies import get_current_user, get_supabase_admin
 import json
+import asyncio
 import logging
 from services.groq_client import invoke_groq_llm
 from services.nvidia_client import invoke_nvidia_llm
@@ -16,17 +17,26 @@ async def get_progress(
     db=Depends(get_supabase_admin),
 ):
     """Return historical performance trends for trend visualization."""
-    resumes_r = db.table("resumes").select("ats_score, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    interviews_r = db.table("interview_sessions").select("overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    github_r = db.table("github_analyses").select("gpi_score, github_username, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
-    linkedin_r = db.table("linkedin_analyses").select("metrics, created_at").eq("user_id", user["user_id"]).order("created_at").execute()
+
+    # ⚡ Bolt: Parallelize independent database queries
+    # What: Uses asyncio.gather with asyncio.to_thread to run 4 Supabase queries concurrently.
+    # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+    # Impact: Reduces query time from ~4N to ~1N, significantly speeding up the dashboard load time.
+    resumes_task = asyncio.to_thread(lambda: db.table("resumes").select("ats_score, created_at").eq("user_id", user["user_id"]).order("created_at").execute())
+    interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at").execute())
+    github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, github_username, created_at").eq("user_id", user["user_id"]).order("created_at").execute())
+    linkedin_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("metrics, created_at").eq("user_id", user["user_id"]).order("created_at").execute())
+
+    resumes_r, interviews_r, github_r, linkedin_r = await asyncio.gather(
+        resumes_task, interviews_task, github_task, linkedin_task
+    )
 
     ats_trend = [{"score": r["ats_score"], "date": r["created_at"]} for r in (resumes_r.data or [])]
     interview_trend = [{"score": i["overall_score"], "role": i["target_role"], "date": i["created_at"]} for i in (interviews_r.data or [])]
     github_trend = [{"gpi": g["gpi_score"], "username": g["github_username"], "date": g["created_at"]} for g in (github_r.data or [])]
     linkedin_trend = [
-        {"score": l["metrics"]["overall_score"] if isinstance(l["metrics"], dict) else 0, "date": l["created_at"]} 
-        for l in (linkedin_r.data or [])
+        {"score": li["metrics"]["overall_score"] if isinstance(li["metrics"], dict) else 0, "date": li["created_at"]}
+        for li in (linkedin_r.data or [])
     ]
 
     # Evolution Score: weighted average of latest metrics
@@ -75,17 +85,27 @@ async def get_ai_summary(
     """
     Generate a comprehensive AI summary of the user's progress across all sections.
     """
-    # Fetch detailed historical data
-    resumes = db.table("resumes").select("ats_score, feedback, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute()
-    interviews = db.table("interview_sessions").select("id, overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute()
-    github = db.table("github_analyses").select("gpi_score, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute()
-    linkedin = db.table("linkedin_analyses").select("metrics, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute()
+
+    # ⚡ Bolt: Parallelize independent database queries
+    # What: Uses asyncio.gather with asyncio.to_thread to run 4 Supabase queries concurrently.
+    # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+    # Impact: Reduces query time from ~4N to ~1N, significantly speeding up the AI summary generation.
+    resumes_task = asyncio.to_thread(lambda: db.table("resumes").select("ats_score, feedback, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute())
+    interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(5).execute())
+    github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute())
+    linkedin_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("metrics, strengths, recommendations, created_at").eq("user_id", user["user_id"]).order("created_at", desc=True).limit(3).execute())
+
+    # Fetch detailed historical data concurrently
+    resumes, interviews, github, linkedin = await asyncio.gather(
+        resumes_task, interviews_task, github_task, linkedin_task
+    )
 
     # Get interview answers for more depth
     interview_ids = [i["id"] for i in (interviews.data or [])]
     answers = []
     if interview_ids:
-        answers = db.table("interview_answers").select("session_id, question, score, strengths, improvements").in_("session_id", interview_ids).execute().data or []
+        answers_r = await asyncio.to_thread(lambda: db.table("interview_answers").select("session_id, question, score, strengths, improvements").in_("session_id", interview_ids).execute())
+        answers = answers_r.data or []
 
     # Prepare context for LLM
     context = {
