@@ -95,7 +95,9 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
                     </p>
                     <button
                       onClick={() => copyToClipboard(point, globalIdx)}
-                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 items-center justify-center transition-all"
+                      aria-label="Copy to clipboard"
+                      title="Copy to clipboard"
+                      className="absolute right-0 top-0 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 opacity-0 group-hover/point:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:outline-none items-center justify-center transition-all"
                     >
                       {copiedIndex === globalIdx ? (
                         <Check size={14} className="text-emerald-500" />
