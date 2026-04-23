@@ -1,9 +1,14 @@
 import json
 import os
-from utils.text_cleaner import extract_keywords
+import functools
 
 _MATRIX_PATH = os.path.join(os.path.dirname(__file__), "../utils/role_skill_matrix.json")
 
+# ⚡ Bolt Optimization
+# What: Cache the role skill matrix using lru_cache and removed unused keyword extraction.
+# Why: Re-reading and parsing the JSON file from disk on every skill gap detection adds unnecessary I/O and parsing overhead. Also removed an expensive regex-based keyword extraction that wasn't being used.
+# Impact: Eliminates repetitive disk I/O and expensive regex tokenization, significantly speeding up skill gap calculation, particularly when invoked frequently (like in quick matches).
+@functools.lru_cache(maxsize=1)
 def _load_matrix() -> dict:
     with open(_MATRIX_PATH, "r") as f:
         return json.load(f)
@@ -27,7 +32,6 @@ def detect_skill_gap(resume_text: str, target_role: str) -> dict:
     if not role_data:
         return {"mandatory_missing": [], "competitive_missing": [], "matched_skills": []}
 
-    resume_keywords = {kw.lower() for kw in extract_keywords(resume_text)}
     resume_text_lower = resume_text.lower()
 
     def is_present(skill: str) -> bool:
