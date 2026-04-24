@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
@@ -15,20 +16,29 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, and GitHub data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # ⚡ Bolt: Parallelize independent synchronous Supabase queries
+        # What: Uses asyncio.gather with asyncio.to_thread to run independent DB queries concurrently.
+        # Why: The Supabase Python client's .execute() performs synchronous network I/O, which blocks the event loop in async functions and adds N+1 latency.
+        # Impact: Reduces context fetch time from sum(T_i) to max(T_i).
+        resume_task = asyncio.to_thread(
+            lambda: db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        )
+        interviews_task = asyncio.to_thread(
+            lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
+        )
+        github_task = asyncio.to_thread(
+            lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        )
         
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        resume_r, interviews_r, github_r = await asyncio.gather(resume_task, interviews_task, github_task)
         
         # 4. Ready Skills from Interviews (score >= 7.0)
         ready_skills = []
         if interviews_r.data:
             session_ids = [i["id"] for i in interviews_r.data]
-            answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
+            answers_r = await asyncio.to_thread(
+                lambda: db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
+            )
             if answers_r.data:
                 ready_skills = list(set([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]]))
 
