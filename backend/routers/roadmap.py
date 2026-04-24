@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
@@ -58,25 +59,25 @@ async def generate_roadmap(
     try:
         user_id = user["user_id"]
         
-        # 1. Fetch Resume
-        resume_text = ""
-        res_r = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        if res_r.data:
-            resume_text = res_r.data[0]["raw_text"]
-        else:
+        # 💡 What: Replaced sequential DB `.execute()` calls with `asyncio.gather` and `asyncio.to_thread`.
+        # 🎯 Why: Supabase python client is synchronous; executing sequentially blocks the event loop.
+        # 📊 Impact: Reduces DB fetch latency by up to ~66% by executing 3 network requests concurrently.
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        gh_task = asyncio.to_thread(lambda: db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        li_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        res_r, gh_r, li_r = await asyncio.gather(resume_task, gh_task, li_task)
+
+        # 1. Process Resume
+        if not res_r.data:
             raise HTTPException(status_code=400, detail="No resume found. Please upload a resume first.")
+        resume_text = res_r.data[0]["raw_text"]
         
-        # 2. Fetch GitHub
-        gh_analysis = None
-        gh_r = db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        if gh_r.data:
-            gh_analysis = gh_r.data[0]
+        # 2. Process GitHub
+        gh_analysis = gh_r.data[0] if gh_r.data else None
             
-        # 3. Fetch LinkedIn
-        li_analysis = None
-        li_r = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        if li_r.data:
-            li_analysis = li_r.data[0]
+        # 3. Process LinkedIn
+        li_analysis = li_r.data[0] if li_r.data else None
 
         # 4. Generate
         roadmap = await roadmap_engine.generate_roadmap(
