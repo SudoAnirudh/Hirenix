@@ -140,11 +140,16 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-glass);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-premium);
+  transform: translateY(-12px) scale(1.02);
+  border-color: color-mix(in srgb, var(--color-brand-blue) 40%, var(--border));
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  box-shadow:
+    0 20px 40px -10px rgba(0, 0, 0, 0.1),
+    0 0 20px -5px color-mix(in srgb, var(--color-brand-blue) 20%, transparent);
 }
 
 .btn-primary {
