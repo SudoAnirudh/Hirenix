@@ -260,7 +260,7 @@ export default function DashboardLayout({
                   className="relative z-10"
                 />
                 <span className="text-[9px] font-bold mt-1 tracking-tight truncate w-full text-center">
-                  {label.split("")[0]}
+                  {label.split(" ")[0]}
                 </span>
               </Link>
             );

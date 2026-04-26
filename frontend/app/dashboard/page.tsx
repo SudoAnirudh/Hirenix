@@ -227,10 +227,10 @@ export default function DashboardPage() {
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight font-heading">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-slate-100 dark:to-slate-400">
-                {getGreeting()},{""}
-              </span>
+                {getGreeting()},
+              </span>{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-500">
-                {fullName.split("")[0]}
+                {fullName.split(" ")[0]}
               </span>
             </h1>
             <p className="text-slate-500 text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
