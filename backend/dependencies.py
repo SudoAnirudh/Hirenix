@@ -124,10 +124,12 @@ async def get_current_user(
         # user_metadata lives in the JWT under the same key
         metadata = payload.get("user_metadata", {})
 
+        plan = metadata.get("plan", "free")
+
         return {
             "user_id": user_id,
             "email": email,
-            "plan": "pro"  # Hardcoded to 'pro' to bypass all feature gates
+            "plan": plan
         }
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -151,10 +153,11 @@ async def get_current_user(
             user = user_res.user
             metadata = getattr(user, "user_metadata", {}) or {}
             print("✅ Supabase network verification succeeded.")
+            plan = metadata.get("plan", "free")
             return {
                 "user_id": user.id,
                 "email": user.email,
-                "plan": "pro"  # Hardcoded to 'pro' to bypass all feature gates
+                "plan": plan
             }
         except Exception as net_e:
             print(f"❌ Supabase network verification failed: {net_e}")
@@ -169,7 +172,11 @@ def require_plan(*allowed_plans: str):
     """Factory that returns a dependency enforcing a minimum subscription plan."""
 
     async def _check_plan(user: dict = Depends(get_current_user)) -> dict:
-        # Plan enforcement disabled: everyone is 'pro'
+        if user.get("plan", "free") not in allowed_plans:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have access to this feature. Please upgrade your plan.",
+            )
         return user
 
     return _check_plan
