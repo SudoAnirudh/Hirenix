@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from typing import Optional, Any
 from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import OutreachDraftsResponse
@@ -16,12 +17,20 @@ async def generate_outreach_drafts(
     Generates personalized LinkedIn and Email outreach drafts using Hirenix AI.
     """
     try:
-        # 1. Fetch Job Match Data
-        match_query = db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        # What: Database query optimizations by wrapping synchronous calls in asyncio.to_thread
+        # Why: Supabase-py is synchronous and blocks the event loop.
+        # Impact: Improves concurrency and unblocks the main event loop.
+        match_query = await asyncio.to_thread(lambda: db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute())
+
         if not match_query.data:
             logger.error(f"Job match {match_id} not found for user {user_id}")
             return None
         
+        li_query = await asyncio.to_thread(lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        # Note: resume_query is kept lazy and fetched only as a fallback.
+        resume_query = None
+
         match_data = match_query.data
         jd_text = match_data.get("jd_text", "")
         target_role = match_data.get("target_role", "Professional")
@@ -29,9 +38,7 @@ async def generate_outreach_drafts(
         skill_gap = match_data.get("skill_gap", {})
         bridge_advice = match_data.get("metadata", {}).get("bridge_advice", [])
 
-        # 2. Fetch LinkedIn Profile Summary (for personalization)
-        li_query = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
+        # 2. Extract LinkedIn Profile Summary or Resume Fallback (for personalization)
         profile_context = ""
         if li_query.data:
             li_data = li_query.data[0]
@@ -43,8 +50,8 @@ async def generate_outreach_drafts(
             profile_context = f"User Profile Summary: {profile_summary}\nKey Strengths: {', '.join(strengths)}"
         else:
             # Fallback to resume if LinkedIn not available
-            resume_query = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-            if resume_query.data:
+            resume_query = await asyncio.to_thread(lambda: db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+            if resume_query and resume_query.data:
                 profile_context = f"Candidate Background: {resume_query.data[0].get('raw_text', '')[:1000]}"
 
         # 3. Construct Prompt for Hirenix AI
