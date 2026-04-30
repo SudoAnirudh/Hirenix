@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 const toolbarBtn =
-  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none #7C9ADD]/10 text-[#4A5568]";
+  "p-2 rounded-xl transition-all disabled:opacity-50 disabled:pointer-events-none hover:bg-[#7C9ADD]/10 text-[#4A5568] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50";
 
 const MenuBar = ({
   editor,
@@ -51,7 +51,7 @@ const MenuBar = ({
   };
 
   const activeClass = "bg-[#7C9ADD]/10 text-[#7C9ADD] shadow-sm";
-  const idleClass = "text-[#718096] #7C9ADD]";
+  const idleClass = "text-[#718096] hover:text-[#7C9ADD]";
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 p-3 sticky top-0 z-10 border-b border-white/60 bg-white/60 backdrop-blur-xl">
@@ -80,7 +80,7 @@ const MenuBar = ({
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={!editor.can().chain().focus().toggleBold().run()}
-          className={`${toolbarBtn} ${editor.isActive("bold") ? "bg-[#7C9ADD]/10 text-[#7C9ADD] shadow-sm" : "text-[#718096] #7C9ADD]"}`}
+          className={`${toolbarBtn} ${editor.isActive("bold") ? activeClass : idleClass}`}
           title="Bold"
           aria-label="Bold"
         >
