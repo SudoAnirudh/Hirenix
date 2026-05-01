@@ -1,5 +1,6 @@
 import base64
 import time
+import logging
 from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -7,6 +8,8 @@ import httpx
 import jwt
 from supabase import create_client, Client
 from config import settings
+
+logger = logging.getLogger("hirenix.dependencies")
 
 bearer_scheme = HTTPBearer(auto_error=False)
 SUPPORTED_ASYMMETRIC_ALGORITHMS = {"ES256", "RS256"}
@@ -138,9 +141,10 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     except MalformedTokenError as exc:
+        logger.error(f"Malformed token error: {exc}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(exc),
+            detail="Invalid authentication token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError as exc:
