@@ -1,4 +1,6 @@
 import os
+import logging
+import json
 from typing import Optional, Dict, List
 from models.roadmap import CareerRoadmap, RoadmapSkill
 from services.skill_gap import detect_skill_gap
