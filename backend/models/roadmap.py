@@ -8,21 +8,28 @@ class Resource(BaseModel):
     is_free: bool
 
 class RoadmapSkill(BaseModel):
+    id: str
     name: str
-    status: str  # 'completed', 'in_progress', 'to_learn'
-    priority: str  # 'high', 'medium', 'low'
-    difficulty: str  # 'easy', 'medium', 'hard'
-    estimated_time: str  # e.g., '2 weeks'
-    resources: List[Resource]
+    description: Optional[str] = None
+    status: str = 'to_learn'  # 'completed', 'in_progress', 'to_learn'
+    priority: Optional[str] = 'medium'  # 'high', 'medium', 'low'
+    difficulty: Optional[str] = 'medium'
+    estimated_time: Optional[str] = None
+    resources: List[Resource] = []
+    children: List['RoadmapSkill'] = []
+    is_optional: bool = False
 
-class Roadmap(BaseModel):
+class CareerRoadmap(BaseModel):
     user_id: Optional[str] = None
     target_role: str
     current_level: str  # 'junior', 'mid', 'senior'
     skills: List[RoadmapSkill]
-    next_step: str
-    overall_progress: float  # 0 to 100
-    future_opportunities: List[str]
+    next_step: Optional[str] = None
+    overall_progress: float = 0.0
+    future_opportunities: List[str] = []
+
+# Needed for self-referencing model
+RoadmapSkill.model_rebuild()
 
 class RoadmapUpdate(BaseModel):
     target_role: str

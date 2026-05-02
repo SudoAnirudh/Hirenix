@@ -399,20 +399,24 @@ export interface RoadmapResource {
 }
 
 export interface RoadmapSkill {
+  id: string;
   name: string;
+  description?: string;
   status: "completed" | "in_progress" | "to_learn";
-  priority: "high" | "medium" | "low";
-  difficulty: "easy" | "medium" | "hard";
-  estimated_time: string;
+  priority?: "high" | "medium" | "low";
+  difficulty?: "easy" | "medium" | "hard";
+  estimated_time?: string;
   resources: RoadmapResource[];
+  children?: RoadmapSkill[];
+  is_optional?: boolean;
 }
 
-export interface Roadmap {
+export interface CareerRoadmap {
   user_id?: string;
   target_role: string;
   current_level: string;
   skills: RoadmapSkill[];
-  next_step: string;
+  next_step?: string;
   overall_progress: number;
   future_opportunities: string[];
 }
@@ -421,15 +425,15 @@ export async function getRoadmapRoles(): Promise<string[]> {
   return request<string[]>("/roadmap/roles");
 }
 
-export async function getSavedRoadmap(): Promise<Roadmap | null> {
-  return request<Roadmap | null>("/roadmap/current");
+export async function getSavedRoadmap(): Promise<CareerRoadmap | null> {
+  return request<CareerRoadmap | null>("/roadmap/current");
 }
 
 export async function generateRoadmap(
   targetRole: string,
   username = "guest",
-): Promise<Roadmap> {
-  return request<Roadmap>(
+): Promise<CareerRoadmap> {
+  return request<CareerRoadmap>(
     `/roadmap/generate?target_role=${encodeURIComponent(targetRole)}&username=${encodeURIComponent(username)}`,
     { method: "POST" },
   );
@@ -438,8 +442,8 @@ export async function generateRoadmap(
 export async function updateSkillStatus(
   targetRole: string,
   completedSkills: string[],
-): Promise<Roadmap> {
-  return request<Roadmap>("/roadmap/skills", {
+): Promise<CareerRoadmap> {
+  return request<CareerRoadmap>("/roadmap/skills", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -451,7 +455,7 @@ export async function updateSkillStatus(
 
 // Deprecated: use getSavedRoadmap or generateRoadmap instead
 export async function getRoadmap(username: string, targetRole: string) {
-  return request<Roadmap>(
+  return request<CareerRoadmap>(
     `/roadmap/${username}?target_role=${encodeURIComponent(targetRole)}`,
   );
 }

@@ -19,14 +19,15 @@ import {
   getSavedRoadmap,
   generateRoadmap,
   updateSkillStatus,
-  Roadmap,
+  CareerRoadmap,
+  RoadmapSkill,
 } from "@/lib/api";
 import { toast } from "sonner";
-import TechTree from "@/components/dashboard/TechTree";
+import VerticalRoadmap from "@/components/dashboard/VerticalRoadmap";
 import { motion } from "framer-motion";
 
 export default function RoadmapPage() {
-  const [data, setData] = useState<Roadmap | null>(null);
+  const [data, setData] = useState<CareerRoadmap | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [selectedRole, setSelectedRole] = useState("");
   const [loading, setLoading] = useState(true);
@@ -86,26 +87,57 @@ export default function RoadmapPage() {
   const toggleSkill = async (skillName: string) => {
     if (!data) return;
 
-    const isCurrentlyCompleted =
-      data.skills.find((s) => s.name === skillName)?.status === "completed";
+    // Helper to find skill and its status recursively
+    const findSkill = (
+      skills: RoadmapSkill[],
+      name: string,
+    ): RoadmapSkill | undefined => {
+      for (const s of skills) {
+        if (s.name === name) return s;
+        if (s.children) {
+          const found = findSkill(s.children, name);
+          if (found) return found;
+        }
+      }
+    };
+
+    const target = findSkill(data.skills, skillName);
+    if (!target) return;
+
+    const isCurrentlyCompleted = target.status === "completed";
+    const newStatus = isCurrentlyCompleted ? "to_learn" : "completed";
+
+    // Recursive update helper
+    const updateNestedStatus = (
+      skills: RoadmapSkill[],
+      name: string,
+      status: any,
+    ): RoadmapSkill[] => {
+      return skills.map((s) => {
+        if (s.name === name) return { ...s, status };
+        if (s.children)
+          return {
+            ...s,
+            children: updateNestedStatus(s.children, name, status),
+          };
+        return s;
+      });
+    };
 
     // Optimistic update
-    const updatedSkills = data.skills.map((s) => {
-      if (s.name === skillName) {
-        return {
-          ...s,
-          status: (isCurrentlyCompleted ? "to_learn" : "completed") as
-            | "completed"
-            | "in_progress"
-            | "to_learn",
-        };
-      }
-      return s;
-    });
+    const updatedSkills = updateNestedStatus(data.skills, skillName, newStatus);
 
-    const completedSkillNames = updatedSkills
-      .filter((s) => s.status === "completed")
-      .map((s) => s.name);
+    // Flatten all completed skills for the backend
+    const getCompletedNames = (skills: RoadmapSkill[]): string[] => {
+      let names: string[] = [];
+      skills.forEach((s) => {
+        if (s.status === "completed") names.push(s.name);
+        if (s.children) names.push(...getCompletedNames(s.children));
+      });
+      return names;
+    };
+
+    const completedSkillNames = getCompletedNames(updatedSkills);
 
     try {
       const updatedData = await updateSkillStatus(
@@ -358,7 +390,10 @@ export default function RoadmapPage() {
               {/* Roadmap Content */}
               {viewMode === "tree" ? (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                  <TechTree skills={data.skills} onToggle={toggleSkill} />
+                  <VerticalRoadmap
+                    skills={data.skills}
+                    onToggle={toggleSkill}
+                  />
                 </div>
               ) : (
                 <div className="relative">

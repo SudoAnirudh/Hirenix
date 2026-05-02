@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
-from models.roadmap import Roadmap, RoadmapUpdate
+from models.roadmap import CareerRoadmap, RoadmapUpdate
 from services.roadmap_engine import roadmap_engine
 from services.skill_gap import _load_matrix
 from dependencies import get_current_user, get_supabase_admin
@@ -20,7 +20,7 @@ async def get_roles():
         logger.error(f"Failed to load roles: {e}")
         raise HTTPException(status_code=500, detail="Failed to load roles.")
 
-@router.get("/current", response_model=Optional[Roadmap])
+@router.get("/current", response_model=Optional[CareerRoadmap])
 async def get_current_roadmap(
     user: dict = Depends(get_current_user),
     db = Depends(get_supabase_admin)
@@ -42,12 +42,12 @@ async def get_current_roadmap(
             if skill["name"] in completed_skills:
                 skill["status"] = "completed"
         
-        return Roadmap(**roadmap_data)
+        return CareerRoadmap(**roadmap_data)
     except Exception as e:
         logger.error(f"Failed to fetch roadmap: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch roadmap.")
 
-@router.post("/generate", response_model=Roadmap)
+@router.post("/generate", response_model=CareerRoadmap)
 async def generate_roadmap(
     target_role: str,
     username: str = "guest",
@@ -103,7 +103,7 @@ async def generate_roadmap(
         logger.error(f"Roadmap generation failed: {e}")
         raise HTTPException(status_code=500, detail="Roadmap generation failed.")
 
-@router.patch("/skills", response_model=Optional[Roadmap])
+@router.patch("/skills", response_model=Optional[CareerRoadmap])
 async def update_skill_status(
     update: RoadmapUpdate,
     user: dict = Depends(get_current_user),

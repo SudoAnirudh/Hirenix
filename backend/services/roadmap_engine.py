@@ -1,14 +1,16 @@
-import json
-import logging
-from typing import Optional
-from models.roadmap import Roadmap
+import os
+from typing import Optional, Dict, List
+from models.roadmap import CareerRoadmap, RoadmapSkill
 from services.skill_gap import detect_skill_gap
 from services.nvidia_client import invoke_nvidia_llm
 from services.groq_client import invoke_groq_llm
 from services.cache_manager import cache_manager
+from utils.link_validator import validate_links, get_fallback_url
 from config import settings
 
 logger = logging.getLogger(__name__)
+
+SCRAPED_ROADMAPS_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "roadmaps")
 
 class RoadmapEngine:
     def __init__(self):
@@ -51,7 +53,6 @@ class RoadmapEngine:
             logger.error(f"Error getting LLM career advice: {str(e)}")
             return None
 
-    @cache_manager.cache_llm_result(provider="nvidia")
     async def generate_roadmap(
         self, 
         resume_text: str, 
@@ -60,7 +61,7 @@ class RoadmapEngine:
         user_id: str,
         github_data: Optional[dict] = None,
         linkedin_data: Optional[dict] = None
-    ) -> Roadmap:
+    ) -> CareerRoadmap:
         """
         Generate a comprehensive, AI-powered career roadmap.
         Synthesizes Resume, GitHub, and LinkedIn analysis to create a personalized path.
@@ -81,45 +82,70 @@ class RoadmapEngine:
         if linkedin_data:
             li_context = f"Summary: {linkedin_data.get('profile_summary')}. Suggested Roles: {', '.join(linkedin_data.get('raw_data', {}).get('suggested_roles', []))}. Strengths: {', '.join(linkedin_data.get('strengths', []))}."
 
+        # 0. Check for Scraped Context
+        scraped_context = ""
+        try:
+            role_norm = target_role.lower().replace(" ", "-")
+            folders = [f for f in os.listdir(SCRAPED_ROADMAPS_DIR) if os.path.isdir(os.path.join(SCRAPED_ROADMAPS_DIR, f))]
+            matched = next((f for f in folders if f in role_norm or role_norm in f), None)
+            if matched:
+                c_path = os.path.join(SCRAPED_ROADMAPS_DIR, matched, "content.json")
+                if os.path.exists(c_path):
+                    with open(c_path, 'r') as f:
+                        scraped_data = json.load(f)
+                        keys = list(scraped_data.keys())[:20]
+                        scraped_context = f"This roadmap should be inspired by roadmap.sh. Key topics to include: {', '.join(keys)}."
+        except Exception as e:
+            logger.warning(f"Failed to load scraped context: {e}")
+
         prompt = f"""
-        You are a world-class AI Career Strategist. Generate a highly personalized career roadmap to help a user become a {target_role}.
+        You are a world-class AI Career Strategist. Generate a highly personalized, HIERARCHICAL career roadmap to help a user become a {target_role}.
+        
+        {scraped_context}
         
         USER CONTEXT:
-        - Resume: {resume_context}
+        - Resume (truncated): {resume_context}
         - GitHub Analysis: {gh_context}
-        - LinkedIn Analysis: {li_context}
         - Target Role: {target_role}
 
         YOUR TASK:
-        1. Analyze their current skill set (Matched Skills: {", ".join(gaps["matched_skills"])}) vs the target role.
-        2. Identify the most critical gaps (Missing Skills: {", ".join(gaps["mandatory_missing"] + gaps["competitive_missing"])}).
-        3. Create a multi-step roadmap with EXACTLY 5-8 specific skills to master.
-        4. For EACH skill, provide 2-3 high-quality, REAL learning resources (YouTube, Official Docs, Coursera, FreeCodeCamp).
+        1. Design a vertical 'spine-and-branch' roadmap like roadmap.sh.
+        2. Group related skills into parent nodes (e.g., 'Frontend Fundamentals' -> ['HTML', 'CSS', 'JS']).
+        3. For EACH skill node, provide:
+           - id: unique slug (e.g., 'frontend-fundamentals')
+           - name: clear title
+           - description: 1-2 sentences of context.
+           - children: nested skills (recursive structure).
+           - resources: 2-3 REAL, high-quality links (YouTube, MDN, Coursera).
+        4. Analyze their current skills (Matched: {", ".join(gaps["matched_skills"])}) and set 'status' to 'completed' if they already know it.
+        
         5. Return ONLY a raw JSON object matching this structure:
         {{
             "target_role": "{target_role}",
             "current_level": "junior/mid/senior based on context",
             "overall_progress": 0-100,
-            "next_step": "One actionable sentence (e.g., 'Master React Hooks next')",
+            "next_step": "One actionable sentence",
             "skills": [
                 {{
+                    "id": "skill-id",
                     "name": "Skill Name",
+                    "description": "...",
                     "status": "completed" | "in_progress" | "to_learn",
                     "priority": "high" | "medium" | "low",
                     "difficulty": "easy" | "medium" | "hard",
                     "estimated_time": "e.g., 2 weeks",
+                    "children": [ ... recursive RoadmapSkill objects ... ],
                     "resources": [
-                        {{ "title": "Resource Title", "url": "valid_url", "type": "video/course/article", "is_free": true/false }}
+                        {{ "title": "Resource Title", "url": "valid_url", "type": "video/course/article", "is_free": true }}
                     ]
                 }}
             ],
-            "future_opportunities": ["Opportunity 1", "Opportunity 2", "Opportunity 3"]
+            "future_opportunities": ["Opportunity 1", "Opportunity 2"]
         }}
 
         IMPORTANT:
+        - Use deep hierarchy (3-4 levels) for complex topics.
         - NO MOCK DATA. Use real educational platforms.
-        - Be realistic about 'completed' skills based on the Resume and GitHub context.
-        - If the target role is very different from their history, focus on bridge skills first.
         - Return ONLY JSON. No preamble.
         """
 
@@ -137,36 +163,47 @@ class RoadmapEngine:
                 cleaned_json = content.strip().lstrip("```json").rstrip("```").strip()
                 roadmap_dict = json.loads(cleaned_json)
                 
-                # 2. Link Validation and Filtering
-                all_urls = []
-                for skill in roadmap_dict.get("skills", []):
-                    for res in skill.get("resources", []):
-                        all_urls.append(res["url"])
-                
-                validity_map = await validate_links(all_urls)
-                
-                for skill in roadmap_dict.get("skills", []):
-                    original_resources = skill.get("resources", [])
-                    # Filter for only valid links
-                    valid_resources = [r for r in original_resources if validity_map.get(r["url"], False)]
-                    
-                    # If all links were invalid, inject a verified fallback
-                    if not valid_resources:
-                        logger.warning(f"All resources for {skill['name']} were invalid. Adding fallback.")
-                        valid_resources = [
-                            {
-                                "title": f"Mastering {skill['name']} (Verified Search)",
-                                "url": get_fallback_url(skill["name"]),
+                # Recursive link validation
+                async def validate_recursive(skills_list):
+                    urls_to_check = []
+                    for s in skills_list:
+                        for r in s.get("resources", []):
+                            urls_to_check.append(r["url"])
+                        if s.get("children"):
+                            urls_to_check.extend(await get_urls_recursive(s["children"]))
+                    return urls_to_check
+
+                async def get_urls_recursive(skills_list):
+                    urls = []
+                    for s in skills_list:
+                        for r in s.get("resources", []):
+                            urls.append(r["url"])
+                        if s.get("children"):
+                            urls.extend(await get_urls_recursive(s["children"]))
+                    return urls
+
+                async def apply_validation_recursive(skills_list, v_map):
+                    for s in skills_list:
+                        original_resources = s.get("resources", [])
+                        valid_resources = [r for r in original_resources if v_map.get(r["url"], False)]
+                        if not valid_resources and original_resources:
+                            valid_resources = [{
+                                "title": f"Mastering {s['name']} (Verified Search)",
+                                "url": get_fallback_url(s["name"]),
                                 "type": "video",
                                 "is_free": True
-                            }
-                        ]
-                    
-                    skill["resources"] = valid_resources
+                            }]
+                        s["resources"] = valid_resources
+                        if s.get("children"):
+                            await apply_validation_recursive(s["children"], v_map)
+
+                all_urls = await get_urls_recursive(roadmap_dict.get("skills", []))
+                validity_map = await validate_links(all_urls)
+                await apply_validation_recursive(roadmap_dict.get("skills", []), validity_map)
 
                 # Ensure user_id is injected
                 roadmap_dict["user_id"] = user_id
-                return Roadmap(**roadmap_dict)
+                return CareerRoadmap(**roadmap_dict)
         except Exception as e:
             logger.error(f"AI Roadmap generation failed: {str(e)}")
             raise Exception(f"Failed to generate AI roadmap: {str(e)}")
