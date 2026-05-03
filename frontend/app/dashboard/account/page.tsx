@@ -23,6 +23,7 @@ import { getSession, signOut } from "@/lib/auth";
 import { getProgress } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useRouter } from "next/navigation";
 
 interface UserSession {
@@ -85,7 +86,10 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+        <LoadingScreen
+          message="Accessing Command Center"
+          submessage="Retrieving Personal Data"
+        />
       </div>
     );
   }

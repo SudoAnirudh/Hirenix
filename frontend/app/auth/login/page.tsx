@@ -9,7 +9,9 @@ import {
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Brain, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -111,11 +113,10 @@ export default function LoginPage() {
 
   if (checkingSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Checking session...
-        </div>
-      </div>
+      <LoadingScreen
+        message="Checking Session"
+        submessage="Secure Authentication"
+      />
     );
   }
 
@@ -134,7 +135,7 @@ export default function LoginPage() {
           className="flex items-center gap-3 mb-10 group justify-center"
         >
           <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform">
-            <Brain className="text-card-foreground" size={24} />
+            <Brain className="text-white" size={24} />
           </div>
           <span className="font-display font-black text-2xl text-foreground tracking-tighter uppercase italic">
             HIRENIX
@@ -222,7 +223,7 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-brand-blue text-card-foreground text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
+              className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
             >
               {loading ? (
                 <>

@@ -255,11 +255,11 @@ export default function ProgressTrackerPage() {
       </div>
 
       {loading && (
-        <div
-          className="glass-card p-10 text-center"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          Loading your progress…
+        <div className="min-h-[400px] flex items-center justify-center">
+          <LoadingScreen
+            message="Calculating Evolution"
+            submessage="Analyzing Performance Data"
+          />
         </div>
       )}
 

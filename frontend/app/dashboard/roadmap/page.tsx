@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import VerticalRoadmap from "@/components/dashboard/VerticalRoadmap";
 import { motion } from "framer-motion";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 export default function RoadmapPage() {
   const [data, setData] = useState<CareerRoadmap | null>(null);
@@ -155,17 +156,14 @@ export default function RoadmapPage() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-brand-blue/20 border-t-[#7C9ADD] rounded-full animate-spin" />
-          <p className="text-muted-foreground font-medium animate-pulse">
-            Loading your career path...
-          </p>
-        </div>
-      </div>
+      <LoadingScreen
+        message="Architecting Your Roadmap"
+        submessage="Analyzing Career Trajectories"
+      />
     );
+  }
 
   if (error)
     return (

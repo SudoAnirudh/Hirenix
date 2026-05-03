@@ -19,6 +19,7 @@ import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 const nav = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -126,12 +127,10 @@ export default function DashboardLayout({
 
   if (checkingSession) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center text-sm"
-        style={{ color: "var(--text-secondary)" }}
-      >
-        Loading dashboard...
-      </div>
+      <LoadingScreen
+        message="Initialising Dashboard"
+        submessage="Verifying Secure Connection"
+      />
     );
   }
 
