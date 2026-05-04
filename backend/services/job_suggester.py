@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
@@ -15,20 +16,32 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, and GitHub data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
+        # ⚡ Bolt Optimization
+        # What: Uses asyncio.gather with asyncio.to_thread to run 3 Supabase queries concurrently.
+        # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+        # Impact: Reduces N+1 latency bottlenecks and significantly speeds up readiness context retrieval.
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute())
+        github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        resume_r, interviews_r, github_r = await asyncio.gather(
+            resume_task, interviews_task, github_task, return_exceptions=True
+        )
+
+        # Handle potential exceptions gracefully by converting to empty objects similar to missing data
+        import types
+        if isinstance(resume_r, Exception):
+            resume_r = types.SimpleNamespace(data=[])
+        if isinstance(interviews_r, Exception):
+            interviews_r = types.SimpleNamespace(data=[])
+        if isinstance(github_r, Exception):
+            github_r = types.SimpleNamespace(data=[])
+
         # 4. Ready Skills from Interviews (score >= 7.0)
         ready_skills = []
-        if interviews_r.data:
+        if getattr(interviews_r, "data", []):
             session_ids = [i["id"] for i in interviews_r.data]
-            answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
+            answers_r = await asyncio.to_thread(lambda: db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute())
             if answers_r.data:
                 ready_skills = list(set([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]]))
 
@@ -72,9 +85,10 @@ async def generate_job_suggestions(user_id: str, db, limit: int = 6) -> JobSugge
     search_fields = [context['target_role']]
     try:
         content = query_resp["choices"][0]["message"]["content"]
-        if "```json" in content: content = content.split("```json")[1].split("```")[0]
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0]
         search_fields = json.loads(content.strip())
-    except:
+    except Exception:
         pass
 
     # 2. Scrape jobs from market
@@ -117,11 +131,12 @@ async def generate_job_suggestions(user_id: str, db, limit: int = 6) -> JobSugge
     recommendations = {}
     try:
         content = rank_resp["choices"][0]["message"]["content"]
-        if "```json" in content: content = content.split("```json")[1].split("```")[0]
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0]
         rec_list = json.loads(content.strip())
         for r in rec_list:
             recommendations[r["idx"]] = r
-    except:
+    except Exception:
         pass
 
     final_suggestions = []
