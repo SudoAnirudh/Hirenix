@@ -21,12 +21,19 @@ def _auth_headers() -> dict:
 
 async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
     """Fetch GitHub repos and compute a comprehensive AI-powered profile analysis."""
+    import asyncio
     logger.info(f"Starting GitHub analysis for user: {username}")
     async with httpx.AsyncClient(timeout=25) as client:
         try:
-            # User info
-            logger.debug(f"Fetching user info for {username}")
-            user_r = await client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
+            logger.debug(f"Fetching user info and repos concurrently for {username}")
+            user_req = client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
+            repos_req = client.get(
+                f"{GITHUB_API}/users/{username}/repos",
+                params={"per_page": 100, "sort": "updated"},
+                headers=_auth_headers(),
+            )
+
+            user_r, repos_r = await asyncio.gather(user_req, repos_req)
             
             if user_r.status_code == 404:
                 raise Exception(f"GitHub user '{username}' not found. Please check the spelling.")
@@ -40,13 +47,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             user_r.raise_for_status()
             user_data = user_r.json()
 
-            # Repositories
-            logger.debug(f"Fetching repos for {username}")
-            repos_r = await client.get(
-                f"{GITHUB_API}/users/{username}/repos",
-                params={"per_page": 100, "sort": "updated"},
-                headers=_auth_headers(),
-            )
             repos_r.raise_for_status()
             repos = repos_r.json()
             logger.info(f"Retrieved {len(repos)} repos for {username}")
@@ -74,28 +74,33 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         repo_metrics: list[RepoMetric] = []
         three_months_ago = (datetime.now() - timedelta(days=90)).isoformat()
         
-        for r in repos[:5]:
-            commits_count = 0
-            # Attempt to fetch commit count for the last 90 days
-            try:
-                commits_r = await client.get(
+        commit_tasks = []
+        top_repos = repos[:5]
+        for r in top_repos:
+            commit_tasks.append(
+                client.get(
                     f"{GITHUB_API}/repos/{username}/{r['name']}/commits",
                     params={"since": three_months_ago, "per_page": 1, "author": username},
                     headers=_auth_headers(),
                 )
-                if commits_r.status_code == 200:
-                    # Link header often contains 'last' page info for count
-                    link = commits_r.headers.get("Link", "")
-                    if 'rel="last"' in link:
-                        # Simple heuristic: last page number is the count if per_page=1
-                        import re
-                        match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
-                        if match:
-                            commits_count = int(match.group(1))
-                    else:
-                        commits_count = len(commits_r.json())
-            except:
-                pass # Gracefully skip if commit fetch fails
+            )
+
+        commit_responses = await asyncio.gather(*commit_tasks, return_exceptions=True)
+
+        for i, r in enumerate(top_repos):
+            commits_count = 0
+            commits_r = commit_responses[i]
+            if not isinstance(commits_r, Exception) and commits_r.status_code == 200:
+                # Link header often contains 'last' page info for count
+                link = commits_r.headers.get("Link", "")
+                if 'rel="last"' in link:
+                    # Simple heuristic: last page number is the count if per_page=1
+                    import re
+                    match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
+                    if match:
+                        commits_count = int(match.group(1))
+                else:
+                    commits_count = len(commits_r.json())
 
             repo_metrics.append(RepoMetric(
                 name=r["name"],
