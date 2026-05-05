@@ -1,3 +1,5 @@
+import asyncio
+import re
 import httpx
 import logging
 from datetime import datetime, timedelta
@@ -18,6 +20,26 @@ def _auth_headers() -> dict:
     if settings.github_token:
         headers["Authorization"] = f"Bearer {settings.github_token}"
     return headers
+
+async def _fetch_repo_commits(client: httpx.AsyncClient, username: str, repo_name: str, three_months_ago: str) -> int:
+    """Fetch commit count for a repository over the last 90 days."""
+    try:
+        commits_r = await client.get(
+            f"{GITHUB_API}/repos/{username}/{repo_name}/commits",
+            params={"since": three_months_ago, "per_page": 1, "author": username},
+            headers=_auth_headers(),
+        )
+        if commits_r.status_code == 200:
+            link = commits_r.headers.get("Link", "")
+            if 'rel="last"' in link:
+                match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
+                if match:
+                    return int(match.group(1))
+            else:
+                return len(commits_r.json())
+    except Exception:
+        pass
+    return 0
 
 async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
     """Fetch GitHub repos and compute a comprehensive AI-powered profile analysis."""
@@ -74,29 +96,14 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         repo_metrics: list[RepoMetric] = []
         three_months_ago = (datetime.now() - timedelta(days=90)).isoformat()
         
-        for r in repos[:5]:
-            commits_count = 0
-            # Attempt to fetch commit count for the last 90 days
-            try:
-                commits_r = await client.get(
-                    f"{GITHUB_API}/repos/{username}/{r['name']}/commits",
-                    params={"since": three_months_ago, "per_page": 1, "author": username},
-                    headers=_auth_headers(),
-                )
-                if commits_r.status_code == 200:
-                    # Link header often contains 'last' page info for count
-                    link = commits_r.headers.get("Link", "")
-                    if 'rel="last"' in link:
-                        # Simple heuristic: last page number is the count if per_page=1
-                        import re
-                        match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
-                        if match:
-                            commits_count = int(match.group(1))
-                    else:
-                        commits_count = len(commits_r.json())
-            except:
-                pass # Gracefully skip if commit fetch fails
+        top_repos = repos[:5]
+        commit_tasks = [
+            _fetch_repo_commits(client, username, r["name"], three_months_ago)
+            for r in top_repos
+        ]
+        commit_counts = await asyncio.gather(*commit_tasks)
 
+        for r, commits_count in zip(top_repos, commit_counts):
             repo_metrics.append(RepoMetric(
                 name=r["name"],
                 description=r.get("description"),
