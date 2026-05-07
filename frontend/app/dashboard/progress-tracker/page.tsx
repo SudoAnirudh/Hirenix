@@ -1,4 +1,5 @@
 "use client";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import React, { useEffect, useState, useRef } from "react";
 import { getProgress, getAISummary } from "@/lib/api";
 import {

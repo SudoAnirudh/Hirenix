@@ -23,7 +23,7 @@ import { getSession, signOut } from "@/lib/auth";
 import { getProgress } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LoadingScreen } from "@/components/ui/LoadingScreen";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { useRouter } from "next/navigation";
 
 interface UserSession {
