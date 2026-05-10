@@ -221,7 +221,8 @@ function JobCard({
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 px-1.5 rounded-lg text-slate-400 group- transition-colors"
+            className="p-1 px-1.5 rounded-lg text-slate-400 group- transition-colors focus-visible:outline-none focus-visible:ring-2"
+            aria-label="Application options"
           >
             <MoreVertical size={14} />
           </button>
