@@ -97,10 +97,14 @@ async def match_job_upload(
 ):
     """Compare an uploaded resume (PDF) against job description (text or file) and return match results."""
     # 1. Parse Resume
-    resume_content = await resume_file.read()
     if not resume_file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Resume must be a PDF.")
     
+    if resume_file.size and resume_file.size > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Resume file too large. Max size is 10MB.")
+
+    resume_content = await resume_file.read()
+
     _, resume_text = parse_resume(resume_content)
     if not resume_text.strip():
         raise HTTPException(status_code=400, detail="Could not extract text from resume.")
@@ -108,6 +112,8 @@ async def match_job_upload(
     # 2. Extract JD Text
     final_jd_text = jd_text or ""
     if jd_file:
+         if jd_file.size and jd_file.size > 10 * 1024 * 1024:
+             raise HTTPException(status_code=413, detail="JD file too large. Max size is 10MB.")
          jd_content = await jd_file.read()
          if jd_file.filename.lower().endswith(".pdf"):
              final_jd_text = extract_pdf_text(jd_content)
