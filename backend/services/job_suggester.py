@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
@@ -15,14 +16,15 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, and GitHub data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # ⚡ Bolt: Parallelize independent database queries
+        # What: Uses asyncio.gather with asyncio.to_thread to run 3 Supabase queries concurrently.
+        # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+        # Impact: Reduces query time from ~3N to ~1N, significantly speeding up job suggestion generation.
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute())
+        github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        resume_r, interviews_r, github_r = await asyncio.gather(resume_task, interviews_task, github_task)
         
         # 4. Ready Skills from Interviews (score >= 7.0)
         ready_skills = []
