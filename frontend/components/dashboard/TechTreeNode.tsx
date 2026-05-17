@@ -89,12 +89,17 @@ export default function TechTreeNode({
 
         {skill.resources && skill.resources.length > 0 && (
           <div className="group/res relative">
-            <div className="p-2 rounded-xl bg-white/40 border border-white transition-colors cursor-pointer text-slate-400">
+            <button
+              type="button"
+              aria-label="View resources"
+              title="View resources"
+              className="p-2 rounded-xl bg-white/40 border border-white transition-colors cursor-pointer text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            >
               <ExternalLink size={14} />
-            </div>
+            </button>
 
             {/* Simple resources preview on hover */}
-            <div className="absolute bottom-full right-0 mb-3 w-48 bg-slate-900 text-white p-3 rounded-2xl text-[10px] opacity-0 invisible group-hover/res:opacity-100 group-hover/res:visible transition-all z-50 shadow-2xl">
+            <div className="absolute bottom-full right-0 mb-3 w-48 bg-slate-900 text-white p-3 rounded-2xl text-[10px] opacity-0 invisible group-hover/res:opacity-100 group-hover/res:visible group-focus-within/res:opacity-100 group-focus-within/res:visible transition-all z-50 shadow-2xl">
               <p className="font-black uppercase tracking-widest text-[#7C9ADD] mb-2">
                 Resources
               </p>
