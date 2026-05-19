@@ -1,5 +1,6 @@
 import aiofiles
 import os
+import tempfile
 from fastapi import UploadFile
 
 
@@ -17,8 +18,13 @@ async def save_upload_temp(file: UploadFile) -> str:
 
 
 def cleanup_temp(path: str) -> None:
-    """Remove a temporary file."""
+    """Remove a temporary file securely."""
     try:
-        os.remove(path)
+        # Ensure the path is strictly within the system temp directory to prevent path traversal deletion
+        temp_dir = tempfile.gettempdir()
+        real_path = os.path.realpath(path)
+        if not real_path.startswith(os.path.realpath(temp_dir)):
+            return
+        os.remove(real_path)
     except FileNotFoundError:
         pass
