@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Optional, Dict, Any
 from dependencies import get_supabase_admin
@@ -20,15 +21,17 @@ async def check_semantic_cache(document_type: str, text: str) -> Optional[Dict[s
     try:
         supabase = get_supabase_admin()
         
-        response = supabase.rpc(
-            "match_semantic_cache",
-            {
-                "query_embedding": embedding,
-                "match_threshold": SIMILARITY_THRESHOLD,
-                "match_count": 1,
-                "doc_type": document_type
-            }
-        ).execute()
+        def run_rpc():
+            return supabase.rpc(
+                "match_semantic_cache",
+                {
+                    "query_embedding": embedding,
+                    "match_threshold": SIMILARITY_THRESHOLD,
+                    "match_count": 1,
+                    "doc_type": document_type
+                }
+            ).execute()
+        response = await asyncio.to_thread(run_rpc)
         
         data = response.data
         if data and len(data) > 0:
@@ -52,12 +55,14 @@ async def set_semantic_cache(document_type: str, text: str, llm_response: Dict[s
     try:
         supabase = get_supabase_admin()
         
-        supabase.table("llm_semantic_cache").insert({
-            "document_type": document_type,
-            "content_text": text,
-            "embedding": embedding,
-            "llm_response": llm_response
-        }).execute()
+        def run_insert():
+            return supabase.table("llm_semantic_cache").insert({
+                "document_type": document_type,
+                "content_text": text,
+                "embedding": embedding,
+                "llm_response": llm_response
+            }).execute()
+        await asyncio.to_thread(run_insert)
         
         logger.info(f"💾 Semantic Cache Set for {document_type}")
     except Exception as e:
