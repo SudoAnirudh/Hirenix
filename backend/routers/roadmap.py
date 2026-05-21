@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from models.roadmap import CareerRoadmap, RoadmapUpdate
@@ -57,24 +58,31 @@ async def generate_roadmap(
     """Generate a new roadmap and save it to the database."""
     try:
         user_id = user["user_id"]
-        
+
+        # ⚡ Bolt: Parallelize independent I/O-bound DB queries to reduce latency
+        # What: Uses asyncio.gather with asyncio.to_thread to run 3 Supabase queries concurrently.
+        # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+        # Impact: Reduces total query time from ~3*t to ~max(t).
+        res_task = asyncio.to_thread(lambda: db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        gh_task = asyncio.to_thread(lambda: db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        li_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        res_r, gh_r, li_r = await asyncio.gather(res_task, gh_task, li_task)
+
         # 1. Fetch Resume
         resume_text = ""
-        res_r = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if res_r.data:
             resume_text = res_r.data[0]["raw_text"]
         else:
             raise HTTPException(status_code=400, detail="No resume found. Please upload a resume first.")
-        
+
         # 2. Fetch GitHub
         gh_analysis = None
-        gh_r = db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if gh_r.data:
             gh_analysis = gh_r.data[0]
-            
+
         # 3. Fetch LinkedIn
         li_analysis = None
-        li_r = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if li_r.data:
             li_analysis = li_r.data[0]
 
