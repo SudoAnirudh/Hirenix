@@ -118,7 +118,8 @@ function RoadmapNode({
               e.stopPropagation();
               onToggleStatus(skill.name);
             }}
-            className={`z-10 relative flex items-center justify-center w-10 h-10 rounded-full transition-all active:scale-90 ${
+            aria-label={skill.status === "completed" ? `Mark ${skill.name} as incomplete` : `Mark ${skill.name} as complete`}
+            className={`z-10 relative flex items-center justify-center w-10 h-10 rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 ${
               skill.status === "completed"
                 ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
@@ -188,7 +189,8 @@ function RoadmapNode({
                     e.stopPropagation();
                     setIsExpanded(!isExpanded);
                   }}
-                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg transition-colors ${
+                  aria-label={isExpanded ? `Collapse ${skill.name} modules` : `Expand ${skill.name} modules`}
+                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 ${
                     isExpanded
                       ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30"
                       : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
