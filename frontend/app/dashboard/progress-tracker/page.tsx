@@ -18,6 +18,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { Sparkles, Loader2, Copy, FileText, Check, Rocket } from "lucide-react";
 import { toast } from "sonner";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import { useReactToPrint } from "react-to-print";
 
 interface TrendPoint {
