@@ -155,7 +155,11 @@ function InterviewView({
         </button>
       </div>
 
-      <InterviewPanel session={session} onComplete={onComplete} />
+      <InterviewPanel
+        session={session}
+        onComplete={onComplete}
+        onExit={onExit}
+      />
     </div>
   );
 }

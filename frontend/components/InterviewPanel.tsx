@@ -1,15 +1,17 @@
 "use client";
 import { useRef, useState, useEffect, useMemo } from "react";
 import { evaluateInterviewSession } from "@/lib/api";
+import { useProctor } from "./interview/ProctorProvider";
 import {
   ChevronRight,
-  CheckCircle,
   Timer,
-  Brain,
-  TrendingUp,
-  Sparkles,
   Mic,
   MicOff,
+  Video,
+  VideoOff,
+  PhoneOff,
+  BrainCircuit,
+  CameraOff,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -74,9 +76,10 @@ export interface SessionSummary {
 interface Props {
   session: Session;
   onComplete: (summary: SessionSummary) => void;
+  onExit?: () => void;
 }
 
-export default function InterviewPanel({ session, onComplete }: Props) {
+export default function InterviewPanel({ session, onComplete, onExit }: Props) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answer, setAnswer] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +98,14 @@ export default function InterviewPanel({ session, onComplete }: Props) {
   const [needsFullscreen, setNeedsFullscreen] = useState(false);
   const malpracticeEndRequestedRef = useRef(false);
 
+  // F2F Media States
+  const [cameraOn, setCameraOn] = useState(true);
+  const [aiState, setAiState] = useState<
+    "idle" | "speaking" | "listening" | "analyzing"
+  >("idle");
+  const { stream, cameraStatus, faceStatus } = useProctor();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
   const SpeechRecognitionCtor = useMemo(() => {
     if (typeof window === "undefined") return null;
     const w = window as unknown as {
@@ -106,6 +117,85 @@ export default function InterviewPanel({ session, onComplete }: Props) {
 
   const q = session.questions[currentIdx];
   const isLast = currentIdx === session.questions.length - 1;
+
+  // Sync candidate local webcam feed
+  useEffect(() => {
+    if (videoRef.current && stream && cameraOn) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream, cameraOn]);
+
+  // Read question aloud via SpeechSynthesis (TTS)
+  const speakQuestion = (text: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel(); // Cancel any active speak queue
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const englishVoice =
+      voices.find(
+        (v) =>
+          v.lang.startsWith("en") &&
+          (v.name.includes("Google") ||
+            v.name.includes("Natural") ||
+            v.name.includes("Microsoft")),
+      ) ||
+      voices.find((v) => v.lang.startsWith("en")) ||
+      voices[0];
+
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+
+    utterance.rate = 0.95; // Slightly slower, more natural pace
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+      setAiState("speaking");
+    };
+
+    utterance.onend = () => {
+      setAiState("listening");
+      // Auto-start recording/listening when interviewer finishes speaking
+      if (isVoiceMode && speechSupported && !isListening) {
+        try {
+          recognitionRef.current?.start();
+          setIsListening(true);
+        } catch (e) {
+          console.error("Speech recognition auto-start failed:", e);
+        }
+      }
+    };
+
+    utterance.onerror = () => {
+      setAiState("listening");
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Trigger speech synthesis whenever current question index changes
+  useEffect(() => {
+    setAiState("speaking");
+    const handleVoices = () => {
+      speakQuestion(q.question);
+    };
+
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.onvoiceschanged = handleVoices;
+      } else {
+        handleVoices();
+      }
+    }
+
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIdx]);
 
   async function requestFullscreen() {
     try {
@@ -131,7 +221,6 @@ export default function InterviewPanel({ session, onComplete }: Props) {
   }
 
   useEffect(() => {
-    // Best-effort: fullscreen must be entered to continue.
     void requestFullscreen();
   }, []);
 
@@ -158,7 +247,6 @@ export default function InterviewPanel({ session, onComplete }: Props) {
     window.addEventListener("blur", onBlur);
     document.addEventListener("fullscreenchange", onFullscreen);
 
-    // Initialize fullscreen state
     setNeedsFullscreen(!document.fullscreenElement);
 
     return () => {
@@ -208,6 +296,10 @@ export default function InterviewPanel({ session, onComplete }: Props) {
       const transcript = (finalTranscript + interimTranscript).trim();
       if (!transcript) return;
       setAnswer(transcript);
+      setAnswersByQuestionId((prev) => ({
+        ...prev,
+        [q.question_id]: transcript,
+      }));
     };
 
     recognition.onerror = () => {
@@ -231,7 +323,7 @@ export default function InterviewPanel({ session, onComplete }: Props) {
         recognitionRef.current = null;
       }
     };
-  }, [isVoiceMode, SpeechRecognitionCtor]);
+  }, [isVoiceMode, SpeechRecognitionCtor, q.question_id]);
 
   function stopListening() {
     try {
@@ -284,11 +376,21 @@ export default function InterviewPanel({ session, onComplete }: Props) {
     reason?: string,
   ) {
     if (isListening) stopListening();
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setAiState("analyzing");
     persistCurrentAnswer("No answer provided.");
+
+    // Retrieve the state at the time of finish
+    const finalAnswerStr = answer.trim() || "No answer provided.";
 
     const payloadAnswers = session.questions.map((qq) => ({
       question_id: qq.question_id,
-      answer: (answersByQuestionId[qq.question_id] ?? "").trim(),
+      answer:
+        qq.question_id === q.question_id
+          ? finalAnswerStr
+          : (answersByQuestionId[qq.question_id] ?? "").trim(),
     }));
 
     setSubmitting(true);
@@ -312,11 +414,15 @@ export default function InterviewPanel({ session, onComplete }: Props) {
       console.error(e);
     } finally {
       setSubmitting(false);
+      setAiState("idle");
     }
   }
 
   function handleNext(autoAdvance = false) {
     if (isListening) stopListening();
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     persistCurrentAnswer(autoAdvance ? "No answer provided." : undefined);
     if (isLast) return;
     setCurrentIdx((i) => i + 1);
@@ -325,273 +431,360 @@ export default function InterviewPanel({ session, onComplete }: Props) {
 
   const categoryColor =
     q.category === "technical"
-      ? "#7C9ADD"
+      ? "#3B82F6"
       : q.category === "system_design"
-        ? "#98C9A3"
-        : "#B8C1EC"; // Soft violet
+        ? "#10B981"
+        : "#8B5CF6";
 
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
   const timeString = `${mins}:${secs.toString().padStart(2, "0")}`;
   const isUrgent = timeLeft <= 30;
 
+  const faceBadge = {
+    label:
+      faceStatus === "single_face"
+        ? "Attentive"
+        : faceStatus === "no_face"
+          ? "Camera check"
+          : faceStatus === "multiple_faces"
+            ? "Multiple people"
+            : faceStatus === "misaligned"
+              ? "Attention drift"
+              : faceStatus === "checking"
+                ? "Checking position..."
+                : "Biometrics Offline",
+    color:
+      faceStatus === "single_face"
+        ? "#10B981"
+        : faceStatus === "unsupported" || faceStatus === "checking"
+          ? "#64748B"
+          : "#EF4444",
+  };
+
   return (
-    <div className="flex flex-col gap-10 animate-fade-up max-w-6xl lg:max-w-7xl mx-auto w-full pb-20 px-4 mt-8">
+    <div className="flex flex-col gap-6 animate-fade-up max-w-7xl mx-auto w-full pb-24 px-4 mt-6">
       {needsFullscreen && !terminated && (
-        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="glass-card w-full max-w-xl p-10 rounded-[40px] bg-white/70 border border-white shadow-2xl">
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#718096] mb-3">
-              Fullscreen required
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="glass-card w-full max-w-xl p-10 rounded-[40px] bg-slate-900 border border-slate-800 shadow-2xl text-center">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-3">
+              Fullscreen Required
             </div>
-            <h3 className="font-display font-black text-3xl tracking-tight text-[#17232E] mb-4">
-              Enter fullscreen to continue
+            <h3 className="font-display font-black text-3xl tracking-tight text-white mb-4">
+              Enter Fullscreen Mode
             </h3>
-            <p className="text-sm font-body text-[#4A5568] leading-relaxed font-medium mb-8">
-              This is a proctored interview. Leaving fullscreen or switching
-              tabs triggers warnings.
+            <p className="text-sm font-body text-slate-400 leading-relaxed font-medium mb-8">
+              This is a proctored face-to-face simulation. Leaving fullscreen or
+              switching tabs triggers malpractice warnings.
             </p>
-            <div className="flex gap-4 justify-end">
+            <div className="flex gap-4 justify-center">
               <button
                 type="button"
                 onClick={() => void requestFullscreen()}
-                className="px-10 py-4 rounded-[28px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white font-display font-black shadow-2xl active:scale-[0.98] transition-all"
+                className="px-10 py-4 rounded-[24px] bg-brand-blue hover:bg-blue-600 text-white font-display font-black shadow-2xl active:scale-[0.98] transition-all"
               >
-                Enter fullscreen
+                Restore Fullscreen
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Header / Progress Area */}
-      <div className="w-full flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#7C9ADD]/10 flex items-center justify-center border border-[#7C9ADD]/20 shadow-sm">
-              <Brain size={24} className="text-[#7C9ADD]" />
-            </div>
-            <div>
-              <h2 className="font-display font-bold text-3xl tracking-tight text-[#2D3748]">
-                Question {currentIdx + 1}
-                <span className="text-lg font-medium ml-3 text-[#A0AEC0]">
-                  / {session.questions.length}
-                </span>
-              </h2>
-            </div>
+      {/* Header Info */}
+      <div className="w-full flex justify-between items-center px-4">
+        <div>
+          <h2 className="font-display font-bold text-2xl tracking-tight text-slate-800">
+            F2F Mock Interview Studio
+          </h2>
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Question {currentIdx + 1} of {session.questions.length} ·{" "}
+            {q.category.toUpperCase().replace("_", " ")}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {session.questions.map((_, i) => (
+            <div
+              key={i}
+              className={`h-2.5 rounded-full transition-all duration-500 ${
+                i < currentIdx
+                  ? "bg-brand-blue/35 w-6"
+                  : i === currentIdx
+                    ? "bg-brand-blue w-12 shadow-md shadow-brand-blue/30"
+                    : "bg-slate-200 w-6"
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Video Call Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+        {/* 1. AI Interviewer Card */}
+        <div
+          className="relative aspect-video rounded-[32px] bg-slate-900 overflow-hidden shadow-xl border flex flex-col items-center justify-center p-6 select-none transition-all duration-500"
+          style={{ borderColor: `${categoryColor}30` }}
+        >
+          {/* Speaking Pulsar Aura */}
+          {aiState === "speaking" && (
+            <motion.div
+              className="absolute w-36 h-36 rounded-full blur-md"
+              style={{ backgroundColor: `${categoryColor}20` }}
+              animate={{ scale: [1, 1.25, 1], opacity: [0.6, 0.2, 0.6] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            />
+          )}
+
+          {/* AI Avatar */}
+          <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-white relative z-10 shadow-lg">
+            <BrainCircuit
+              size={44}
+              style={{ color: categoryColor }}
+              className={aiState === "speaking" ? "animate-pulse" : ""}
+            />
           </div>
-          <div className="flex items-center gap-3">
-            {session.questions.map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 transition-all duration-700 rounded-full ${
-                  i < currentIdx
-                    ? "bg-[#7C9ADD] w-10 opacity-40 shadow-sm"
-                    : i === currentIdx
-                      ? "bg-linear-to-r from-[#7C9ADD] to-[#98C9A3] w-20 shadow-lg shadow-[#7C9ADD]/20"
-                      : "bg-[#E2E8F0] w-10"
-                }`}
-              />
-            ))}
+
+          {/* Audio Visualizer Wave (only when speaking) */}
+          {aiState === "speaking" && (
+            <div className="absolute bottom-5 right-5 flex items-end gap-1.5 h-6">
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="w-1 rounded-full"
+                  style={{ backgroundColor: categoryColor }}
+                  animate={{ height: [6, Math.random() * 20 + 8, 6] }}
+                  transition={{ repeat: Infinity, duration: 0.4 + i * 0.1 }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Question Overlay Banner */}
+          <div className="absolute top-5 inset-x-6 text-center bg-black/30 backdrop-blur-md py-3 px-6 rounded-2xl border border-white/10 select-none">
+            <p className="text-sm font-semibold text-slate-200 leading-snug">
+              {q.question}
+            </p>
+          </div>
+
+          {/* AI Identity Label */}
+          <div className="absolute bottom-5 left-5 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 text-white font-bold text-xs tracking-wider">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                aiState === "speaking"
+                  ? "bg-emerald-500 animate-pulse"
+                  : aiState === "listening"
+                    ? "bg-sky-400 animate-ping"
+                    : "bg-amber-500 animate-pulse"
+              }`}
+            />
+            <span>Sarah (AI Recruiter) · {aiState.toUpperCase()}</span>
           </div>
         </div>
 
-        {/* Timer */}
-        {true && (
-          <div className="flex items-center gap-4 flex-wrap justify-end">
-            <div
-              className={`flex items-center gap-3 px-8 py-5 rounded-[24px] text-sm font-bold transition-all duration-500 border border-white/60 ${
-                isUrgent
-                  ? "animate-pulse bg-red-50 text-red-500 shadow-lg shadow-red-200"
-                  : "bg-white/40 backdrop-blur-md text-[#4A5568] shadow-glass"
-              }`}
-            >
-              <Timer
-                size={20}
-                className={isUrgent ? "text-red-500" : "text-[#7C9ADD]"}
-              />
-              <span className="tabular-nums tracking-wider">{timeString}</span>
+        {/* 2. Candidate Webcam Card */}
+        <div className="relative aspect-video rounded-[32px] bg-slate-950 overflow-hidden shadow-xl border border-slate-800 flex items-center justify-center">
+          {cameraOn && cameraStatus === "active" ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover scale-x-[-1]"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 gap-3">
+              <div className="p-4 rounded-full bg-slate-800 border border-slate-700 text-slate-400">
+                <CameraOff size={28} />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                {cameraStatus === "denied"
+                  ? "Camera Permissions Blocked"
+                  : "Video Feed Muted"}
+              </span>
             </div>
+          )}
 
+          {/* Recording & Mute Indicators */}
+          <div className="absolute top-5 left-5 flex items-center gap-2">
+            {isListening && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600/30 border border-red-500/30 backdrop-blur-md text-white font-black text-[9px] tracking-widest uppercase">
+                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span>RECORDING VOICE</span>
+              </div>
+            )}
+            <span className="px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md text-[9px] font-black text-white uppercase tracking-wider">
+              YOU (CANDIDATE)
+            </span>
+          </div>
+
+          {/* Proctor Biometric indicator */}
+          <div className="absolute top-5 right-5 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md text-[9px] font-black uppercase text-white tracking-wider">
             <div
-              className={`flex items-center gap-2 px-6 py-4 rounded-[24px] text-[11px] font-black uppercase tracking-[0.25em] border ${
-                malpracticeWarnings > 0
-                  ? "bg-amber-50 text-amber-700 border-amber-100"
-                  : "bg-white/40 text-[#718096] border-white/60"
-              }`}
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: faceBadge.color }}
+            />
+            <span>{faceBadge.label}</span>
+          </div>
+
+          {/* Sound wave simulation in recorder */}
+          {isListening && (
+            <div className="absolute bottom-5 right-5 flex items-center gap-1">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="w-1 bg-red-500 rounded-full animate-pulse"
+                  style={{
+                    height: `${8 + i * 3}px`,
+                    animationDelay: `${i * 0.15}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Zoom/Meet Floating-style Toolbar */}
+      <div className="flex items-center justify-between p-5 rounded-[28px] bg-slate-900 border border-slate-800 text-slate-200 shadow-xl max-w-4xl mx-auto w-full transition-all mt-4 select-none">
+        <div className="flex items-center gap-3">
+          {/* Toggle Mic */}
+          <button
+            type="button"
+            onClick={toggleListening}
+            disabled={!speechSupported || submitting}
+            className={`p-3.5 rounded-full transition-all active:scale-90 ${
+              isListening
+                ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+                : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+            } disabled:opacity-50`}
+            title={isListening ? "Mute Microphone" : "Unmute Microphone"}
+          >
+            {isListening ? <Mic size={18} /> : <MicOff size={18} />}
+          </button>
+
+          {/* Toggle Camera */}
+          <button
+            type="button"
+            onClick={() => setCameraOn(!cameraOn)}
+            disabled={submitting}
+            className={`p-3.5 rounded-full transition-all active:scale-90 ${
+              cameraOn
+                ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
+                : "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+            }`}
+            title={cameraOn ? "Stop Video" : "Start Video"}
+          >
+            {cameraOn ? <Video size={18} /> : <VideoOff size={18} />}
+          </button>
+        </div>
+
+        {/* Timer / Counter */}
+        <div className="flex items-center gap-5">
+          <div
+            className={`flex items-center gap-2 px-4.5 py-2.5 rounded-2xl border text-xs font-black uppercase tracking-wider ${
+              isUrgent
+                ? "bg-red-500/10 text-red-500 border-red-500/25 animate-pulse"
+                : "bg-slate-800/80 border-slate-700 text-slate-300"
+            }`}
+          >
+            <Timer size={14} />
+            <span className="tabular-nums tracking-widest">{timeString}</span>
+          </div>
+
+          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+            Violations:{" "}
+            <span className="text-amber-500">{malpracticeWarnings}</span>/3
+          </div>
+        </div>
+
+        {/* Session Action Toggles */}
+        <div className="flex items-center gap-3">
+          {onExit && (
+            <button
+              type="button"
+              onClick={onExit}
+              className="p-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 transition-all active:scale-90"
+              title="Hang Up / Exit Interview"
             >
-              Warnings:{""}
-              <span className="tabular-nums">{malpracticeWarnings}</span>/3
+              <PhoneOff size={18} />
+            </button>
+          )}
+
+          {!isLast ? (
+            <button
+              type="button"
+              onClick={() => handleNext(false)}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-blue hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+            >
+              <span>Next</span>
+              <ChevronRight size={14} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => void handleFinish()}
+              disabled={submitting}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+            >
+              <span>{submitting ? "Submitting..." : "Submit Call"}</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Transcript & Response Area */}
+      <div className="glass-card p-6.5 rounded-[32px] border border-slate-200 bg-white/40 shadow-glass w-full max-w-4xl mx-auto transition-all duration-500">
+        <div className="flex justify-between items-center mb-3 px-2">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-px bg-slate-300" />
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Live Call Transcription
+            </h4>
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+            Editable Script
+          </span>
+        </div>
+
+        <textarea
+          id={`answer-${q.question_id}`}
+          className="w-full bg-white/60 border border-slate-200 rounded-2xl p-5 text-slate-800 text-base leading-relaxed resize-none min-h-[140px] focus:outline-none focus:border-brand-blue/50 font-body placeholder:text-slate-400"
+          placeholder={
+            session.answer_mode === "text"
+              ? "Formulate your response here. Type your complete answer structure..."
+              : speechSupported
+                ? "Talk naturally into your microphone. Sarah will listen and generate transcripts here. Correct any spelling details if needed before hitting next."
+                : "Voice transcription is unavailable in this browser. Please type your response directly."
+          }
+          value={answer}
+          onChange={(e) => {
+            const next = e.target.value;
+            setAnswer(next);
+            setAnswersByQuestionId((prev) => ({
+              ...prev,
+              [q.question_id]: next,
+            }));
+          }}
+          disabled={submitting || needsFullscreen || terminated}
+        />
+
+        {q.expected_topics.length > 0 && (
+          <div className="mt-4 px-2">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-2">
+              Expected Technical Topics to Cover
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {q.expected_topics.map((topic) => (
+                <span
+                  key={topic}
+                  className="px-3.5 py-1.5 rounded-full bg-white/80 text-[10px] font-bold text-slate-600 border border-slate-200 shadow-sm uppercase tracking-wider"
+                >
+                  {topic}
+                </span>
+              ))}
             </div>
           </div>
         )}
-      </div>
-
-      <div className="flex flex-col gap-8 px-4">
-        {/* Main Question Card */}
-        <div className="flex flex-col gap-6">
-          <div className="glass-card p-12 md:p-16 relative overflow-hidden group rounded-[48px] shadow-glass bg-white/40 border border-white/60 backdrop-blur-xl">
-            {/* Ambient Background Aura */}
-            <div
-              className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-all duration-1000 translate-y-[-20%] translate-x-[20%]"
-              style={{ background: categoryColor }}
-            />
-
-            <div className="flex flex-wrap items-center gap-4 mb-8 relative z-10">
-              <span
-                className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.25em] rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm border border-white"
-                style={{ color: categoryColor }}
-              >
-                {q.category.replace("_", "")}
-              </span>
-              <span className="px-5 py-2 text-[10px] font-black uppercase tracking-[0.25em] rounded-2xl bg-white/80 backdrop-blur-sm shadow-sm border border-white text-[#718096]">
-                {q.difficulty}
-              </span>
-            </div>
-
-            <h3
-              className="font-display font-bold text-3xl md:text-5xl leading-tight mb-10 relative z-10 text-[#2D3748] tracking-tighter text-balance select-none"
-              onCopy={(e) => e.preventDefault()}
-              onCut={(e) => e.preventDefault()}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              {q.question}
-            </h3>
-
-            {q.expected_topics.length > 0 && (
-              <div className="mb-10 relative z-10">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 block text-[#A0AEC0]">
-                  Core Paradigms
-                </span>
-                <div className="flex flex-wrap gap-3">
-                  {q.expected_topics.map((topic) => (
-                    <span
-                      key={topic}
-                      className="px-5 py-2.5 rounded-2xl bg-white/60 text-[11px] font-bold uppercase tracking-wider text-[#4A5568] border border-white shadow-sm transition-all cursor-default"
-                    >
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="p-8 rounded-[32px] relative z-10 bg-[#7C9ADD]/5 border border-[#7C9ADD]/10 backdrop-blur-sm shadow-glass group/tip">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/30 group-hover/tip:scale-110 transition-transform">
-                  <Sparkles size={18} />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#7C9ADD]">
-                  Strategic Insight
-                </span>
-              </div>
-              <p className="text-[15px] font-body text-[#4A5568] leading-relaxed font-medium">
-                {q.category === "behavioral"
-                  ? "Utilize the STAR framework. Weave a narrative that highlights decision-making under pressure and quantifiable impact."
-                  : q.category === "system_design"
-                    ? "Architect from first principles. Address scalability bottlenecks and data consistency tradeoffs head-on."
-                    : "Unpack the technical rationale. Elaborate on implementation tradeoffs and share a battle-tested perspective."}
-              </p>
-            </div>
-          </div>
-
-          {/* Answer Area */}
-          <div className="flex flex-col gap-6 mt-6">
-            <div className="flex items-center justify-between px-6">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-px bg-[#718096]/20" />
-                <span className="text-[11px] font-black tracking-[0.25em] uppercase text-[#718096]">
-                  Your Technical Response
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                {session.answer_mode !== "text" && (
-                  <span className="text-[10px] font-black tracking-[0.2em] uppercase px-4 py-1.5 rounded-full bg-[#7C9ADD] text-white shadow-lg shadow-[#7C9ADD]/20 animate-pulse">
-                    {session.answer_mode} Mode Active
-                  </span>
-                )}
-                {isVoiceMode && (
-                  <button
-                    type="button"
-                    onClick={toggleListening}
-                    disabled={!speechSupported || submitting}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border transition-all ${
-                      isListening
-                        ? "bg-red-50 text-red-600 border-red-100"
-                        : "bg-white/60 text-[#2D3748] border-white/60"
-                    } disabled:opacity-50`}
-                    aria-pressed={isListening}
-                  >
-                    {isListening ? <MicOff size={14} /> : <Mic size={14} />}
-                    {isListening ? "Stop" : "Record"}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute inset-0 bg-linear-to-br from-[#7C9ADD]/5 to-[#98C9A3]/5 blur-[20px] rounded-[40px] opacity-0 group-focus-within:opacity-100 transition-opacity" />
-              <textarea
-                id={`answer-${q.question_id}`}
-                className="w-full rounded-[40px] p-10 text-xl leading-relaxed resize-none min-h-[220px] transition-all duration-700 font-body outline-none bg-white/40 backdrop-blur-xl border border-white/60 text-[#2D3748] placeholder:text-[#A0AEC0] shadow-glass focus:bg-white/60 focus:border-[#7C9ADD]/50 focus:shadow-2xl focus:shadow-[#7C9ADD]/10 relative z-10"
-                placeholder={
-                  session.answer_mode === "text"
-                    ? "Formulate your narrative here. Balance technical depth with clear structural logic..."
-                    : session.answer_mode === "voice"
-                      ? speechSupported
-                        ? "Press Record and speak. Your transcript will appear here..."
-                        : "Voice transcript isn’t supported in this browser. Please type your answer instead."
-                      : "Type your answer here..."
-                }
-                value={answer}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setAnswer(next);
-                  setAnswersByQuestionId((prev) => ({
-                    ...prev,
-                    [q.question_id]: next,
-                  }));
-                }}
-                onPaste={(e) => {
-                  e.preventDefault();
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                }}
-                disabled={submitting || needsFullscreen || terminated}
-              />
-            </div>
-
-            <div className="mt-4 flex justify-end gap-4">
-              {!isLast ? (
-                <button
-                  type="button"
-                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#7C9ADD] to-[#6b89cc] text-white shadow-2xl shadow-[#7C9ADD]/40 active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
-                  onClick={() => handleNext(false)}
-                  disabled={submitting || needsFullscreen || terminated}
-                >
-                  <span className="font-display font-black text-2xl tracking-tighter">
-                    Next Question
-                  </span>
-                  <ChevronRight size={28} className=" transition-transform" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="flex items-center gap-5 px-14 py-6 rounded-[32px] bg-linear-to-r from-[#2D3748] to-[#4A5568] text-white shadow-2xl active:scale-[0.98] transition-all group disabled:opacity-50 disabled:scale-100"
-                  onClick={() => void handleFinish()}
-                  disabled={submitting || needsFullscreen || terminated}
-                >
-                  <span className="font-display font-black text-2xl tracking-tighter">
-                    {submitting ? "Evaluating Session..." : "Finish & Evaluate"}
-                  </span>
-                  {!submitting && (
-                    <ChevronRight size={28} className=" transition-transform" />
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
