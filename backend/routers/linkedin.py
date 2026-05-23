@@ -19,6 +19,9 @@ async def analyze_linkedin(
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
+    if file.size and file.size > 5 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File too large. Max size is 5MB.")
+
     try:
         content = await file.read()
         analysis = await analyze_linkedin_profile(content)

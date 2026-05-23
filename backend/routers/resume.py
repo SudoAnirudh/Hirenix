@@ -20,6 +20,9 @@ async def upload_resume(
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
 
+    if file.size and file.size > MAX_RESUME_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Max size is 10MB.")
+
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
