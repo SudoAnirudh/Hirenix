@@ -1,0 +1,20 @@
+name: Daily Jobs Sync
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # Runs daily at 4:00 AM UTC (9:30 AM IST)
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Twitter Job Sync API
+        run: |
+          API_URL="https://hirenix-oa57.onrender.com/jobs-board/sync"
+          echo "Triggering jobs sync API at: $API_URL"
+          
+          # Send POST request with Bearer token
+          curl -f -X POST "$API_URL" \
+               -H "Authorization: Bearer ${{ secrets.JOBS_SYNC_TOKEN }}" \
+               -H "Content-Type: application/json"
