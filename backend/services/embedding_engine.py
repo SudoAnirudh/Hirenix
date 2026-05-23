@@ -71,10 +71,21 @@ def _load_local_model():
     return _model if _model != "FAILED" else None
 
 async def get_embedding(text: str) -> Optional[List[float]]:
-    """Return an embedding vector, preferring API to local model."""
+    """Return an embedding vector, preferring API to local model, standardized to 1536 dimensions."""
     # 1. Try NVIDIA API first
     nvidia_emb = await _get_nvidia_embedding(text)
     if nvidia_emb:
+        if len(nvidia_emb) > 1536:
+            # Matryoshka embeddings: safe to truncate and re-normalize
+            truncated = nvidia_emb[:1536]
+            norm = np.linalg.norm(truncated)
+            if norm > 0:
+                nvidia_emb = (np.array(truncated) / norm).tolist()
+            else:
+                nvidia_emb = truncated
+        elif len(nvidia_emb) < 1536:
+            # Pad with trailing zeros to reach 1536 dimensions
+            nvidia_emb = nvidia_emb + [0.0] * (1536 - len(nvidia_emb))
         return nvidia_emb
 
     # 2. Try local model as fallback (will fail/slow in production)
@@ -82,7 +93,12 @@ async def get_embedding(text: str) -> Optional[List[float]]:
     if model:
         try:
             embedding = model.encode(text, convert_to_numpy=True)
-            return embedding.tolist()
+            emb_list = embedding.tolist()
+            if len(emb_list) < 1536:
+                emb_list = emb_list + [0.0] * (1536 - len(emb_list))
+            elif len(emb_list) > 1536:
+                emb_list = emb_list[:1536]
+            return emb_list
         except Exception as e:
             logger.error(f"Local model encoding failed: {e}")
     

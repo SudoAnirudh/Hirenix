@@ -1,6 +1,7 @@
 import httpx
 import logging
 import time
+import json
 from typing import List, Dict, Any, Optional
 from config import settings
 from services.telemetry_service import telemetry
@@ -58,3 +59,62 @@ async def invoke_nvidia_llm(
         logger.error(f"Error invoking Hirenix AI: {str(e)}")
         telemetry.track_call("nvidia", success=False, latency_ms=latency_ms)
         return None
+
+
+async def stream_nvidia_llm(
+    messages: List[Dict[str, str]],
+    model: str = "google/gemma-4-31b-it",
+    temperature: float = 0.6,
+    max_tokens: int = 4096,
+):
+    """
+    Streams response chunks from NVIDIA inference API.
+    Yields string content chunks.
+    """
+    if not settings.nvidia_api_key:
+        logger.warning("Core AI API key is not set for streaming.")
+        yield "Error: NVIDIA_API_KEY is not set."
+        return
+
+    invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    
+    headers = {
+        "Authorization": f"Bearer {settings.nvidia_api_key}",
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream"
+    }
+
+    payload = {
+        "model": model,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "stream": True,
+    }
+
+    start_time = time.time()
+    try:
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            async with client.stream("POST", invoke_url, headers=headers, json=payload) as response:
+                response.raise_for_status()
+                
+                async for line in response.aiter_lines():
+                    if line.startswith("data:"):
+                        data_str = line[5:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            data_json = json.loads(data_str)
+                            chunk = data_json["choices"][0]["delta"].get("content", "")
+                            if chunk:
+                                yield chunk
+                        except Exception:
+                            pass
+        latency_ms = (time.time() - start_time) * 1000
+        telemetry.track_call("nvidia_stream", success=True, latency_ms=latency_ms)
+    except Exception as e:
+        latency_ms = (time.time() - start_time) * 1000
+        logger.error(f"Error in NVIDIA LLM streaming: {str(e)}")
+        telemetry.track_call("nvidia_stream", success=False, latency_ms=latency_ms)
+        yield f"Error during streaming: {str(e)}"
+
