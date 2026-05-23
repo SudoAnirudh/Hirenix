@@ -38,6 +38,10 @@ class Settings(BaseSettings):
         "https://hirenix-frontend-r4dsvvzeb-anirudhs-projects-e6a6ef2f.vercel.app"
     )
 
+    # Twitter Job Aggregator
+    twitter_handle: str = "DevByLakshya"
+    twitter_rss_override: Optional[str] = None
+
     class Config:
         env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
         extra = "ignore"
@@ -48,3 +52,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

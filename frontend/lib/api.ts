@@ -1,7 +1,7 @@
 import { getAccessToken, refreshSession, signOut } from "./auth";
 
 const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
-const LOCAL_API_FALLBACK = "http://127.0.0.1:8000";
+const LOCAL_API_FALLBACK = "http://127.0.0.1:8001";
 
 export function getBaseUrl(): string {
   // If the user explicitly provided an API URL, use it.
@@ -17,7 +17,7 @@ export function getBaseUrl(): string {
 
     // Use the same host type (localhost vs 127.0.0.1) as the frontend
     // to avoid cross-origin protocol/DNs mismatches.
-    return isLocal ? `http://${host}:8000` : PROD_API_FALLBACK;
+    return isLocal ? `http://${host}:8001` : PROD_API_FALLBACK;
   }
 
   return LOCAL_API_FALLBACK;
