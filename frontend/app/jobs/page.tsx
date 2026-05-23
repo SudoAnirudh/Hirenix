@@ -29,6 +29,15 @@ interface JobPost {
   posted_at: string;
 }
 
+const formatApplyUrl = (url: string | null) => {
+  if (!url) return "#";
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 export default function JobsBoardPage() {
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [total, setTotal] = useState(0);
@@ -337,7 +346,7 @@ export default function JobsBoardPage() {
                 </div>
                 {selectedJob.apply_url ? (
                   <a
-                    href={selectedJob.apply_url}
+                    href={formatApplyUrl(selectedJob.apply_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-8 py-4.5 rounded-[22px] bg-brand-blue text-white font-display font-black text-sm uppercase transition-all flex items-center justify-center gap-2"

@@ -1,6 +1,6 @@
 import { getAccessToken, refreshSession, signOut } from "./auth";
 
-const PROD_API_FALLBACK = "https://hirenix-backend.onrender.com";
+const PROD_API_FALLBACK = "https://hirenix-oa57.onrender.com";
 const LOCAL_API_FALLBACK = "http://127.0.0.1:8001";
 
 export function getBaseUrl(): string {
