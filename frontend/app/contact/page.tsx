@@ -82,8 +82,8 @@ export default function ContactPage() {
               variants={fadeInUp}
               className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium"
             >
-              Have a question, feedback, or want to collaborate? I'd love to
-              hear from you. Reach out through any of the channels below.
+              Have a question, feedback, or want to collaborate? I&apos;d love
+              to hear from you. Reach out through any of the channels below.
             </motion.p>
           </motion.div>
 

@@ -86,7 +86,8 @@ export default function BlogsPage() {
             className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium"
           >
             Deep dives into how Hirenix accelerates your career, beats the ATS,
-            and prepares you for the world's toughest engineering interviews.
+            and prepares you for the world&apos;s toughest engineering
+            interviews.
           </motion.p>
         </motion.div>
       </section>

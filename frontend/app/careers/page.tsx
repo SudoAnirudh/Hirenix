@@ -72,9 +72,9 @@ export default function CareersPage() {
               variants={fadeInUp}
               className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium"
             >
-              Hirenix is an open-source initiative. We're looking for passionate
-              developers to contribute to the platform and democratize career
-              acceleration tools.
+              Hirenix is an open-source initiative. We&apos;re looking for
+              passionate developers to contribute to the platform and
+              democratize career acceleration tools.
             </motion.p>
 
             <motion.div

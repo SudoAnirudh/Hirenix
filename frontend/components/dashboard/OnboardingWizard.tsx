@@ -76,7 +76,7 @@ export default function OnboardingWizard({
               Welcome to the evolution of your career.
             </h1>
             <p className="text-xl text-slate-400 mb-10 font-light leading-relaxed">
-              Hirenix AI is calibrating your professional trajectory. Let's
+              Hirenix AI is calibrating your professional trajectory. Let&apos;s
               tailor the engine to your exact ambitions.
             </p>
             <Button

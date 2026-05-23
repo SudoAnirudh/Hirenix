@@ -83,9 +83,9 @@ export default function NotFound() {
             variants={fadeInUp}
             className="text-lg md:text-xl text-muted-foreground mb-12 max-w-lg leading-relaxed font-medium"
           >
-            It looks like this page was rejected by our ATS scanner. Don't
-            worry, your career path is still on track. Let's get you back to
-            safety.
+            It looks like this page was rejected by our ATS scanner. Don&apos;t
+            worry, your career path is still on track. Let&apos;s get you back
+            to safety.
           </motion.p>
 
           <motion.div
