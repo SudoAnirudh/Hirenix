@@ -1,5 +1,7 @@
+import asyncio
 import httpx
 import logging
+import re
 from datetime import datetime, timedelta
 from config import settings
 from models.github import GitHubAnalysisResponse, GitHubMetrics, RepoMetric
@@ -74,7 +76,7 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         repo_metrics: list[RepoMetric] = []
         three_months_ago = (datetime.now() - timedelta(days=90)).isoformat()
         
-        for r in repos[:5]:
+        async def _fetch_repo_commits(r: dict) -> int:
             commits_count = 0
             # Attempt to fetch commit count for the last 90 days
             try:
@@ -88,7 +90,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     link = commits_r.headers.get("Link", "")
                     if 'rel="last"' in link:
                         # Simple heuristic: last page number is the count if per_page=1
-                        import re
                         match = re.search(r'page=(\d+)&since=.*>; rel="last"', link)
                         if match:
                             commits_count = int(match.group(1))
@@ -96,7 +97,12 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                         commits_count = len(commits_r.json())
             except:
                 pass # Gracefully skip if commit fetch fails
+            return commits_count
 
+        # Fetch commits concurrently for top 5 repos to avoid N+1 bottleneck
+        commit_counts = await asyncio.gather(*[_fetch_repo_commits(r) for r in repos[:5]])
+
+        for r, commits_count in zip(repos[:5], commit_counts):
             repo_metrics.append(RepoMetric(
                 name=r["name"],
                 description=r.get("description"),
