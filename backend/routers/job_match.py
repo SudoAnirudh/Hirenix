@@ -160,7 +160,14 @@ async def scrape_jobs_for_fields(
 
     # 1. Scrape jobs
     limit = max(1, min(payload.limit, 50))
-    jobs = await scrape_jobs(fields, payload.location, payload.remote_only, limit)
+    jobs = await scrape_jobs(
+        fields,
+        payload.location,
+        payload.remote_only,
+        limit,
+        payload.workplace_type or "any",
+        payload.job_type or "any"
+    )
     
     # 2. Fetch user's latest resume for auto-matching
     r = (

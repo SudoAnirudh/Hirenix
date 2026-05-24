@@ -186,12 +186,59 @@ async def _fetch_jobspresso(keywords: List[str], limit: int) -> List[JobListing]
 
 
 async def scrape_jobs(
-    fields: List[str], location: str | None, remote_only: bool, limit: int
+    fields: List[str],
+    location: str | None,
+    remote_only: bool,
+    limit: int,
+    workplace_type: str = "any",
+    job_type: str = "any"
 ) -> List[JobListing]:
     # Refined search query construction
     queries = [f.strip() for f in fields if f and f.strip()]
     
-    # We'll run searches for each field separately to maximize breadth
+    # 1. Search local job_posts table (Indian & custom opportunities)
+    local_jobs: List[JobListing] = []
+    try:
+        from dependencies import get_supabase_admin
+        db = get_supabase_admin()
+        local_query = db.table("job_posts").select("*")
+        
+        # Build search condition for fields if provided
+        or_conditions = []
+        for f in queries:
+            or_conditions.append(f"title.ilike.%{f}%,description.ilike.%{f}%")
+        if or_conditions:
+            local_query = local_query.or_(",".join(or_conditions))
+            
+        # Filter by location if specified
+        if location:
+            local_query = local_query.ilike("location", f"%{location}%")
+            
+        local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
+        for j in (local_res.data or []):
+            loc_lower = j["location"].lower()
+            is_remote = "remote" in loc_lower
+            if remote_only and not is_remote:
+                continue
+            local_jobs.append(
+                JobListing(
+                    id=j["id"],
+                    title=j["title"],
+                    company=j["company"],
+                    location=j["location"],
+                    remote=is_remote,
+                    job_type="Full-time",  # Default / Fallback type
+                    tags=j.get("requirements") or [],
+                    apply_url=j.get("apply_url") or "",
+                    source="Hirenix Board",
+                    posted_at=j["posted_at"],
+                    description_snippet=j.get("description")[:450] if j.get("description") else "",
+                )
+            )
+    except Exception as e:
+        logger.error(f"Error fetching from local job_posts: {e}")
+
+    # 2. We'll run searches for each field separately to maximize breadth on external boards
     source_limit = max(8, limit // 2)
     
     all_tasks = []
@@ -216,6 +263,9 @@ async def scrape_jobs(
         elif isinstance(res, Exception):
             logger.error(f"Global Scraper error: {res}")
 
+    # Combine local and external jobs
+    all_jobs = local_jobs + all_jobs
+
     # Robust location filtering if provided
     if location:
         loc_q = location.lower().strip()
@@ -223,6 +273,28 @@ async def scrape_jobs(
             j for j in all_jobs 
             if loc_q in j.location.lower() or (j.remote and loc_q == "remote")
         ]
+
+    # Workplace type filtering
+    if workplace_type != "any":
+        wt = workplace_type.lower().strip()
+        if wt == "remote":
+            all_jobs = [j for j in all_jobs if j.remote or "remote" in j.location.lower()]
+        elif wt == "in-office" or wt == "in_office":
+            all_jobs = [j for j in all_jobs if not j.remote and "remote" not in j.location.lower()]
+        elif wt == "hybrid":
+            all_jobs = [j for j in all_jobs if "hybrid" in j.location.lower() or "flexible" in j.location.lower()]
+
+    # Job type filtering
+    if job_type != "any":
+        jt = job_type.lower().strip()
+        if jt == "full-time" or jt == "full_time":
+            all_jobs = [j for j in all_jobs if "full-time" in j.job_type.lower() or "fulltime" in j.job_type.lower() or "permanent" in j.job_type.lower() or j.job_type == "Not specified"]
+        elif jt == "part-time" or jt == "part_time":
+            all_jobs = [j for j in all_jobs if "part-time" in j.job_type.lower() or "parttime" in j.job_type.lower()]
+        elif jt == "contract":
+            all_jobs = [j for j in all_jobs if "contract" in j.job_type.lower() or "temporary" in j.job_type.lower() or "freelance" in j.job_type.lower()]
+        elif jt == "internship":
+            all_jobs = [j for j in all_jobs if "intern" in j.job_type.lower() or "co-op" in j.job_type.lower()]
 
     # Post-filtering for quality
     all_jobs = [j for j in all_jobs if j.apply_url and len(j.title) > 3]

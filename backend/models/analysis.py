@@ -36,6 +36,8 @@ class JobScrapeRequest(BaseModel):
     location: Optional[str] = None
     remote_only: bool = False
     limit: int = 20
+    workplace_type: Optional[str] = "any"
+    job_type: Optional[str] = "any"
 
 
 class JobListing(BaseModel):

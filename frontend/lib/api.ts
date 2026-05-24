@@ -211,6 +211,8 @@ export async function scrapeJobs(
   location?: string,
   remoteOnly = false,
   limit = 20,
+  workplaceType = "any",
+  jobType = "any",
 ) {
   return request("/jobs/scrape-jobs", {
     method: "POST",
@@ -220,6 +222,8 @@ export async function scrapeJobs(
       location,
       remote_only: remoteOnly,
       limit,
+      workplace_type: workplaceType,
+      job_type: jobType,
     }),
   });
 }

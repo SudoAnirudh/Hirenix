@@ -92,7 +92,8 @@ export default function JobMatchPage() {
   const [result, setResult] = useState<JobMatchResult | null>(null);
   const [fieldInput, setFieldInput] = useState("");
   const [jobLocation, setJobLocation] = useState("");
-  const [remoteOnly, setRemoteOnly] = useState(true);
+  const [workplaceType, setWorkplaceType] = useState("any");
+  const [jobType, setJobType] = useState("any");
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobs, setJobs] = useState<ScrapedJob[]>([]);
   const [error, setError] = useState("");
@@ -172,8 +173,10 @@ export default function JobMatchPage() {
       const data = (await scrapeJobs(
         fields,
         jobLocation || undefined,
-        remoteOnly,
+        workplaceType === "remote",
         20,
+        workplaceType,
+        jobType,
       )) as { jobs: ScrapedJob[] };
       setJobs(data.jobs ?? []);
     } catch (e: unknown) {
@@ -659,13 +662,13 @@ export default function JobMatchPage() {
           <h3 className="font-display font-black text-3xl text-foreground tracking-tight">
             Market <span className="text-brand-blue">Discovery</span>
           </h3>
-          <div className="p-10 rounded-[3rem] bg-secondary border border-border grid grid-cols-1 md:grid-cols-4 gap-8 items-end">
+          <div className="p-10 rounded-[3rem] bg-secondary border border-border grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 items-end">
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Specialization
               </label>
               <input
-                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none"
+                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none text-foreground"
                 placeholder="e.g. LLM, React..."
                 value={fieldInput}
                 onChange={(e) => setFieldInput(e.target.value)}
@@ -676,28 +679,47 @@ export default function JobMatchPage() {
                 Geo Preference
               </label>
               <input
-                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none"
-                placeholder="Worldwide..."
+                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none text-foreground"
+                placeholder="e.g. India, Bangalore..."
                 value={jobLocation}
                 onChange={(e) => setJobLocation(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-4 h-12 px-6 rounded-xl bg-card border border-border">
-              <Globe size={16} className="text-brand-blue" />
-              <span className="text-[10px] font-black uppercase tracking-widest flex-1">
-                Remote Focus
-              </span>
-              <input
-                type="checkbox"
-                checked={remoteOnly}
-                onChange={(e) => setRemoteOnly(e.target.checked)}
-                className="accent-brand-blue w-4 h-4"
-              />
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Workplace
+              </label>
+              <select
+                className="w-full bg-card border border-border rounded-xl px-4 h-12 text-sm font-bold outline-none text-foreground cursor-pointer"
+                value={workplaceType}
+                onChange={(e) => setWorkplaceType(e.target.value)}
+              >
+                <option value="any">Any</option>
+                <option value="remote">Remote</option>
+                <option value="in-office">In-Office</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Job Type
+              </label>
+              <select
+                className="w-full bg-card border border-border rounded-xl px-4 h-12 text-sm font-bold outline-none text-foreground cursor-pointer"
+                value={jobType}
+                onChange={(e) => setJobType(e.target.value)}
+              >
+                <option value="any">Any</option>
+                <option value="full-time">Full-Time</option>
+                <option value="part-time">Part-Time</option>
+                <option value="contract">Contract</option>
+                <option value="internship">Internship</option>
+              </select>
             </div>
             <Button
               onClick={handleScrapeJobs}
               disabled={jobsLoading}
-              className="h-12 bg-foreground text-card-foreground rounded-xl text-[10px] font-black uppercase tracking-widest"
+              className="h-12 bg-foreground text-card-foreground rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer w-full"
             >
               {jobsLoading ? "Searching..." : "Pulse Survey"}
             </Button>
