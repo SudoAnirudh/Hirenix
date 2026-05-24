@@ -143,6 +143,13 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
   const q = questionsList[currentIdx];
   const isLast = currentIdx === totalQuestionsLimit - 1;
 
+  const currentQuestionIdRef = useRef(q.question_id);
+  useEffect(() => {
+    currentQuestionIdRef.current = q.question_id;
+  }, [q.question_id]);
+
+  const pendingActionRef = useRef<"next" | "finish" | null>(null);
+
   // Sync candidate local webcam feed
   useEffect(() => {
     if (videoRef.current && stream && cameraOn) {
@@ -164,23 +171,42 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
           }
         };
         recorder.onstop = async () => {
-          if (audioChunksRef.current.length === 0) return;
+          const activeQId = currentQuestionIdRef.current;
+          if (audioChunksRef.current.length === 0) {
+            setTranscribing(false);
+            const action = pendingActionRef.current;
+            pendingActionRef.current = null;
+            if (action === "next") {
+              void executeNext("");
+            } else if (action === "finish") {
+              void executeFinish("");
+            }
+            return;
+          }
           const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
           setTranscribing(true);
+          let finalTranscription = "";
           try {
             const res = await transcribeAudio(blob);
             if (res.text && res.text.trim()) {
-              const text = res.text.trim();
-              setAnswer(text);
+              finalTranscription = res.text.trim();
+              setAnswer(finalTranscription);
               setAnswersByQuestionId((prev) => ({
                 ...prev,
-                [q.question_id]: text,
+                [activeQId]: finalTranscription,
               }));
             }
           } catch (err) {
             console.error("Transcription error:", err);
           } finally {
             setTranscribing(false);
+            const action = pendingActionRef.current;
+            pendingActionRef.current = null;
+            if (action === "next") {
+              void executeNext(finalTranscription);
+            } else if (action === "finish") {
+              void executeFinish(finalTranscription);
+            }
           }
         };
         recorder.start(100);
@@ -440,45 +466,36 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, submitting]);
 
-  function persistCurrentAnswer(fallbackIfEmpty?: string) {
-    const trimmed = answer.trim();
-    const finalAnswer = trimmed || fallbackIfEmpty || "";
-    setAnswersByQuestionId((prev) => ({
-      ...prev,
-      [q.question_id]: finalAnswer,
-    }));
-  }
-
-  async function handleFinish(
+  async function executeFinish(
+    finalAnswer: string,
     terminatedForMalpractice = false,
     reason?: string,
   ) {
-    if (isListening) stopListening();
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setAiState("analyzing");
-    persistCurrentAnswer("No answer provided.");
 
-    // Retrieve the state at the time of finish
-    const finalAnswerStr = answer.trim() || "No answer provided.";
+    const finalAnswerStr = finalAnswer.trim() || "No answer provided.";
+    setAnswersByQuestionId((prev) => ({
+      ...prev,
+      [q.question_id]: finalAnswerStr,
+    }));
 
     const payloadAnswers = questionsList.map((qq) => ({
       question_id: qq.question_id,
       answer:
         qq.question_id === q.question_id
           ? finalAnswerStr
-          : (answersByQuestionId[qq.question_id] ?? "").trim(),
+          : (answersByQuestionId[qq.question_id] ?? "").trim() ||
+            "No answer provided.",
     }));
 
     setSubmitting(true);
     try {
       const summary = (await evaluateInterviewSession(
         session.session_id,
-        payloadAnswers.map((a) => ({
-          ...a,
-          answer: a.answer || "No answer provided.",
-        })),
+        payloadAnswers,
       )) as SessionSummary;
       onComplete({
         ...summary,
@@ -496,14 +513,29 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     }
   }
 
-  async function handleNext(autoAdvance = false) {
-    if (isListening) stopListening();
+  async function handleFinish(
+    terminatedForMalpractice = false,
+    reason?: string,
+  ) {
+    if (isListening) {
+      pendingActionRef.current = "finish";
+      stopListening();
+      return;
+    }
+    if (transcribing) {
+      pendingActionRef.current = "finish";
+      return;
+    }
+    await executeFinish(answer, terminatedForMalpractice, reason);
+  }
+
+  async function executeNext(finalAnswer: string, autoAdvance = false) {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
 
     const finalAnswerStr =
-      answer.trim() || (autoAdvance ? "No answer provided." : "");
+      finalAnswer.trim() || (autoAdvance ? "No answer provided." : "");
     setAnswersByQuestionId((prev) => ({
       ...prev,
       [q.question_id]: finalAnswerStr,
@@ -534,6 +566,19 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
       setSubmitting(false);
       setAiState("idle");
     }
+  }
+
+  async function handleNext(autoAdvance = false) {
+    if (isListening) {
+      pendingActionRef.current = "next";
+      stopListening();
+      return;
+    }
+    if (transcribing) {
+      pendingActionRef.current = "next";
+      return;
+    }
+    await executeNext(answer, autoAdvance);
   }
 
   const categoryColor =
@@ -871,6 +916,13 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               : answer
           }
           onChange={(e) => {
+            if (
+              typeof window !== "undefined" &&
+              window.speechSynthesis &&
+              window.speechSynthesis.speaking
+            ) {
+              window.speechSynthesis.cancel();
+            }
             const next = e.target.value;
             setAnswer(next);
             setAnswersByQuestionId((prev) => ({

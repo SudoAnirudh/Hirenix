@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { startInterview } from "@/lib/api";
+import { startInterview, getProgress } from "@/lib/api";
 import InterviewPanel from "@/components/InterviewPanel";
 import type { SessionSummary } from "@/components/InterviewPanel";
 import { ToastProvider } from "@/components/interview/ToastProvider";
@@ -19,6 +19,7 @@ import {
   Mic,
   MessageSquareText,
   LayoutTemplate,
+  FileText,
 } from "lucide-react";
 
 /* ─── Constants ─── */
@@ -87,6 +88,12 @@ const TRACK_OPTIONS = [
 ];
 
 /* ─── Types ─── */
+interface Resume {
+  id: string;
+  file_name: string;
+  ats_score?: number;
+}
+
 interface Question {
   question_id: string;
   question: string;
@@ -190,6 +197,7 @@ function MockInterviewPageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [session, setSession] = useState<Session | null>(null);
+  const [resumes, setResumes] = useState<Resume[]>([]);
 
   const difficulty =
     intensity === 1 ? "easy" : intensity === 3 ? "hard" : "medium";
@@ -201,17 +209,37 @@ function MockInterviewPageContent() {
   const [userRating, setUserRating] = useState<number | null>(null);
   const [userFeedback, setUserFeedback] = useState("");
 
-  /* Auto-fill resume ID from localStorage */
+  /* Load resumes and auto-fill resume ID from localStorage */
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("latest_resume");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.resume_id) setResumeId(parsed.resume_id);
+    async function loadResumes() {
+      try {
+        const progress = (await getProgress()) as any;
+        if (progress?.ats_trend) {
+          setResumes(progress.ats_trend);
+          if (progress.ats_trend.length > 0) {
+            const stored = localStorage.getItem("latest_resume");
+            let initialResumeId = "";
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                if (
+                  parsed?.resume_id &&
+                  progress.ats_trend.some(
+                    (r: Resume) => r.id === parsed.resume_id,
+                  )
+                ) {
+                  initialResumeId = parsed.resume_id;
+                }
+              } catch {}
+            }
+            setResumeId(initialResumeId);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load resumes:", err);
       }
-    } catch {
-      // ignore
     }
+    loadResumes();
   }, []);
 
   async function handleStart() {
@@ -341,6 +369,37 @@ function MockInterviewPageContent() {
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* Resume Context Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <FileText size={14} className="text-muted-foreground" />
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                    Resume Context
+                  </label>
+                </div>
+                <div className="relative group">
+                  <select
+                    className="w-full bg-card/50 border border-white rounded-3xl py-5 px-8 focus:ring-4 focus:ring-brand-blue/10 text-foreground font-display font-bold text-xl shadow-sm transition-all outline-none appearance-none"
+                    value={resumeId}
+                    onChange={(e) => setResumeId(e.target.value)}
+                  >
+                    <option value="">
+                      General Interview (No Resume Context)
+                    </option>
+                    {resumes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.file_name}{" "}
+                        {r.ats_score ? `(ATS Score: ${r.ats_score})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-[10px] text-muted-foreground font-medium pl-2 leading-relaxed">
+                  Selecting a resume allows the AI to tailor questions
+                  specifically to your background, projects, and skills.
+                </p>
               </div>
 
               {/* Interview Type Selection */}

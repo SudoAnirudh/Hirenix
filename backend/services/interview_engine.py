@@ -145,6 +145,32 @@ EXPERIENCE_OVERRIDES = {
 }
 
 
+def determine_next_category(plan: InterviewPlan, history: List[Dict[str, str]]) -> str:
+    """
+    Given the interview plan and history of questions asked so far,
+    determine the category of the next question.
+    """
+    technical_asked = sum(1 for h in history if h.get("category") == "technical")
+    behavioral_asked = sum(1 for h in history if h.get("category") == "behavioral")
+    system_design_asked = sum(1 for h in history if h.get("category") == "system_design")
+
+    technical_remaining = max(0, plan.technical - technical_asked)
+    behavioral_remaining = max(0, plan.behavioral - behavioral_asked)
+    system_design_remaining = max(0, plan.system_design - system_design_asked)
+
+    remaining = {
+        "technical": technical_remaining,
+        "system_design": system_design_remaining,
+        "behavioral": behavioral_remaining,
+    }
+    # Find keys with value > 0
+    available = {k: v for k, v in remaining.items() if v > 0}
+    if not available:
+        return "technical"
+    # Return the one with highest remaining count
+    return max(available, key=available.get)
+
+
 def generate_interview_plan(
     target_role: str,
     difficulty: str = "medium",
@@ -227,6 +253,7 @@ async def _generate_questions_llm(
     interview_type: str,
     experience_level: str,
     num_questions: int,
+    required_category: Optional[str] = None,
 ) -> Optional[List[InterviewQuestion]]:
     """
     Generate role-specific questions using the available LLM (Groq with NVIDIA fallback).
@@ -248,7 +275,12 @@ Generate {num_questions} interview questions for:
 - experience_level: {experience_level}
 - interview_type: {interview_type}  (technical | behavioral | system_design | mixed)
 - difficulty: {difficulty} (easy | medium | hard)
+- variation_seed: {uuid.uuid4()} (Use this to ensure high variety and distinct focus areas compared to previous sessions)
+"""
+    if required_category:
+        user += f"- required_question_category: {required_category} (You MUST generate questions of category \"{required_category}\")\n"
 
+    user += f"""
 If resume_context is provided, lightly tailor 1-2 questions to it without copying text verbatim.
 
 resume_context:
@@ -283,11 +315,13 @@ Rules:
                 continue
             question_text = item.get("question")
             category = item.get("category")
+            if required_category:
+                category = required_category
+            elif category not in {"technical", "behavioral", "system_design"}:
+                category = "technical"
             expected_topics = item.get("expected_topics") or []
             follow_up = item.get("follow_up_prompt", None)
             if not isinstance(question_text, str) or not question_text.strip():
-                continue
-            if category not in {"technical", "behavioral", "system_design"}:
                 continue
             if not isinstance(expected_topics, list):
                 expected_topics = []
@@ -328,6 +362,8 @@ async def generate_questions(
         experience_level=experience_level,
     )
 
+    first_cat = determine_next_category(plan, [])
+
     llm_questions = await _generate_questions_llm(
         resume_context=resume_context,
         target_role=target_role,
@@ -335,6 +371,7 @@ async def generate_questions(
         interview_type=interview_type,
         experience_level=experience_level,
         num_questions=1,
+        required_category=first_cat,
     )
     if llm_questions:
         return plan, llm_questions
@@ -360,23 +397,37 @@ async def generate_questions(
             )
         )
 
-    for item in role_bank.get("technical", [])[: plan.technical]:
+    import random
+    tech_pool = list(role_bank.get("technical", []))
+    sys_pool = list(role_bank.get("system_design", []))
+    beh_pool = list(BEHAVIORAL_QUESTIONS)
+    random.shuffle(tech_pool)
+    random.shuffle(sys_pool)
+    random.shuffle(beh_pool)
+
+    for item in tech_pool[: plan.technical]:
         append_question(item, "technical")
 
-    for item in role_bank.get("system_design", [])[: plan.system_design]:
+    for item in sys_pool[: plan.system_design]:
         append_question(item, "system_design")
 
-    for item in BEHAVIORAL_QUESTIONS[: plan.behavioral]:
+    for item in beh_pool[: plan.behavioral]:
         append_question(item, "behavioral")
 
     if len(questions) < num_questions:
-        fallback_pool = role_bank.get("technical", []) + QUESTION_BANK["default"]["technical"]
+        fallback_pool = list(role_bank.get("technical", [])) + list(QUESTION_BANK["default"]["technical"])
+        random.shuffle(fallback_pool)
         for item in fallback_pool:
             if len(questions) >= num_questions:
                 break
             append_question(item, "technical")
 
-    return plan, questions[:1]
+    # Filter to find the first question matching first_cat
+    first_q = next((q for q in questions if q.category == first_cat), None)
+    if not first_q and questions:
+        first_q = questions[0]
+
+    return plan, [first_q] if first_q else questions[:1]
 
 
 def _normalized_term_hits(answer: str, topics: List[str]) -> float:
@@ -631,6 +682,8 @@ async def generate_next_question(
         "Return ONLY valid JSON."
     )
 
+    next_cat = determine_next_category(plan, history)
+
     context_hint = resume_context.strip() if resume_context else ""
     if context_hint:
         # Bound context so we don't explode prompt size
@@ -642,6 +695,7 @@ We are conducting an interview for:
 - Experience Level: {experience_level}
 - Interview Type: {interview_type}
 - Difficulty: {difficulty}
+- variation_seed: {uuid.uuid4()}
 
 Candidate's Resume Context:
 {context_hint if context_hint else "(none)"}
@@ -659,16 +713,18 @@ Conversational History (Previous Questions & Candidate's Answers):
 
     user += f"""
 Please generate the next question.
+You MUST generate a question of category: {next_cat}.
+
 Rules:
 1. Do not ask the same question or repeat topics already covered.
 2. The question should follow up actively and conversationally on the candidate's previous answers if possible, or pivot smoothly.
-3. Expected category of this question should align with the remaining allocation of the Interview Plan.
+3. Expected category of this question MUST be "{next_cat}".
 4. Keep the question concise (under 35 words).
 5. Do not include markdown formatting or backticks.
 
 Return a JSON object with:
 - question (string)
-- category (one of: "technical", "behavioral", "system_design")
+- category (must be: "{next_cat}")
 - expected_topics (array of 3-6 short strings)
 - follow_up_prompt (string or null)
 """
@@ -680,13 +736,11 @@ Return a JSON object with:
         ])
         if data and isinstance(data, dict):
             question_text = data.get("question")
-            category = data.get("category")
+            category = next_cat  # Force the correct plan category
             expected_topics = data.get("expected_topics") or []
             follow_up = data.get("follow_up_prompt", None)
 
             if isinstance(question_text, str) and question_text.strip():
-                if category not in {"technical", "behavioral", "system_design"}:
-                    category = "technical"
                 if not isinstance(expected_topics, list):
                     expected_topics = []
                 expected_topics = [str(t).strip() for t in expected_topics if str(t).strip()][:8]
@@ -707,36 +761,26 @@ Return a JSON object with:
     role_bank = _pick_role_bank(target_role)
     asked_questions = {h.get("question", "").lower() for h in history}
 
-    asked_by_cat = {"technical": 0, "behavioral": 0, "system_design": 0}
-    for h in history:
-        cat = h.get("category", "technical")
-        if cat in asked_by_cat:
-            asked_by_cat[cat] += 1
-
-    target_cat = "technical"
-    if asked_by_cat["technical"] < plan.technical:
-        target_cat = "technical"
-    elif asked_by_cat["system_design"] < plan.system_design:
-        target_cat = "system_design"
-    elif asked_by_cat["behavioral"] < plan.behavioral:
-        target_cat = "behavioral"
-
     pool = []
-    if target_cat == "technical":
+    if next_cat == "technical":
         pool = role_bank.get("technical", []) + QUESTION_BANK["default"]["technical"]
-    elif target_cat == "system_design":
+    elif next_cat == "system_design":
         pool = role_bank.get("system_design", [])
-    elif target_cat == "behavioral":
+    elif next_cat == "behavioral":
         pool = BEHAVIORAL_QUESTIONS
 
-    for item in pool:
+    import random
+    pool_shuffled = list(pool)
+    random.shuffle(pool_shuffled)
+
+    for item in pool_shuffled:
         q_text = item["question"]
         if q_text.lower() not in asked_questions:
             return InterviewQuestion(
                 question_id=str(uuid.uuid4()),
                 question=q_text,
-                category=target_cat,
-                difficulty=difficulty if target_cat != "behavioral" else "medium",
+                category=next_cat,
+                difficulty=difficulty if next_cat != "behavioral" else "medium",
                 expected_topics=item["topics"],
                 follow_up_prompt=item.get("follow_up"),
             )
@@ -746,7 +790,7 @@ Return a JSON object with:
     return InterviewQuestion(
         question_id=str(uuid.uuid4()),
         question=default_q,
-        category="technical",
+        category=next_cat,
         difficulty=difficulty,
         expected_topics=["problem solving", "conflict resolution"],
         follow_up_prompt=None,
