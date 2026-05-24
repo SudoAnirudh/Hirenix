@@ -4,6 +4,7 @@ import { startInterview } from "@/lib/api";
 import InterviewPanel from "@/components/InterviewPanel";
 import type { SessionSummary } from "@/components/InterviewPanel";
 import { ToastProvider } from "@/components/interview/ToastProvider";
+import { ProctorProvider } from "@/components/interview/ProctorProvider";
 import {
   BrainCircuit,
   Sparkles,
@@ -575,22 +576,24 @@ function MockInterviewPageContent() {
   /* ─────────────────────── INTERVIEW PHASE ─────────────────────── */
   if (phase === "interview" && session) {
     return (
-      <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 overflow-hidden font-body px-6 py-20">
-        {/* Ambient Background Orbs */}
-        <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
-        <div
-          className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
-          style={{ animationDelay: "-4s" }}
-        ></div>
+      <ProctorProvider enabled={true}>
+        <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 overflow-hidden font-body px-6 py-20">
+          {/* Ambient Background Orbs */}
+          <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
+          <div
+            className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
+            style={{ animationDelay: "-4s" }}
+          ></div>
 
-        <div className="relative z-10 w-full mx-auto">
-          <InterviewView
-            session={session}
-            onComplete={handleComplete}
-            onExit={handleRestart}
-          />
+          <div className="relative z-10 w-full mx-auto">
+            <InterviewView
+              session={session}
+              onComplete={handleComplete}
+              onExit={handleRestart}
+            />
+          </div>
         </div>
-      </div>
+      </ProctorProvider>
     );
   }
 

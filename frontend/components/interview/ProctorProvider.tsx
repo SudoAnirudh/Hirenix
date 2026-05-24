@@ -346,10 +346,19 @@ export function ProctorProvider({
 
     let cancelled = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
-    const faceDetector = new window.FaceDetector({
-      fastMode: true,
-      maxDetectedFaces: 2,
-    });
+    let faceDetector: FaceDetectorInstance;
+
+    try {
+      faceDetector = new window.FaceDetector({
+        fastMode: true,
+        maxDetectedFaces: 2,
+      });
+    } catch (e) {
+      console.warn("FaceDetector constructor failed:", e);
+      setFaceStatus("unsupported");
+      return;
+    }
+
     const video = document.createElement("video");
     const anomalyCounts = { noFace: 0, multipleFaces: 0, misaligned: 0 };
 
@@ -450,40 +459,59 @@ export function ProctorProvider({
   useEffect(() => {
     if (!enabled || !stream || stream.getAudioTracks().length === 0) return;
 
-    const audioCtx = new AudioContext();
-    const source = audioCtx.createMediaStreamSource(stream);
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioContextClass) {
+      return;
+    }
 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    let anomalyFrames = 0;
+    let audioCtx: AudioContext | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
-    const intervalId = setInterval(() => {
-      if (stoppingRef.current) return;
-      analyser.getByteFrequencyData(dataArray);
+    try {
+      audioCtx = new AudioContextClass();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
 
-      const avg =
-        dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
-      const normalizedVolume = Math.min(avg / 128, 1);
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      let anomalyFrames = 0;
 
-      // Simple heuristic: if volume is consistently high (speaking/noise)
-      if (normalizedVolume > 0.45) {
-        anomalyFrames++;
-        if (anomalyFrames > 15) {
-          // e.g., ~1.5 seconds of sustained noise
-          addViolation("audio_anomaly");
-          anomalyFrames = 0; // reset to avoid spamming
+      intervalId = setInterval(() => {
+        if (stoppingRef.current) return;
+        analyser.getByteFrequencyData(dataArray);
+
+        const avg =
+          dataArray.reduce((sum, val) => sum + val, 0) / dataArray.length;
+        const normalizedVolume = Math.min(avg / 128, 1);
+
+        // Simple heuristic: if volume is consistently high (speaking/noise)
+        if (normalizedVolume > 0.45) {
+          anomalyFrames++;
+          if (anomalyFrames > 15) {
+            // e.g., ~1.5 seconds of sustained noise
+            addViolation("audio_anomaly");
+            anomalyFrames = 0; // reset to avoid spamming
+          }
+        } else {
+          // Decrease anomaly count if quiet
+          anomalyFrames = Math.max(0, anomalyFrames - 2);
         }
-      } else {
-        // Decrease anomaly count if quiet
-        anomalyFrames = Math.max(0, anomalyFrames - 2);
-      }
-    }, 100);
+      }, 100);
+    } catch (err) {
+      console.error("Audio monitoring initialization failed:", err);
+    }
 
     return () => {
-      clearInterval(intervalId);
-      void audioCtx.close().catch(() => {});
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      if (audioCtx) {
+        void audioCtx.close().catch(() => {});
+      }
     };
   }, [addViolation, enabled, stream]);
 
