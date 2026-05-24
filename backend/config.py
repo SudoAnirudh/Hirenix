@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     )
 
     # Twitter Job Aggregator
-    twitter_handle: str = "DevByLakshya"
+    twitter_handles: str = "DevByLakshya"
     twitter_rss_override: Optional[str] = None
 
     class Config:
@@ -49,6 +49,14 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",")]
+
+    @property
+    def twitter_handles_list(self) -> list[str]:
+        return [handle.strip() for handle in self.twitter_handles.split(",") if handle.strip()]
+
+    @property
+    def twitter_handle(self) -> str:
+        return self.twitter_handles_list[0] if self.twitter_handles_list else ""
 
 
 settings = Settings()

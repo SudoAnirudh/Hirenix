@@ -115,14 +115,26 @@ def _clean_llm_json(content: str) -> Optional[Dict[str, Any]]:
     return None
 
 async def sync_twitter_jobs() -> int:
-    handle = settings.twitter_handle
-    entries = await fetch_tweets_feed(handle)
-    if not entries: return 0
+    handles = settings.twitter_handles_list
+    if not handles:
+        logger.warning("No Twitter handles configured for scraping.")
+        return 0
+
+    all_entries: List[Dict[str, Any]] = []
+    for handle in handles:
+        entries = await fetch_tweets_feed(handle)
+        if entries:
+            all_entries.extend(entries)
+        else:
+            logger.warning(f"No RSS feed entries found for Twitter handle: {handle}")
+
+    if not all_entries:
+        return 0
 
     db = get_supabase_admin()
     new_jobs_count = 0
 
-    for entry in entries:
+    for entry in all_entries:
         try:
             guid = getattr(entry, "id", getattr(entry, "link", ""))
             tweet_id = _extract_tweet_id(guid)
