@@ -12,11 +12,11 @@ logger = logging.getLogger("hirenix.job_suggester")
 
 async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     """
-    Synthesizes user profile, resume, interview, and GitHub data for suggestion context.
+    Synthesizes user profile, resume, interview, GitHub, and LinkedIn data for suggestion context.
     """
     try:
         # 1. Latest Resume
-        resume_r = db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        resume_r = db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         
         # 2. Latest Interview Sessions
         interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
@@ -24,17 +24,48 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
         # 3. GitHub Stats
         github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         
-        # 4. Ready Skills from Interviews (score >= 7.0)
+        # 4. LinkedIn Stats
+        linkedin_r = db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+
         ready_skills = []
+
+        # 5. Extract Resume skills from sections if available
+        if resume_r.data:
+            resume_id = resume_r.data[0]["id"]
+            sections_r = db.table("resume_sections").select("content").eq("resume_id", resume_id).eq("section_type", "skills").execute()
+            if sections_r.data:
+                content = sections_r.data[0]["content"] or ""
+                skills_raw = [s.strip() for s in content.replace("\n", ",").split(",") if s.strip()]
+                # filter clean short names
+                clean_skills = [s for s in skills_raw if len(s) > 1 and len(s) < 30]
+                ready_skills.extend(clean_skills[:5])
+        
+        # 6. Ready Skills from Interviews (score >= 7.0)
         if interviews_r.data:
             session_ids = [i["id"] for i in interviews_r.data]
             answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
             if answers_r.data:
-                ready_skills = list(set([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]]))
+                ready_skills.extend([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]])
 
         # Add GitHub strengths
         if github_r.data and github_r.data[0].get("strengths"):
-            ready_skills.extend(github_r.data[0]["strengths"][:2])
+            github_strengths = github_r.data[0]["strengths"]
+            if isinstance(github_strengths, list):
+                ready_skills.extend(github_strengths[:2])
+            elif isinstance(github_strengths, str):
+                try:
+                    ready_skills.extend(json.loads(github_strengths)[:2])
+                except: pass
+
+        # Add LinkedIn strengths
+        if linkedin_r.data and linkedin_r.data[0].get("strengths"):
+            linkedin_strengths = linkedin_r.data[0]["strengths"]
+            if isinstance(linkedin_strengths, list):
+                ready_skills.extend(linkedin_strengths[:2])
+            elif isinstance(linkedin_strengths, str):
+                try:
+                    ready_skills.extend(json.loads(linkedin_strengths)[:2])
+                except: pass
 
         target_role = interviews_r.data[0]["target_role"] if interviews_r.data else "Software Engineer"
         ats_score = resume_r.data[0]["ats_score"] if resume_r.data else 0
@@ -44,7 +75,7 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
         return {
             "resume_text": resume_text[:2000],
             "ats_score": float(ats_score),
-            "ready_skills": list(set(ready_skills)),
+            "ready_skills": list(set([s for s in ready_skills if s])),
             "target_role": target_role,
             "gpi_score": float(gpi_score),
         }

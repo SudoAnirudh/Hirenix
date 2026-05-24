@@ -5,7 +5,6 @@ import {
   matchJob,
   matchJobWithUpload,
   scrapeJobs,
-  createApplication,
   getJobSuggestions,
   SuggestedJob,
 } from "@/lib/api";
@@ -14,26 +13,21 @@ import SkillGapList from "@/components/SkillGapList";
 import {
   CheckCircle,
   AlertCircle,
-  ChevronRight,
   Search,
   MapPin,
-  Globe,
-  ExternalLink,
   Sparkles,
   FileText,
   Fingerprint,
   Briefcase,
   History,
-  Info,
   TrendingUp,
-  FileEdit,
   Zap,
   Target,
   ArrowUpRight,
   Star,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import CoverLetterModal from "@/components/CoverLetterModal";
 import OutreachModal from "@/components/OutreachModal";
 import { Mail as MailIcon } from "lucide-react";
@@ -291,7 +285,7 @@ export default function JobMatchPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {suggestions.map((job, idx) => (
+              {suggestions.map((job) => (
                 <motion.div
                   key={job.id}
                   whileTap={{ scale: 0.98 }}
@@ -662,119 +656,166 @@ export default function JobMatchPage() {
           <h3 className="font-display font-black text-3xl text-foreground tracking-tight">
             Market <span className="text-brand-blue">Discovery</span>
           </h3>
-          <div className="p-10 rounded-[3rem] bg-secondary border border-border grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 items-end">
+          <div className="p-8 md:p-10 rounded-[2.5rem] bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 shadow-lg backdrop-blur-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 items-end">
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Specialization
               </label>
-              <input
-                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none text-foreground"
-                placeholder="e.g. LLM, React..."
-                value={fieldInput}
-                onChange={(e) => setFieldInput(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-10 pr-4 h-12 text-xs font-bold outline-none text-foreground transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  placeholder="e.g. React, LLM, Python..."
+                  value={fieldInput}
+                  onChange={(e) => setFieldInput(e.target.value)}
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                  <Search size={14} />
+                </div>
+              </div>
             </div>
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Geo Preference
               </label>
-              <input
-                className="w-full bg-card border border-border rounded-xl px-5 h-12 text-sm font-bold outline-none text-foreground"
-                placeholder="e.g. India, Bangalore..."
-                value={jobLocation}
-                onChange={(e) => setJobLocation(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-10 pr-4 h-12 text-xs font-bold outline-none text-foreground transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  placeholder="e.g. India, Bangalore..."
+                  value={jobLocation}
+                  onChange={(e) => setJobLocation(e.target.value)}
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                  <MapPin size={14} />
+                </div>
+              </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 relative">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Workplace
               </label>
-              <select
-                className="w-full bg-card border border-border rounded-xl px-4 h-12 text-sm font-bold outline-none text-foreground cursor-pointer"
-                value={workplaceType}
-                onChange={(e) => setWorkplaceType(e.target.value)}
-              >
-                <option value="any">Any</option>
-                <option value="remote">Remote</option>
-                <option value="in-office">In-Office</option>
-                <option value="hybrid">Hybrid</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-4 pr-10 h-12 text-xs font-bold outline-none text-foreground cursor-pointer appearance-none transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  value={workplaceType}
+                  onChange={(e) => setWorkplaceType(e.target.value)}
+                >
+                  <option value="any">Any Workplace</option>
+                  <option value="remote">Remote Only</option>
+                  <option value="in-office">In-Office</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 relative">
               <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Job Type
               </label>
-              <select
-                className="w-full bg-card border border-border rounded-xl px-4 h-12 text-sm font-bold outline-none text-foreground cursor-pointer"
-                value={jobType}
-                onChange={(e) => setJobType(e.target.value)}
-              >
-                <option value="any">Any</option>
-                <option value="full-time">Full-Time</option>
-                <option value="part-time">Part-Time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-              </select>
+              <div className="relative">
+                <select
+                  className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-4 pr-10 h-12 text-xs font-bold outline-none text-foreground cursor-pointer appearance-none transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                  value={jobType}
+                  onChange={(e) => setJobType(e.target.value)}
+                >
+                  <option value="any">Any Schedule</option>
+                  <option value="full-time">Full-Time</option>
+                  <option value="part-time">Part-Time</option>
+                  <option value="contract">Contract</option>
+                  <option value="internship">Internship</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
             </div>
             <Button
               onClick={handleScrapeJobs}
               disabled={jobsLoading}
-              className="h-12 bg-foreground text-card-foreground rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer w-full"
+              className="h-12 bg-gradient-to-r from-brand-blue to-brand-indigo hover:from-brand-blue/90 hover:to-brand-indigo/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer w-full transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-brand-blue/20 flex items-center justify-center gap-2 border-0"
             >
-              {jobsLoading ? "Searching..." : "Pulse Survey"}
+              {jobsLoading ? (
+                <div className="animate-spin h-4 w-4 border-2 border-white/20 border-t-white rounded-full" />
+              ) : (
+                <>
+                  <span>Pulse Survey</span>
+                  <Zap size={12} className="fill-white" />
+                </>
+              )}
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {jobs.map((job, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-8 rounded-[3rem] bg-card border border-border transition-all duration-300 group cursor-pointer"
-            >
-              <div className="space-y-6">
-                <div className="flex justify-between items-start">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                    Market Sync
-                  </span>
-                  <TrendingUp
-                    size={16}
-                    className="text-brand-blue opacity-40"
-                  />
+        {jobsError && (
+          <div className="p-6 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-4 text-red-600 text-xs font-bold">
+            <AlertCircle size={20} />
+            <span>Search failed: {jobsError}</span>
+          </div>
+        )}
+
+        {jobsLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="p-8 rounded-[3rem] bg-card border border-border shadow-sm animate-pulse h-64"
+              />
+            ))}
+          </div>
+        )}
+
+        {!jobsLoading && jobs.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {jobs.map((job) => (
+              <motion.div
+                key={job.id || job.apply_url}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-8 rounded-[3rem] bg-card border border-border transition-all duration-300 group cursor-pointer"
+              >
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                      Market Sync
+                    </span>
+                    <TrendingUp
+                      size={16}
+                      className="text-brand-blue opacity-40"
+                    />
+                  </div>
+                  <h5 className="font-display font-bold text-lg text-foreground line-clamp-2 min-h-[56px] leading-snug group-transition-colors">
+                    {job.title}
+                  </h5>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {job.company}
+                  </p>
+                  <p className="text-xs font-medium text-muted-foreground line-clamp-3 leading-relaxed">
+                    {job.description_snippet}
+                  </p>
+                  <div className="flex items-center justify-between pt-6">
+                    <button
+                      onClick={() => {
+                        setJdText(job.description_snippet);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="text-[9px] font-black uppercase tracking-widest text-brand-blue"
+                    >
+                      Analyze
+                    </button>
+                    <a
+                      href={job.apply_url}
+                      target="_blank"
+                      className="px-6 py-2 rounded-xl bg-brand-blue text-card-foreground text-[9px] font-black uppercase tracking-widest transition-all"
+                    >
+                      Secure Spot
+                    </a>
+                  </div>
                 </div>
-                <h5 className="font-display font-bold text-lg text-foreground line-clamp-2 min-h-[56px] leading-snug group- transition-colors">
-                  {job.title}
-                </h5>
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  {job.company}
-                </p>
-                <p className="text-xs font-medium text-muted-foreground line-clamp-3 leading-relaxed">
-                  {job.description_snippet}
-                </p>
-                <div className="flex items-center justify-between pt-6">
-                  <button
-                    onClick={() => {
-                      setJdText(job.description_snippet);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
-                    className="text-[9px] font-black uppercase tracking-widest text-brand-blue"
-                  >
-                    Analyze
-                  </button>
-                  <a
-                    href={job.apply_url}
-                    target="_blank"
-                    className="px-6 py-2 rounded-xl bg-brand-blue text-card-foreground text-[9px] font-black uppercase tracking-widest transition-all"
-                  >
-                    Secure Spot
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
