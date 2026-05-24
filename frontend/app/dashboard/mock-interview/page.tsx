@@ -5,6 +5,8 @@ import InterviewPanel from "@/components/InterviewPanel";
 import type { SessionSummary } from "@/components/InterviewPanel";
 import { ToastProvider } from "@/components/interview/ToastProvider";
 import { ProctorProvider } from "@/components/interview/ProctorProvider";
+import PreInterviewChecks from "@/components/interview/PreInterviewChecks";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 import {
   BrainCircuit,
   Sparkles,
@@ -115,7 +117,7 @@ interface Session {
   questions: Question[];
 }
 
-type Phase = "setup" | "interview" | "report";
+type Phase = "setup" | "checks" | "interview" | "report";
 
 /* ═══════════════════════════════════════════════════════════
  Inner interview view
@@ -245,6 +247,15 @@ function MockInterviewPageContent() {
     setUserRating(null);
     setUserFeedback("");
     setError("");
+  }
+
+  if (loading) {
+    return (
+      <LoadingScreen
+        message="Synthesizing Interview Studio"
+        submessage="Curating tailored questions based on your professional vector..."
+      />
+    );
   }
 
   /* ─────────────────────── SETUP SCREEN ─────────────────────── */
@@ -498,19 +509,12 @@ function MockInterviewPageContent() {
               {/* Action Area */}
               <div className="pt-10">
                 <button
-                  className={`w-full bg-linear-to-r from-foreground to-muted-foreground text-card-foreground py-8 rounded-[32px] font-display font-black text-2xl flex items-center justify-center gap-6 shadow-2xl shadow-foreground/30 active:scale-[0.98] transition-all group ${loading ? "opacity-70 cursor-wait" : ""}`}
+                  className="w-full bg-linear-to-r from-foreground to-muted-foreground text-card-foreground py-8 rounded-[32px] font-display font-black text-2xl flex items-center justify-center gap-6 shadow-2xl shadow-foreground/30 active:scale-[0.98] transition-all group"
                   type="button"
-                  disabled={loading}
-                  onClick={handleStart}
+                  onClick={() => setPhase("checks")}
                 >
-                  <span>
-                    {loading
-                      ? "Synthesizing Environment..."
-                      : "Initiate Studio Session"}
-                  </span>
-                  {!loading && (
-                    <ChevronRight size={32} className=" transition-transform" />
-                  )}
+                  <span>Initiate Studio Session</span>
+                  <ChevronRight size={32} className=" transition-transform" />
                 </button>
                 <div className="flex items-center justify-center gap-3 mt-8 opacity-60">
                   <span className="w-8 h-px bg-muted-foreground" />
@@ -573,11 +577,32 @@ function MockInterviewPageContent() {
     );
   }
 
+  /* ─────────────────────── CHECKS PHASE ─────────────────────── */
+  if (phase === "checks") {
+    return (
+      <div className="fixed inset-0 z-[100] min-h-screen w-screen h-screen bg-[#FDF9F3] text-foreground overflow-y-auto font-body flex items-center justify-center p-6">
+        {/* Ambient Background Orbs */}
+        <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
+        <div
+          className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
+          style={{ animationDelay: "-4s" }}
+        ></div>
+
+        <div className="relative z-10 w-full max-w-4xl mx-auto flex justify-center">
+          <PreInterviewChecks
+            onReady={() => void handleStart()}
+            onBack={() => setPhase("setup")}
+          />
+        </div>
+      </div>
+    );
+  }
+
   /* ─────────────────────── INTERVIEW PHASE ─────────────────────── */
   if (phase === "interview" && session) {
     return (
       <ProctorProvider enabled={true}>
-        <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 overflow-hidden font-body px-6 py-20">
+        <div className="fixed inset-0 z-[100] min-h-screen w-screen h-screen bg-[#FDF9F3] text-foreground overflow-y-auto font-body px-6 py-20">
           {/* Ambient Background Orbs */}
           <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
           <div

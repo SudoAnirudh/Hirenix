@@ -580,6 +580,12 @@ export function ProctorProvider({
     setCameraStatus("unavailable");
   }, [stream]);
 
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
+
   const value: ProctorState = {
     active: enabled,
     stream,

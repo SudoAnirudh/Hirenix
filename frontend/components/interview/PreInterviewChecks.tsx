@@ -148,7 +148,14 @@ export default function PreInterviewChecks({
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      const audioCtx = new AudioContext();
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as Window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!AudioContextClass) {
+        throw new Error("AudioContext not supported");
+      }
+      const audioCtx = new AudioContextClass();
       audioCtxRef.current = audioCtx;
       const source = audioCtx.createMediaStreamSource(audioStream);
       const analyser = audioCtx.createAnalyser();
@@ -435,6 +442,9 @@ export default function PreInterviewChecks({
     return () => {
       if (audioCtxRef.current) {
         void audioCtxRef.current.close().catch(() => {});
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
