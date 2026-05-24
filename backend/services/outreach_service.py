@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from typing import Optional, Any
@@ -16,8 +17,11 @@ async def generate_outreach_drafts(
     Generates personalized LinkedIn and Email outreach drafts using Hirenix AI.
     """
     try:
+
         # 1. Fetch Job Match Data
-        match_query = db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        def fetch_match():
+            return db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        match_query = await asyncio.to_thread(fetch_match)
         if not match_query.data:
             logger.error(f"Job match {match_id} not found for user {user_id}")
             return None
@@ -30,7 +34,9 @@ async def generate_outreach_drafts(
         bridge_advice = match_data.get("metadata", {}).get("bridge_advice", [])
 
         # 2. Fetch LinkedIn Profile Summary (for personalization)
-        li_query = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        def fetch_linkedin():
+            return db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        li_query = await asyncio.to_thread(fetch_linkedin)
         
         profile_context = ""
         if li_query.data:
@@ -43,7 +49,9 @@ async def generate_outreach_drafts(
             profile_context = f"User Profile Summary: {profile_summary}\nKey Strengths: {', '.join(strengths)}"
         else:
             # Fallback to resume if LinkedIn not available
-            resume_query = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+            def fetch_resume():
+                return db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+            resume_query = await asyncio.to_thread(fetch_resume)
             if resume_query.data:
                 profile_context = f"Candidate Background: {resume_query.data[0].get('raw_text', '')[:1000]}"
 

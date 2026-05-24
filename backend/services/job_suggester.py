@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import uuid
@@ -15,20 +16,30 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, and GitHub data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # 1-3. Fetch Resume, Interview Sessions, and GitHub Stats concurrently without blocking the event loop
         
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        def fetch_resume():
+            return db.table("resumes").select("raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+
+        def fetch_interviews():
+            return db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
+
+        def fetch_github():
+            return db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+
+        resume_r, interviews_r, github_r = await asyncio.gather(
+            asyncio.to_thread(fetch_resume),
+            asyncio.to_thread(fetch_interviews),
+            asyncio.to_thread(fetch_github)
+        )
         
         # 4. Ready Skills from Interviews (score >= 7.0)
         ready_skills = []
         if interviews_r.data:
             session_ids = [i["id"] for i in interviews_r.data]
-            answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
+            def fetch_answers():
+                return db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
+            answers_r = await asyncio.to_thread(fetch_answers)
             if answers_r.data:
                 ready_skills = list(set([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]]))
 
