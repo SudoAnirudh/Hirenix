@@ -580,11 +580,21 @@ export function ProctorProvider({
     setCameraStatus("unavailable");
   }, [stream]);
 
+  const activeStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => {
+    activeStreamRef.current = stream;
+  }, [stream]);
+
   useEffect(() => {
     return () => {
-      stop();
+      if (activeStreamRef.current) {
+        activeStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (document.fullscreenElement) {
+        void document.exitFullscreen().catch(() => {});
+      }
     };
-  }, [stop]);
+  }, []);
 
   const value: ProctorState = {
     active: enabled,
