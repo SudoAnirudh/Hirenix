@@ -1,6 +1,10 @@
 "use client";
 import { useRef, useState, useEffect, useMemo } from "react";
-import { evaluateInterviewSession } from "@/lib/api";
+import {
+  evaluateInterviewSession,
+  transcribeAudio,
+  getNextQuestion,
+} from "@/lib/api";
 import { useProctor } from "./interview/ProctorProvider";
 import {
   ChevronRight,
@@ -28,6 +32,17 @@ type SpeechRecognitionLike = {
 
 type SpeechRecognitionCtorLike = new () => SpeechRecognitionLike;
 
+interface InterviewPlan {
+  role: string;
+  experience_level: string;
+  interview_type: string;
+  difficulty: string;
+  num_questions: number;
+  technical: number;
+  behavioral: number;
+  system_design: number;
+}
+
 interface Question {
   question_id: string;
   question: string;
@@ -44,6 +59,7 @@ interface Session {
   interview_type: string;
   answer_mode: string;
   questions: Question[];
+  interview_plan?: InterviewPlan;
 }
 
 interface Feedback {
@@ -115,8 +131,17 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
   }, []);
 
-  const q = session.questions[currentIdx];
-  const isLast = currentIdx === session.questions.length - 1;
+  // MediaRecorder states for Whisper transcription
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const [transcribing, setTranscribing] = useState(false);
+
+  const [questionsList, setQuestionsList] = useState<Question[]>(
+    session.questions,
+  );
+  const totalQuestionsLimit = session.interview_plan?.num_questions || 5;
+  const q = questionsList[currentIdx];
+  const isLast = currentIdx === totalQuestionsLimit - 1;
 
   // Sync candidate local webcam feed
   useEffect(() => {
@@ -124,6 +149,59 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
       videoRef.current.srcObject = stream;
     }
   }, [stream, cameraOn]);
+
+  // Handle high-accuracy MediaRecorder recording and Whisper transcription trigger
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (isListening && stream) {
+      audioChunksRef.current = [];
+      try {
+        const recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        recorder.onstop = async () => {
+          if (audioChunksRef.current.length === 0) return;
+          const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          setTranscribing(true);
+          try {
+            const res = await transcribeAudio(blob);
+            if (res.text && res.text.trim()) {
+              const text = res.text.trim();
+              setAnswer(text);
+              setAnswersByQuestionId((prev) => ({
+                ...prev,
+                [q.question_id]: text,
+              }));
+            }
+          } catch (err) {
+            console.error("Transcription error:", err);
+          } finally {
+            setTranscribing(false);
+          }
+        };
+        recorder.start(100);
+        mediaRecorderRef.current = recorder;
+      } catch (err) {
+        console.error("Failed to start MediaRecorder:", err);
+      }
+    } else {
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch {
+          // ignore
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isListening, stream]);
 
   // Read question aloud via SpeechSynthesis (TTS)
   const speakQuestion = (text: string) => {
@@ -385,7 +463,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     // Retrieve the state at the time of finish
     const finalAnswerStr = answer.trim() || "No answer provided.";
 
-    const payloadAnswers = session.questions.map((qq) => ({
+    const payloadAnswers = questionsList.map((qq) => ({
       question_id: qq.question_id,
       answer:
         qq.question_id === q.question_id
@@ -418,15 +496,44 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     }
   }
 
-  function handleNext(autoAdvance = false) {
+  async function handleNext(autoAdvance = false) {
     if (isListening) stopListening();
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
-    persistCurrentAnswer(autoAdvance ? "No answer provided." : undefined);
+
+    const finalAnswerStr =
+      answer.trim() || (autoAdvance ? "No answer provided." : "");
+    setAnswersByQuestionId((prev) => ({
+      ...prev,
+      [q.question_id]: finalAnswerStr,
+    }));
+
     if (isLast) return;
-    setCurrentIdx((i) => i + 1);
-    setTimeLeft(120);
+
+    setSubmitting(true);
+    setAiState("analyzing");
+    try {
+      const nextQ = await getNextQuestion(
+        session.session_id,
+        q.question_id,
+        finalAnswerStr || "No answer provided.",
+        {
+          difficulty: session.interview_plan?.difficulty,
+          experienceLevel: session.interview_plan?.experience_level,
+          interviewType: session.interview_plan?.interview_type,
+          numQuestions: session.interview_plan?.num_questions,
+        },
+      );
+      setQuestionsList((prev) => [...prev, nextQ]);
+      setCurrentIdx((i) => i + 1);
+      setTimeLeft(120);
+    } catch (err) {
+      console.error("Failed to load next question:", err);
+    } finally {
+      setSubmitting(false);
+      setAiState("idle");
+    }
   }
 
   const categoryColor =
@@ -497,12 +604,12 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             F2F Mock Interview Studio
           </h2>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Question {currentIdx + 1} of {session.questions.length} ·{" "}
+            Question {currentIdx + 1} of {totalQuestionsLimit} ·{" "}
             {q.category.toUpperCase().replace("_", " ")}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {session.questions.map((_, i) => (
+          {[...Array(totalQuestionsLimit)].map((_, i) => (
             <div
               key={i}
               className={`h-2.5 rounded-full transition-all duration-500 ${
@@ -650,7 +757,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
           <button
             type="button"
             onClick={toggleListening}
-            disabled={!speechSupported || submitting}
+            disabled={!speechSupported || submitting || transcribing}
             className={`p-3.5 rounded-full transition-all active:scale-90 ${
               isListening
                 ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
@@ -665,7 +772,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
           <button
             type="button"
             onClick={() => setCameraOn(!cameraOn)}
-            disabled={submitting}
+            disabled={submitting || transcribing}
             className={`p-3.5 rounded-full transition-all active:scale-90 ${
               cameraOn
                 ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
@@ -713,7 +820,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             <button
               type="button"
               onClick={() => handleNext(false)}
-              disabled={submitting}
+              disabled={submitting || transcribing}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-blue hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
             >
               <span>Next</span>
@@ -723,7 +830,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             <button
               type="button"
               onClick={() => void handleFinish()}
-              disabled={submitting}
+              disabled={submitting || transcribing}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
             >
               <span>{submitting ? "Submitting..." : "Submit Call"}</span>
@@ -750,13 +857,19 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
           id={`answer-${q.question_id}`}
           className="w-full bg-white/60 border border-slate-200 rounded-2xl p-5 text-slate-800 text-base leading-relaxed resize-none min-h-[140px] focus:outline-none focus:border-brand-blue/50 font-body placeholder:text-slate-400"
           placeholder={
-            session.answer_mode === "text"
-              ? "Formulate your response here. Type your complete answer structure..."
-              : speechSupported
-                ? "Talk naturally into your microphone. Sarah will listen and generate transcripts here. Correct any spelling details if needed before hitting next."
-                : "Voice transcription is unavailable in this browser. Please type your response directly."
+            transcribing
+              ? "Refining transcription with high-accuracy AI..."
+              : session.answer_mode === "text"
+                ? "Formulate your response here. Type your complete answer structure..."
+                : speechSupported
+                  ? "Talk naturally into your microphone. Sarah will listen and generate transcripts here. Correct any spelling details if needed before hitting next."
+                  : "Voice transcription is unavailable in this browser. Please type your response directly."
           }
-          value={answer}
+          value={
+            transcribing
+              ? "Refining transcription with high-accuracy AI..."
+              : answer
+          }
           onChange={(e) => {
             const next = e.target.value;
             setAnswer(next);
@@ -765,7 +878,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               [q.question_id]: next,
             }));
           }}
-          disabled={submitting || needsFullscreen || terminated}
+          disabled={submitting || transcribing || needsFullscreen || terminated}
         />
 
         {q.expected_topics.length > 0 && (

@@ -101,3 +101,13 @@ class ProctorReport(BaseModel):
 class SaveProctorReportRequest(BaseModel):
     session_id: str
     report: ProctorReport
+
+
+class NextQuestionRequest(BaseModel):
+    session_id: str
+    current_question_id: str
+    answer: str
+    difficulty: str = "medium"
+    experience_level: str = "junior"
+    interview_type: str = "mixed"
+    num_questions: int = 5

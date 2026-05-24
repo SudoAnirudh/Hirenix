@@ -2,14 +2,15 @@ import uuid
 import asyncio
 import logging
 from typing import Dict, List
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from dependencies import get_current_user, get_supabase_admin
 from services.interview_engine import (
     generate_questions,
     evaluate_answer,
-    stream_evaluate_answer
+    stream_evaluate_answer,
+    generate_next_question
 )
+from services.audio_transcriber import transcribe_audio_with_groq
 from models.interview import (
     StartInterviewRequest,
     StartInterviewResponse,
@@ -18,6 +19,9 @@ from models.interview import (
     SaveProctorReportRequest,
     EvaluateSessionRequest,
     SessionSummaryResponse,
+    NextQuestionRequest,
+    InterviewQuestion,
+    InterviewPlan,
 )
 import json
 
@@ -370,6 +374,116 @@ async def save_proctor_report(
         }).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
     except Exception as db_err:
         logger.error(f"⚠️ interview_sessions update (proctor_report) failed: {db_err}")
-        # The schema might not have the column yet, we just print the error and return success
-
+        raise HTTPException(status_code=500, detail="Could not save proctor report.")
+    
     return {"status": "success"}
+
+
+@router.post("/transcribe")
+async def transcribe(
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
+):
+    """Transcribe recorded candidate speech using Groq's high-speed Whisper service."""
+    try:
+        file_bytes = await file.read()
+        text = await transcribe_audio_with_groq(file_bytes, file.filename)
+        return {"text": text}
+    except Exception as e:
+        logger.error(f"Transcription route failure: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/next-question", response_model=InterviewQuestion)
+async def next_question(
+    payload: NextQuestionRequest,
+    user: dict = Depends(get_current_user),
+    db=Depends(get_supabase_admin),
+):
+    """Generate the next logically coherent question dynamically based on Q&A history."""
+    session_rows = (
+        db.table("interview_sessions")
+        .select("*")
+        .eq("id", payload.session_id)
+        .eq("user_id", user["user_id"])
+        .limit(1)
+        .execute()
+    )
+    session_data = (session_rows.data or [None])[0]
+    if not session_data:
+        raise HTTPException(status_code=404, detail="Interview session not found.")
+
+    from services.interview_engine import generate_interview_plan
+    plan = generate_interview_plan(
+        target_role=session_data.get("target_role", "Software Engineer"),
+        difficulty=payload.difficulty,
+        num_questions=payload.num_questions,
+        interview_type=payload.interview_type,
+        experience_level=payload.experience_level,
+    )
+
+    resume_context = ""
+    resume_id = session_data.get("resume_id")
+    if resume_id:
+        sections_r = (
+            db.table("resume_sections")
+            .select("*")
+            .eq("resume_id", resume_id)
+            .execute()
+        )
+        for s in (sections_r.data or []):
+            resume_context += s.get("content", "") + " "
+
+    existing_questions = _get_session_questions(session_data, payload.session_id)
+
+    answer_rows = (
+        db.table("interview_answers")
+        .select("*")
+        .eq("session_id", payload.session_id)
+        .execute()
+    )
+
+    history = []
+    for row in (answer_rows.data or []):
+        history.append({
+            "question": row.get("question", ""),
+            "answer": row.get("user_answer", ""),
+            "category": row.get("category", "technical")
+        })
+
+    current_q_text = ""
+    current_cat = "technical"
+    current_q = next((q for q in existing_questions if q["question_id"] == payload.current_question_id), None)
+    if current_q:
+        current_q_text = current_q["question"]
+        current_cat = current_q.get("category", "technical")
+
+    history.append({
+        "question": current_q_text,
+        "answer": payload.answer,
+        "category": current_cat
+    })
+
+    new_question = await generate_next_question(
+        resume_context=resume_context,
+        target_role=session_data.get("target_role", "Software Engineer"),
+        difficulty=payload.difficulty,
+        experience_level=payload.experience_level,
+        interview_type=payload.interview_type,
+        plan=plan,
+        history=history,
+    )
+    if not new_question:
+        raise HTTPException(status_code=500, detail="Could not generate next question.")
+
+    existing_questions.append(new_question.model_dump())
+    _cache_questions(payload.session_id, [InterviewQuestion(**q) for q in existing_questions])
+
+    try:
+        db.table("interview_sessions").update({
+            "questions": json.dumps(existing_questions)
+        }).eq("id", payload.session_id).eq("user_id", user["user_id"]).execute()
+    except Exception as db_err:
+        logger.error(f"⚠️ interview_sessions update (questions) failed: {db_err}")
+
+    return new_question

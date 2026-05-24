@@ -1,13 +1,47 @@
 import uuid
 import json
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from models.interview import AnswerFeedback, InterviewPlan, InterviewQuestion
 from services.nvidia_client import invoke_nvidia_llm
+from services.groq_client import invoke_groq_llm
 from config import settings
 
 logger = logging.getLogger(__name__)
+
+
+async def _invoke_llm_json(messages: List[Dict[str, str]]) -> Optional[Any]:
+    content = None
+    # 1. Try Groq
+    if settings.groq_api_key:
+        try:
+            logger.info("Invoking Groq LLM...")
+            res = await invoke_groq_llm(messages, model="llama-3.3-70b-versatile", temperature=0.7)
+            if res:
+                content = res.get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            logger.warning(f"Groq LLM invocation failed: {e}")
+
+    # 2. Try NVIDIA fallback
+    if not content and settings.nvidia_api_key:
+        try:
+            logger.info("Invoking NVIDIA LLM fallback...")
+            res = await invoke_nvidia_llm(messages, model="meta/llama-3.1-70b-instruct", temperature=0.7)
+            if res:
+                content = res.get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            logger.warning(f"NVIDIA LLM invocation failed: {e}")
+
+    if not content:
+        return None
+
+    try:
+        cleaned = content.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+        return json.loads(cleaned)
+    except Exception as e:
+        logger.error(f"Failed to parse LLM response as JSON: {e}. Raw content: {content}")
+        return None
 
 
 QUESTION_BANK: Dict[str, Dict[str, List[dict]]] = {
@@ -186,7 +220,7 @@ def _pick_role_bank(target_role: str) -> Dict[str, List[dict]]:
     return QUESTION_BANK.get(target_role, QUESTION_BANK["default"])
 
 
-async def _generate_questions_with_nvidia(
+async def _generate_questions_llm(
     resume_context: str,
     target_role: str,
     difficulty: str,
@@ -195,18 +229,15 @@ async def _generate_questions_with_nvidia(
     num_questions: int,
 ) -> Optional[List[InterviewQuestion]]:
     """
-    Generate role-specific questions using NVIDIA's chat completions API.
+    Generate role-specific questions using the available LLM (Groq with NVIDIA fallback).
     Returns InterviewQuestion list on success, otherwise None.
     """
-    if not settings.nvidia_api_key:
-        return None
-
     system = (
         "You are an expert interviewer. Generate concise, role-appropriate mock interview questions. "
         "Return ONLY valid JSON."
     )
 
-    context_hint = resume_context.strip()
+    context_hint = resume_context.strip() if resume_context else ""
     if context_hint:
         # Bound context so we don't explode prompt size
         context_hint = context_hint[:2500]
@@ -237,21 +268,12 @@ Rules:
 """
 
     try:
-        response_data = await invoke_nvidia_llm(
+        raw = await _invoke_llm_json(
             [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
-            ],
-            temperature=0.7,
-            max_tokens=2048,
+            ]
         )
-        if not response_data:
-            return None
-
-        content = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        cleaned = content.strip()
-        cleaned = cleaned.lstrip("```json").lstrip("```").rstrip("```").strip()
-        raw = json.loads(cleaned)
         if not isinstance(raw, list) or not raw:
             return None
 
@@ -285,7 +307,7 @@ Rules:
             return None
         return questions[:num_questions]
     except Exception as e:
-        logger.warning(f"NVIDIA question generation failed, falling back. err={e}")
+        logger.warning(f"LLM question generation failed, falling back. err={e}")
         return None
 
 
@@ -306,13 +328,13 @@ async def generate_questions(
         experience_level=experience_level,
     )
 
-    llm_questions = await _generate_questions_with_nvidia(
+    llm_questions = await _generate_questions_llm(
         resume_context=resume_context,
         target_role=target_role,
         difficulty=difficulty,
         interview_type=interview_type,
         experience_level=experience_level,
-        num_questions=num_questions,
+        num_questions=1,
     )
     if llm_questions:
         return plan, llm_questions
@@ -354,7 +376,7 @@ async def generate_questions(
                 break
             append_question(item, "technical")
 
-    return plan, questions[:num_questions]
+    return plan, questions[:1]
 
 
 def _normalized_term_hits(answer: str, topics: List[str]) -> float:
@@ -469,7 +491,7 @@ async def _evaluate_with_llm(
     category: str,
     expected_topics: List[str],
 ) -> Optional[dict]:
-    """Uses NVIDIA LLM to evaluate the answer."""
+    """Uses LLM (Groq with NVIDIA fallback) to evaluate the answer."""
     prompt = f"""
     You are an expert technical interviewer and career coach. 
     Evaluate the following interview answer for a {category} question.
@@ -496,14 +518,9 @@ async def _evaluate_with_llm(
     """
 
     try:
-        response_data = await invoke_nvidia_llm([{"role": "user", "content": prompt}])
-        if not response_data:
+        data = await _invoke_llm_json([{"role": "user", "content": prompt}])
+        if not data or not isinstance(data, dict):
             return None
-        
-        content = response_data.get("choices", [{}])[0].get("message", {}).get("content", "")
-        # Clean response if LLM added markdown backticks
-        cleaned_response = content.strip().lstrip("```json").rstrip("```").strip()
-        data = json.loads(cleaned_response)
         
         # Ensure all required fields are present
         required_fields = [
@@ -592,4 +609,145 @@ async def evaluate_answer(
         model_answer=_build_model_answer(question, category, expected_topics),
         coaching_tip=_build_coaching_tip(category),
         **scores,
+    )
+
+
+async def generate_next_question(
+    resume_context: str,
+    target_role: str,
+    difficulty: str,
+    experience_level: str,
+    interview_type: str,
+    plan: InterviewPlan,
+    history: List[Dict[str, str]],
+) -> Optional[InterviewQuestion]:
+    """
+    Generate the next follow-up or new question in a conversational manner.
+    """
+    system = (
+        "You are an expert technical interviewer conducting a live, active face-to-face mock interview. "
+        "Your task is to generate the next single interview question for the candidate. "
+        "The question must be highly dynamic and conversational. It should either follow up directly on the candidate's previous answer (delving deeper into their projects, tech stack, or reasoning) or transition to a new relevant topic as defined by the interview plan.\n\n"
+        "Return ONLY valid JSON."
+    )
+
+    context_hint = resume_context.strip() if resume_context else ""
+    if context_hint:
+        # Bound context so we don't explode prompt size
+        context_hint = context_hint[:2500]
+
+    user = f"""
+We are conducting an interview for:
+- Target Role: {target_role}
+- Experience Level: {experience_level}
+- Interview Type: {interview_type}
+- Difficulty: {difficulty}
+
+Candidate's Resume Context:
+{context_hint if context_hint else "(none)"}
+
+Interview Plan:
+- Technical Questions: {plan.technical}
+- Behavioral Questions: {plan.behavioral}
+- System Design Questions: {plan.system_design}
+- Total Questions: {plan.num_questions}
+
+Conversational History (Previous Questions & Candidate's Answers):
+"""
+    for i, h in enumerate(history, 1):
+        user += f"\nRound {i}:\nQuestion [{h.get('category')}]: {h.get('question')}\nCandidate Answer: {h.get('answer')}\n"
+
+    user += f"""
+Please generate the next question.
+Rules:
+1. Do not ask the same question or repeat topics already covered.
+2. The question should follow up actively and conversationally on the candidate's previous answers if possible, or pivot smoothly.
+3. Expected category of this question should align with the remaining allocation of the Interview Plan.
+4. Keep the question concise (under 35 words).
+5. Do not include markdown formatting or backticks.
+
+Return a JSON object with:
+- question (string)
+- category (one of: "technical", "behavioral", "system_design")
+- expected_topics (array of 3-6 short strings)
+- follow_up_prompt (string or null)
+"""
+
+    try:
+        data = await _invoke_llm_json([
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ])
+        if data and isinstance(data, dict):
+            question_text = data.get("question")
+            category = data.get("category")
+            expected_topics = data.get("expected_topics") or []
+            follow_up = data.get("follow_up_prompt", None)
+
+            if isinstance(question_text, str) and question_text.strip():
+                if category not in {"technical", "behavioral", "system_design"}:
+                    category = "technical"
+                if not isinstance(expected_topics, list):
+                    expected_topics = []
+                expected_topics = [str(t).strip() for t in expected_topics if str(t).strip()][:8]
+
+                return InterviewQuestion(
+                    question_id=str(uuid.uuid4()),
+                    question=question_text.strip(),
+                    category=category,
+                    difficulty=difficulty if category != "behavioral" else "medium",
+                    expected_topics=expected_topics,
+                    follow_up_prompt=follow_up if isinstance(follow_up, str) or follow_up is None else None,
+                )
+    except Exception as e:
+        logger.error(f"Error generating next question: {e}")
+
+    # Fallback if LLM fails
+    logger.info("LLM next question generation failed, falling back to static bank.")
+    role_bank = _pick_role_bank(target_role)
+    asked_questions = {h.get("question", "").lower() for h in history}
+
+    asked_by_cat = {"technical": 0, "behavioral": 0, "system_design": 0}
+    for h in history:
+        cat = h.get("category", "technical")
+        if cat in asked_by_cat:
+            asked_by_cat[cat] += 1
+
+    target_cat = "technical"
+    if asked_by_cat["technical"] < plan.technical:
+        target_cat = "technical"
+    elif asked_by_cat["system_design"] < plan.system_design:
+        target_cat = "system_design"
+    elif asked_by_cat["behavioral"] < plan.behavioral:
+        target_cat = "behavioral"
+
+    pool = []
+    if target_cat == "technical":
+        pool = role_bank.get("technical", []) + QUESTION_BANK["default"]["technical"]
+    elif target_cat == "system_design":
+        pool = role_bank.get("system_design", [])
+    elif target_cat == "behavioral":
+        pool = BEHAVIORAL_QUESTIONS
+
+    for item in pool:
+        q_text = item["question"]
+        if q_text.lower() not in asked_questions:
+            return InterviewQuestion(
+                question_id=str(uuid.uuid4()),
+                question=q_text,
+                category=target_cat,
+                difficulty=difficulty if target_cat != "behavioral" else "medium",
+                expected_topics=item["topics"],
+                follow_up_prompt=item.get("follow_up"),
+            )
+
+    # Absolute fallback
+    default_q = "Can you explain some key challenges you've faced on technical projects and how you resolved them?"
+    return InterviewQuestion(
+        question_id=str(uuid.uuid4()),
+        question=default_q,
+        category="technical",
+        difficulty=difficulty,
+        expected_topics=["problem solving", "conflict resolution"],
+        follow_up_prompt=None,
     )

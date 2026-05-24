@@ -10,7 +10,7 @@ logger = logging.getLogger("hirenix.core_ai")
 
 async def invoke_nvidia_llm(
     messages: List[Dict[str, str]],
-    model: str = "google/gemma-4-31b-it",
+    model: str = "meta/llama-3.1-70b-instruct",
     temperature: float = 0.6,
     max_tokens: int = 4096,
 ) -> Optional[Dict[str, Any]]:
@@ -63,7 +63,7 @@ async def invoke_nvidia_llm(
 
 async def stream_nvidia_llm(
     messages: List[Dict[str, str]],
-    model: str = "google/gemma-4-31b-it",
+    model: str = "meta/llama-3.1-70b-instruct",
     temperature: float = 0.6,
     max_tokens: int = 4096,
 ):

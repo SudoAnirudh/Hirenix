@@ -362,6 +362,69 @@ export async function submitAnswer(
   });
 }
 
+export async function transcribeAudio(
+  audioBlob: Blob,
+): Promise<{ text: string }> {
+  const token = await getAccessToken();
+  const formData = new FormData();
+  formData.append("file", audioBlob, "recording.wav");
+
+  const headers: HeadersInit = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+
+  let res: Response;
+  try {
+    res = await fetch(`${getBaseUrl()}/interview/transcribe`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+  } catch (error: unknown) {
+    throw toApiError(error);
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Transcription failed");
+  }
+
+  return res.json();
+}
+
+export async function getNextQuestion(
+  sessionId: string,
+  currentQuestionId: string,
+  answer: string,
+  options: {
+    difficulty?: string;
+    experienceLevel?: string;
+    interviewType?: string;
+    numQuestions?: number;
+  } = {},
+) {
+  return request<{
+    question_id: string;
+    question: string;
+    category: string;
+    difficulty: string;
+    expected_topics: string[];
+    follow_up_prompt: string | null;
+  }>("/interview/next-question", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: sessionId,
+      current_question_id: currentQuestionId,
+      answer,
+      difficulty: options.difficulty ?? "medium",
+      experience_level: options.experienceLevel ?? "junior",
+      interview_type: options.interviewType ?? "mixed",
+      num_questions: options.numQuestions ?? 5,
+    }),
+  });
+}
+
 export async function evaluateInterviewSession(
   sessionId: string,
   answers: Array<{ question_id: string; answer: string }>,
