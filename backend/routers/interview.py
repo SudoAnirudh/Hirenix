@@ -21,7 +21,6 @@ from models.interview import (
     SessionSummaryResponse,
     NextQuestionRequest,
     InterviewQuestion,
-    InterviewPlan,
 )
 import json
 
