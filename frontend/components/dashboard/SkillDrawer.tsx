@@ -51,7 +51,8 @@ export default function SkillDrawer({
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              aria-label="Close skill details"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2"
             >
               <X size={20} />
             </button>
