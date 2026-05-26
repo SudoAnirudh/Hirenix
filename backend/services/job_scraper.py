@@ -206,13 +206,15 @@ async def scrape_jobs(
         # Build search condition for fields if provided
         or_conditions = []
         for f in queries:
-            or_conditions.append(f"title.ilike.%{f}%,description.ilike.%{f}%")
+            safe_f = f.replace(",", "").replace('"', "")
+            or_conditions.append(f"title.ilike.%{safe_f}%,description.ilike.%{safe_f}%")
         if or_conditions:
             local_query = local_query.or_(",".join(or_conditions))
             
         # Filter by location if specified
         if location:
-            local_query = local_query.ilike("location", f"%{location}%")
+            safe_loc = location.replace(",", "").replace('"', "")
+            local_query = local_query.ilike("location", f"%{safe_loc}%")
             
         local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
         for j in (local_res.data or []):

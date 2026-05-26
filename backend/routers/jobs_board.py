@@ -1,5 +1,6 @@
 import os
 import logging
+import secrets
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -41,9 +42,11 @@ async def get_jobs_board(
     try:
         query = db.table("job_posts").select("*", count="exact")
         if search:
-            query = query.or_(f"title.ilike.%{search}%,company.ilike.%{search}%,description.ilike.%{search}%")
+            safe_search = search.replace(",", "").replace('"', "")
+            query = query.or_(f"title.ilike.%{safe_search}%,company.ilike.%{safe_search}%,description.ilike.%{safe_search}%")
         if location:
-            query = query.ilike("location", f"%{location}%")
+            safe_location = location.replace(",", "").replace('"', "")
+            query = query.ilike("location", f"%{safe_location}%")
         query = query.order("posted_at", desc=True)
         start = (page - 1) * limit
         end = start + limit - 1
@@ -69,7 +72,7 @@ async def trigger_jobs_sync(
     db=Depends(get_supabase_admin)
 ):
     expected_token = os.environ.get("JOBS_SYNC_TOKEN") or settings.jwt_secret
-    if not credentials or credentials.credentials != expected_token:
+    if not credentials or not secrets.compare_digest(credentials.credentials, expected_token):
         raise HTTPException(status_code=401, detail="Unauthorized.")
     try:
         new_jobs = await sync_twitter_jobs()
