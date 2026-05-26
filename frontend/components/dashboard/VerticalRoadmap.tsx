@@ -114,11 +114,12 @@ function RoadmapNode({
         {/* Status Indicator (Vibrant Circle) */}
         <div className="relative flex-shrink-0">
           <button
+            aria-label={skill.status === "completed" ? "Mark as incomplete" : "Mark as completed"}
             onClick={(e) => {
               e.stopPropagation();
               onToggleStatus(skill.name);
             }}
-            className={`z-10 relative flex items-center justify-center w-10 h-10 rounded-full transition-all active:scale-90 ${
+            className={`z-10 relative flex items-center justify-center w-10 h-10 rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
               skill.status === "completed"
                 ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
