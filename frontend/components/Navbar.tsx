@@ -36,7 +36,7 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className={`text-sm font-semibold transition-colors #7C9ADD] ${
+              className={`text-sm font-semibold transition-colors hover:text-[#7C9ADD] ${
                 pathname === href ? "text-[#7C9ADD]" : "text-[#4A5568]"
               }`}
             >
@@ -47,13 +47,13 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="hidden sm:block">
-            <button className="text-sm font-bold text-[#4A5568] #7C9ADD] transition-colors px-4">
+            <button className="text-sm font-bold text-[#4A5568] hover:text-[#7C9ADD] transition-colors px-4">
               Dashboard
             </button>
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-sm font-bold shadow-lg shadow-[#7C9ADD]/20 #7C9ADD]/90 transition-all"
+            className="px-6 py-2.5 rounded-xl bg-[#7C9ADD] text-white text-sm font-bold shadow-lg shadow-[#7C9ADD]/20 hover:bg-[#7C9ADD]/90 transition-all"
           >
             Start Studio
           </Link>

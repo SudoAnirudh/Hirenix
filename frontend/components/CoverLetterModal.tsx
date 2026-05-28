@@ -172,7 +172,7 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
+                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all"
                       title="Copy to Clipboard"
                     >
                       {copied ? (
@@ -211,7 +211,7 @@ export default function CoverLetterModal({
               <Button
                 variant="outline"
                 onClick={() => handleDownload("docx")}
-                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest #7C9ADD] #7C9ADD] transition-all h-11 px-6"
+                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest hover:text-[#7C9ADD] hover:text-[#7C9ADD] transition-all h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 Word (.docx)
