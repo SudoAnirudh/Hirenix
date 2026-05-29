@@ -6,6 +6,7 @@ import logging
 from typing import List
 
 from models.analysis import JobListing
+from utils.sanitizer import sanitize_postgrest_filter
 
 logger = logging.getLogger("hirenix.job_scraper")
 
@@ -206,7 +207,8 @@ async def scrape_jobs(
         # Build search condition for fields if provided
         or_conditions = []
         for f in queries:
-            or_conditions.append(f"title.ilike.%{f}%,description.ilike.%{f}%")
+            safe_f = sanitize_postgrest_filter(f)
+            or_conditions.append(f"title.ilike.%{safe_f}%,description.ilike.%{safe_f}%")
         if or_conditions:
             local_query = local_query.or_(",".join(or_conditions))
             

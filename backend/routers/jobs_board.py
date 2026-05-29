@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from dependencies import get_supabase_admin
 from config import settings
 from services.twitter_job_aggregator import sync_twitter_jobs
+from utils.sanitizer import sanitize_postgrest_filter
 
 logger = logging.getLogger("hirenix.jobs_board")
 router = APIRouter()
@@ -42,7 +43,8 @@ async def get_jobs_board(
     try:
         query = db.table("job_posts").select("*", count="exact")
         if search:
-            query = query.or_(f"title.ilike.%{search}%,company.ilike.%{search}%,description.ilike.%{search}%")
+            safe_search = sanitize_postgrest_filter(search)
+            query = query.or_(f"title.ilike.%{safe_search}%,company.ilike.%{safe_search}%,description.ilike.%{safe_search}%")
         if location:
             query = query.ilike("location", f"%{location}%")
         query = query.order("posted_at", desc=True)

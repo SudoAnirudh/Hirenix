@@ -1,12 +1,11 @@
 import os
 import logging
 import json
-from typing import Optional, Dict, List
-from models.roadmap import CareerRoadmap, RoadmapSkill
+from typing import Optional
+from models.roadmap import CareerRoadmap
 from services.skill_gap import detect_skill_gap
 from services.nvidia_client import invoke_nvidia_llm
 from services.groq_client import invoke_groq_llm
-from services.cache_manager import cache_manager
 from utils.link_validator import validate_links, get_fallback_url
 from config import settings
 
