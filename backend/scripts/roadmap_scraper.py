@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from typing import List, Dict, Any, Optional
+from typing import Any, Optional
 from concurrent.futures import ThreadPoolExecutor
 
 # Configuration
