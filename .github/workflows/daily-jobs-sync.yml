@@ -9,12 +9,20 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.JOBS_SYNC_TOKEN }}" ]; then
+            echo "ERROR: JOBS_SYNC_TOKEN secret is not set"
+            exit 1
+          fi
+          echo "Secret is configured"
+      
       - name: Trigger Twitter Job Sync API
         run: |
           API_URL="https://hirenix-oa57.onrender.com/jobs-board/sync"
           echo "Triggering jobs sync API at: $API_URL"
           
-          # Send POST request with Bearer token
           curl -f -X POST "$API_URL" \
                -H "Authorization: Bearer ${{ secrets.JOBS_SYNC_TOKEN }}" \
-               -H "Content-Type: application/json"
+               -H "Content-Type: application/json" \
+               -w "\nHTTP Status: %{http_code}\n"
