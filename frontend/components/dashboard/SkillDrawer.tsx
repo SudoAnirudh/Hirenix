@@ -51,7 +51,8 @@ export default function SkillDrawer({
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+              aria-label="Close drawer"
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               <X size={20} />
             </button>
@@ -82,7 +83,7 @@ export default function SkillDrawer({
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 dark:hover:border-indigo-500 group transition-all"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 dark:hover:border-indigo-500 group transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
                     <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm text-indigo-500 group-hover:scale-110 transition-transform">
                       {resource.type === "video" ? (
@@ -123,7 +124,7 @@ export default function SkillDrawer({
                 onClick={() => {
                   onToggleStatus(skill.name);
                 }}
-                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
+                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                   skill.status === "completed"
                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
                     : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none"
