@@ -64,7 +64,7 @@ async def get_jobs_board(
         return PaginatedJobsResponse(total=total_count, page=page, limit=limit, jobs=formatted_jobs)
     except Exception as e:
         logger.error(f"Error fetching jobs: {e}")
-        raise HTTPException(status_code=500, detail="Could not retrieve job postings.")
+        raise HTTPException(status_code=500, detail=f"Could not retrieve job postings: {str(e)}")
 
 @router.post("/sync")
 async def trigger_jobs_sync(
