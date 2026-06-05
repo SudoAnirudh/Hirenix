@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
@@ -15,25 +16,40 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, GitHub, and LinkedIn data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # What: Replaced sequential synchronous db.execute() calls with asyncio.gather running in threads
+        # Why: The Supabase python client is synchronous; calling .execute() in series blocks the async event loop and increases latency.
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute())
+        github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        linkedin_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
         
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
-        # 4. LinkedIn Stats
-        linkedin_r = db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        resume_r, interviews_r, github_r, linkedin_r = await asyncio.gather(
+            resume_task, interviews_task, github_task, linkedin_task
+        )
 
         ready_skills = []
 
-        # 5. Extract Resume skills from sections if available
+        # 5 & 6 Gather dependent queries
+        sections_r = None
+        answers_r = None
+        dependent_tasks = []
+
         if resume_r.data:
             resume_id = resume_r.data[0]["id"]
-            sections_r = db.table("resume_sections").select("content").eq("resume_id", resume_id).eq("section_type", "skills").execute()
-            if sections_r.data:
+            dependent_tasks.append(asyncio.to_thread(lambda: db.table("resume_sections").select("content").eq("resume_id", resume_id).eq("section_type", "skills").execute()))
+        else:
+            dependent_tasks.append(asyncio.to_thread(lambda: None))
+
+        if interviews_r.data:
+            session_ids = [i["id"] for i in interviews_r.data]
+            dependent_tasks.append(asyncio.to_thread(lambda: db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()))
+        else:
+            dependent_tasks.append(asyncio.to_thread(lambda: None))
+
+        sections_r, answers_r = await asyncio.gather(*dependent_tasks)
+
+        # 5. Extract Resume skills from sections if available
+        if sections_r and sections_r.data:
                 content = sections_r.data[0]["content"] or ""
                 skills_raw = [s.strip() for s in content.replace("\n", ",").split(",") if s.strip()]
                 # filter clean short names
@@ -41,11 +57,8 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
                 ready_skills.extend(clean_skills[:5])
         
         # 6. Ready Skills from Interviews (score >= 7.0)
-        if interviews_r.data:
-            session_ids = [i["id"] for i in interviews_r.data]
-            answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
-            if answers_r.data:
-                ready_skills.extend([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]])
+        if answers_r and answers_r.data:
+            ready_skills.extend([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]])
 
         # Add GitHub strengths
         if github_r.data and github_r.data[0].get("strengths"):
