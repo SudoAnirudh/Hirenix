@@ -1,5 +1,4 @@
 import httpx
-import feedparser
 import re
 import json
 import logging
@@ -14,55 +13,128 @@ from services.groq_client import invoke_groq_llm
 
 logger = logging.getLogger("hirenix.twitter_job_aggregator")
 
-NITTER_INSTANCES = [
-    "https://nitter.privacydev.net",
-    "https://nitter.moomoo.me",
-    "https://nitter.cz",
-    "https://nitter.space",
-    "https://nitter.soopy.moe",
-    "https://nitter.perennialte.ch",
-    "https://nitter.salast.us",
-    "https://nitter.catsarch.com",
-    "https://nitter.tiekoetter.com",
-    "https://nitter.d420.de",
-]
 
 def _clean_tweet_text(text: str) -> str:
-    if not text: return ""
+    if not text:
+        return ""
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
-def _extract_tweet_id(guid: str) -> str:
-    match = re.search(r"status/(\d+)", guid)
-    return match.group(1) if match else str(hash(guid))
 
-async def _fetch_rss_feed(url: str) -> Optional[str]:
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "application/rss+xml, application/xml, text/xml, */*"
+async def fetch_tweets_via_apify(
+    handles: List[str], max_items: int = 15
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Triggers the apidojo/twitter-scraper-lite actor via Apify API,
+    polls the run status until completion, and returns the dataset items.
+    """
+    token = settings.apify_token
+    if not token:
+        logger.error(
+            "APIFY_TOKEN environment variable is not set. Cannot run Apify Twitter Scraper."
+        )
+        return None
+
+    # Replace slash with tilde for Apify Acts endpoint: apidojo~twitter-scraper-lite
+    actor_id = "apidojo~twitter-scraper-lite"
+    run_url = f"https://api.apify.com/v2/acts/{actor_id}/runs?token={token}"
+
+    payload = {
+        "twitterHandles": handles,
+        "maxItems": max_items,
+        "sort": "Latest",
     }
-    async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-        response = await client.get(url, headers=headers)
-        return response.text if response.status_code == 200 else None
 
-async def fetch_tweets_feed(handle: str) -> Optional[List[Dict[str, Any]]]:
-    if settings.twitter_rss_override:
-        feed_xml = await _fetch_rss_feed(settings.twitter_rss_override)
-        if feed_xml:
-            feed = feedparser.parse(feed_xml)
-            if feed.entries: return feed.entries
-
-    for instance in NITTER_INSTANCES:
-        url = f"{instance}/{handle}/rss"
+    logger.info(f"Triggering Apify Actor {actor_id} for handles: {handles}")
+    async with httpx.AsyncClient(timeout=30.0) as client:
         try:
-            feed_xml = await _fetch_rss_feed(url)
-            if not feed_xml or "xml" not in feed_xml: continue
-            feed = feedparser.parse(feed_xml)
-            if feed.entries: return feed.entries
+            # 1. Trigger the run
+            response = await client.post(run_url, json=payload)
+            if response.status_code != 201:
+                logger.error(
+                    f"Failed to start Apify actor run. Status: {response.status_code}. Response: {response.text}"
+                )
+                return None
+
+            run_data = response.json().get("data", {})
+            run_id = run_data.get("id")
+            default_dataset_id = run_data.get("defaultDatasetId")
+
+            if not run_id or not default_dataset_id:
+                logger.error(
+                    f"Apify response missing run_id or default_dataset_id: {run_data}"
+                )
+                return None
+
+            # 2. Poll the status of the run (maximum 3 minutes wait time)
+            status_url = (
+                f"https://api.apify.com/v2/actor-runs/{run_id}?token={token}"
+            )
+            max_wait_seconds = 180
+            poll_interval_seconds = 5
+            elapsed_seconds = 0
+
+            logger.info(f"Apify run started. Run ID: {run_id}. Polling...")
+            while elapsed_seconds < max_wait_seconds:
+                await asyncio.sleep(poll_interval_seconds)
+                elapsed_seconds += poll_interval_seconds
+
+                status_res = await client.get(status_url)
+                if status_res.status_code == 200:
+                    run_info = status_res.json().get("data", {})
+                    status = run_info.get("status")
+                    logger.info(
+                        f"Apify run status: {status} (elapsed: {elapsed_seconds}s)"
+                    )
+
+                    if status == "SUCCEEDED":
+                        break
+                    elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
+                        logger.error(
+                            f"Apify run finished with non-success status: {status}"
+                        )
+                        return None
+                else:
+                    logger.warning(
+                        f"Error checking Apify run status. Status code: {status_res.status_code}"
+                    )
+            else:
+                logger.error("Apify run timed out waiting for completion.")
+                # Attempt to abort the run to avoid cost overrun
+                try:
+                    await client.post(
+                        f"https://api.apify.com/v2/actor-runs/{run_id}/abort?token={token}"
+                    )
+                except Exception:
+                    pass
+                return None
+
+            # 3. Retrieve results from dataset
+            items_url = f"https://api.apify.com/v2/datasets/{default_dataset_id}/items?token={token}"
+            items_res = await client.get(items_url)
+            if items_res.status_code == 200:
+                tweets = items_res.json()
+                if isinstance(tweets, list):
+                    logger.info(
+                        f"Successfully retrieved {len(tweets)} tweets from Apify dataset."
+                    )
+                    return tweets
+                else:
+                    logger.error(
+                        f"Unexpected data format returned from dataset: {type(tweets)}"
+                    )
+                    return None
+            else:
+                logger.error(
+                    f"Failed to fetch dataset items. Status: {items_res.status_code}. Response: {items_res.text}"
+                )
+                return None
+
         except Exception as e:
-            logger.error(f"Error fetching from Nitter instance {instance}: {e}")
-    return None
+            logger.error(f"Exception during Apify run: {e}")
+            return None
+
 
 async def parse_tweet_with_llm(tweet_text: str) -> Optional[Dict[str, Any]]:
     prompt = f"""
@@ -87,7 +159,9 @@ ONLY return the JSON object. Do not include conversational text or markdown bloc
         if settings.nvidia_api_key:
             res = await invoke_nvidia_llm(messages, temperature=0.2)
             if res and res.get("choices"):
-                response_json = _clean_llm_json(res["choices"][0]["message"]["content"])
+                response_json = _clean_llm_json(
+                    res["choices"][0]["message"]["content"]
+                )
     except Exception as e:
         logger.warning(f"NVIDIA parsing failed: {e}")
 
@@ -96,10 +170,13 @@ ONLY return the JSON object. Do not include conversational text or markdown bloc
             if settings.groq_api_key:
                 res = await invoke_groq_llm(messages, temperature=0.2)
                 if res and res.get("choices"):
-                    response_json = _clean_llm_json(res["choices"][0]["message"]["content"])
+                    response_json = _clean_llm_json(
+                        res["choices"][0]["message"]["content"]
+                    )
         except Exception as e:
             logger.error(f"Groq parsing failed: {e}")
     return response_json
+
 
 def _clean_llm_json(content: str) -> Optional[Dict[str, Any]]:
     try:
@@ -114,58 +191,81 @@ def _clean_llm_json(content: str) -> Optional[Dict[str, Any]]:
         logger.warning(f"Failed to parse LLM JSON: {e}")
     return None
 
+
 async def sync_twitter_jobs() -> int:
     handles = settings.twitter_handles_list
     if not handles:
         logger.warning("No Twitter handles configured for scraping.")
         return 0
 
-    all_entries: List[Dict[str, Any]] = []
-    for handle in handles:
-        entries = await fetch_tweets_feed(handle)
-        if entries:
-            all_entries.extend(entries)
-        else:
-            logger.warning(f"No RSS feed entries found for Twitter handle: {handle}")
+    if not settings.apify_token:
+        logger.error(
+            "APIFY_TOKEN environment variable is not set. Skipping Twitter jobs sync."
+        )
+        return 0
 
-    if not all_entries:
+    tweets = await fetch_tweets_via_apify(handles, max_items=15)
+    if not tweets:
+        logger.warning("No tweets retrieved from Apify.")
+        return 0
+
+    # Check for Apify Free tier demo mode restriction
+    if all(t.get("demo") for t in tweets):
+        logger.warning(
+            "Apify returned only demo/placeholder items. This typically means your Apify account is on the Free tier and subject to limitations for this actor. To scrape real data, please upgrade your Apify account to a paid plan."
+        )
         return 0
 
     db = get_supabase_admin()
     new_jobs_count = 0
 
-    for entry in all_entries:
+    for tweet in tweets:
         try:
-            guid = getattr(entry, "id", getattr(entry, "link", ""))
-            tweet_id = _extract_tweet_id(guid)
-            tweet_text = _clean_tweet_text(getattr(entry, "description", getattr(entry, "title", "")))
-            if not tweet_text: continue
+            tweet_id = tweet.get("id")
+            if not tweet_id:
+                continue
 
-            existing = db.table("job_posts").select("id").eq("tweet_id", tweet_id).execute()
-            if existing.data: continue
+            # Standardized tweet content field in apidojo/twitter-scraper-lite
+            tweet_text = _clean_tweet_text(
+                tweet.get("text") or tweet.get("fullText") or ""
+            )
+            if not tweet_text:
+                continue
+
+            existing = (
+                db.table("job_posts")
+                .select("id")
+                .eq("tweet_id", str(tweet_id))
+                .execute()
+            )
+            if existing.data:
+                continue
 
             job_data = await parse_tweet_with_llm(tweet_text)
-            if not job_data: continue
+            if not job_data:
+                continue
 
-            posted_at = datetime.utcnow().isoformat()
-            if hasattr(entry, "published_parsed") and entry.published_parsed:
-                try:
-                    posted_at = datetime(*entry.published_parsed[:6]).isoformat()
-                except Exception: pass
+            posted_at = tweet.get("createdAt")
+            if not posted_at:
+                posted_at = datetime.utcnow().isoformat()
 
-            db.table("job_posts").insert({
-                "title": job_data["title"],
-                "company": job_data["company"],
-                "location": job_data["location"],
-                "apply_url": job_data.get("apply_url"),
-                "description": job_data.get("description") or tweet_text[:500],
-                "requirements": job_data.get("requirements", []),
-                "tweet_id": tweet_id,
-                "posted_at": posted_at
-            }).execute()
+            db.table("job_posts").insert(
+                {
+                    "title": job_data["title"],
+                    "company": job_data["company"],
+                    "location": job_data["location"],
+                    "apply_url": job_data.get("apply_url"),
+                    "description": job_data.get("description")
+                    or tweet_text[:500],
+                    "requirements": job_data.get("requirements", []),
+                    "tweet_id": str(tweet_id),
+                    "posted_at": posted_at,
+                }
+            ).execute()
 
             new_jobs_count += 1
             await asyncio.sleep(1.0)
         except Exception as e:
-            logger.error(f"Error processing RSS entry: {e}")
+            logger.error(f"Error processing Apify tweet: {e}")
+
     return new_jobs_count

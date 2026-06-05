@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     # Groq
     groq_api_key: Optional[str] = None
 
+    # Apify
+    apify_token: Optional[str] = None
+
     # Stripe
     stripe_secret_key: Optional[str] = None
     stripe_webhook_secret: Optional[str] = None

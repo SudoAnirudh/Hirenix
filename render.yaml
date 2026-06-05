@@ -30,6 +30,8 @@ services:
         sync: false
       - key: APP_ENV
         value: production
-      # We will set ALLOWED_ORIGINS to the frontend URL manually
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: APIFY_TOKEN
+        sync: false
+
