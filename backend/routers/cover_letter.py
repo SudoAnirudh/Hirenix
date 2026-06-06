@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -93,28 +94,37 @@ async def export_cover_letter(
     db=Depends(get_supabase_admin),
 ):
     """Exports a cover letter as PDF or Docx."""
-    r = (
-        db.table("cover_letters")
-        .select("*")
-        .eq("id", letter_id)
-        .eq("user_id", user["user_id"])
-        .single()
-        .execute()
+
+    def fetch_cover_letter():
+        return (
+            db.table("cover_letters")
+            .select("*")
+            .eq("id", letter_id)
+            .eq("user_id", user["user_id"])
+            .single()
+            .execute()
+        )
+
+    def fetch_profile():
+        return (
+            db.table("profiles")
+            .select("full_name")
+            .eq("id", user["user_id"])
+            .single()
+            .execute()
+        )
+
+    # ⚡ Bolt: Execute blocking Supabase calls concurrently in separate threads
+    r, p = await asyncio.gather(
+        asyncio.to_thread(fetch_cover_letter),
+        asyncio.to_thread(fetch_profile)
     )
+
     if not r.data:
         raise HTTPException(status_code=404, detail="Cover letter not found.")
 
-    # Fetch user profile for headers
-    p = (
-        db.table("profiles")
-        .select("full_name")
-        .eq("id", user["user_id"])
-        .single()
-        .execute()
-    )
-    
     header_info = {
-        "name": p.data.get("full_name", "Valued User"),
+        "name": p.data.get("full_name", "Valued User") if p.data else "Valued User",
         "email": user.get("email", ""),
         "date": datetime.date.today().strftime("%B %d, %Y"),
         "location": "Global", # Can be updated if profile has location
