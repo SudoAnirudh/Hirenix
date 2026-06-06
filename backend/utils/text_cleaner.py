@@ -8,13 +8,22 @@ _NON_PRINTABLE_PATTERN = re.compile(r"[^\x20-\x7E\n]")
 
 _KEYWORD_PATTERN = re.compile(r"\b[a-zA-Z][a-zA-Z0-9+#.]*\b")
 
-_ACHIEVEMENT_PATTERNS = [
-    re.compile(r"\d+\s*%", re.IGNORECASE),  # percentages
-    re.compile(r"\$\s*\d+", re.IGNORECASE),  # dollar amounts
-    re.compile(r"\d+\s*x\b", re.IGNORECASE),  # multipliers
-    re.compile(r"\d+\s*(million|billion|k\b|users|clients|employees)", re.IGNORECASE),
-    re.compile(r"increased|decreased|reduced|improved|grew|saved", re.IGNORECASE),
-]
+# PERFORMANCE OPTIMIZATION:
+# Combined multiple achievement regex patterns into a single pattern using the `|` (OR) operator.
+# This prevents the overhead of iterating through multiple regex patterns in a Python loop and
+# allows the underlying C engine to optimize the search process.
+_ACHIEVEMENT_PATTERN = re.compile(
+    r"\d+\s*%|\$\s*\d+|\d+\s*x\b|\d+\s*(?:million|billion|k\b|users|clients|employees)|increased|decreased|reduced|improved|grew|saved",
+    re.IGNORECASE
+)
+
+# PERFORMANCE OPTIMIZATION:
+# Extracted the loop-invariant `stopwords` set to a module-level `frozenset` constant.
+# This eliminates redundant memory allocation and set hashing on every function call.
+_STOPWORDS = frozenset({
+    "the", "and", "or", "a", "an", "to", "of", "in", "with", "for",
+    "on", "at", "by", "is", "are", "was", "were",
+})
 
 
 def clean_text(text: str) -> str:
@@ -34,32 +43,14 @@ def clean_text(text: str) -> str:
 
 def extract_keywords(text: str) -> list[str]:
     """Extract candidate keywords by removing stopwords and short tokens."""
-    stopwords = {
-        "the",
-        "and",
-        "or",
-        "a",
-        "an",
-        "to",
-        "of",
-        "in",
-        "with",
-        "for",
-        "on",
-        "at",
-        "by",
-        "is",
-        "are",
-        "was",
-        "were",
-    }
-    tokens = _KEYWORD_PATTERN.findall(text)
-    return [t.lower() for t in tokens if len(t) > 2 and t.lower() not in stopwords]
+    return [
+        # PERFORMANCE OPTIMIZATION:
+        # Using the walrus operator `:=` to evaluate `t.lower()` only once per token
+        t_lower for t in _KEYWORD_PATTERN.findall(text)
+        if len(t) > 2 and (t_lower := t.lower()) not in _STOPWORDS
+    ]
 
 
 def has_measurable_achievement(text: str) -> bool:
     """Return True if the text contains quantified results."""
-    for p in _ACHIEVEMENT_PATTERNS:
-        if p.search(text):
-            return True
-    return False
+    return bool(_ACHIEVEMENT_PATTERN.search(text))
