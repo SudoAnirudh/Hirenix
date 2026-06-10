@@ -26,7 +26,7 @@
   "homepage": "https://github.com/SudoAnirudh/Hirenix#readme",
   "devDependencies": {
     "all-contributors-cli": "^6.26.1",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "eslint": "^10.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
