@@ -130,7 +130,7 @@ export default function RoadmapPage() {
 
     // Flatten all completed skills for the backend
     const getCompletedNames = (skills: RoadmapSkill[]): string[] => {
-      let names: string[] = [];
+      const names: string[] = [];
       skills.forEach((s) => {
         if (s.status === "completed") names.push(s.name);
         if (s.children) names.push(...getCompletedNames(s.children));
