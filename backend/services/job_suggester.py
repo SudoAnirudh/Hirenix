@@ -3,6 +3,7 @@ import logging
 import uuid
 from typing import Dict, Any
 
+import asyncio
 from services.job_scraper import scrape_jobs
 from services.groq_client import invoke_groq_llm
 from services.nvidia_client import invoke_nvidia_llm
@@ -15,37 +16,44 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, GitHub, and LinkedIn data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # 1-4. Concurrent Data Fetching
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute())
+        github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        linkedin_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
         
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
-        # 4. LinkedIn Stats
-        linkedin_r = db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        resume_r, interviews_r, github_r, linkedin_r = await asyncio.gather(resume_task, interviews_task, github_task, linkedin_task)
 
         ready_skills = []
 
-        # 5. Extract Resume skills from sections if available
+        # 5. Extract Resume skills from sections and 6. Ready Skills from Interviews concurrently
+        sections_task = None
         if resume_r.data:
             resume_id = resume_r.data[0]["id"]
-            sections_r = db.table("resume_sections").select("content").eq("resume_id", resume_id).eq("section_type", "skills").execute()
-            if sections_r.data:
-                content = sections_r.data[0]["content"] or ""
-                skills_raw = [s.strip() for s in content.replace("\n", ",").split(",") if s.strip()]
-                # filter clean short names
-                clean_skills = [s for s in skills_raw if len(s) > 1 and len(s) < 30]
-                ready_skills.extend(clean_skills[:5])
-        
-        # 6. Ready Skills from Interviews (score >= 7.0)
+            sections_task = asyncio.to_thread(lambda: db.table("resume_sections").select("content").eq("resume_id", resume_id).eq("section_type", "skills").execute())
+
+        answers_task = None
         if interviews_r.data:
             session_ids = [i["id"] for i in interviews_r.data]
-            answers_r = db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute()
-            if answers_r.data:
-                ready_skills.extend([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]])
+            answers_task = asyncio.to_thread(lambda: db.table("interview_answers").select("category, score").in_("session_id", session_ids).execute())
+
+        # Execute any pending secondary tasks concurrently
+        results = await asyncio.gather(
+            sections_task if sections_task else asyncio.sleep(0),
+            answers_task if answers_task else asyncio.sleep(0)
+        )
+        sections_r = results[0] if sections_task else None
+        answers_r = results[1] if answers_task else None
+
+        if sections_r and hasattr(sections_r, 'data') and sections_r.data:
+            content = sections_r.data[0]["content"] or ""
+            skills_raw = [s.strip() for s in content.replace("\n", ",").split(",") if s.strip()]
+            # filter clean short names
+            clean_skills = [s for s in skills_raw if len(s) > 1 and len(s) < 30]
+            ready_skills.extend(clean_skills[:5])
+
+        if answers_r and hasattr(answers_r, 'data') and answers_r.data:
+            ready_skills.extend([a["category"] for a in answers_r.data if a["score"] and a["score"] >= 7.0 and a["category"]])
 
         # Add GitHub strengths
         if github_r.data and github_r.data[0].get("strengths"):
