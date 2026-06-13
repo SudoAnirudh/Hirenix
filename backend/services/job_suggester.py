@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any
 
 from services.job_scraper import scrape_jobs
@@ -15,17 +16,13 @@ async def get_user_readiness_context(user_id: str, db) -> Dict[str, Any]:
     Synthesizes user profile, resume, interview, GitHub, and LinkedIn data for suggestion context.
     """
     try:
-        # 1. Latest Resume
-        resume_r = db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # 1. Fetch concurrently to avoid N+1 DB latency
+        resume_task = asyncio.to_thread(lambda: db.table("resumes").select("id, raw_text, ats_score").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        interviews_task = asyncio.to_thread(lambda: db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute())
+        github_task = asyncio.to_thread(lambda: db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        linkedin_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
         
-        # 2. Latest Interview Sessions
-        interviews_r = db.table("interview_sessions").select("id, overall_score, target_role").eq("user_id", user_id).order("created_at", desc=True).limit(3).execute()
-        
-        # 3. GitHub Stats
-        github_r = db.table("github_analyses").select("gpi_score, strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
-        
-        # 4. LinkedIn Stats
-        linkedin_r = db.table("linkedin_analyses").select("strengths").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        resume_r, interviews_r, github_r, linkedin_r = await asyncio.gather(resume_task, interviews_task, github_task, linkedin_task)
 
         ready_skills = []
 
