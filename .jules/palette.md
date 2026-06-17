@@ -1,0 +1,3 @@
+## 2026-05-11 - Keyboard Accessibility for Hover-Revealed Tooltips
+**Learning:** When using `group-hover` to reveal tooltips or secondary information in icon-only triggers (like the ExternalLink in TechTreeNode), wrapping the trigger in a non-semantic `div` breaks keyboard accessibility. Screen reader and keyboard-only users cannot access the tooltip because the element cannot receive focus.
+**Action:** Always use semantic interactive elements (like `<button>`) with `type="button"`, `aria-label`, and `title` for icon-only triggers. Include `focus-visible:ring-2` for visual focus indication, and crucially, apply `group-focus-within:opacity-100 group-focus-within:visible` to the tooltip container alongside `group-hover` to ensure the tooltip is revealed on keyboard focus.
