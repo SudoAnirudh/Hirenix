@@ -6,3 +6,8 @@
 **Vulnerability:** User input was being directly interpolated into Supabase PostgREST `.or_()` clauses.
 **Learning:** Commas and parentheses in strings are interpreted as syntactic boundaries in PostgREST filters, leading to injection vulnerabilities.
 **Prevention:** Added a `sanitize_postgrest_filter` utility function to strip out commas, parentheses, and double-quotes from user input before usage in these clauses.
+
+## 2025-02-28 - Hardcoded /tmp/ path vulnerability
+**Vulnerability:** Hardcoded `/tmp/` path for temporary file creation.
+**Learning:** Hardcoding `/tmp/` can lead to path traversal vulnerabilities, file collision/overwrite, or failure on systems where the temporary directory is different (like Windows or environments with specific TMPDIR setups), as well as failure when `cleanup_temp` expects `tempfile.gettempdir()`.
+**Prevention:** Always use `tempfile.gettempdir()` combined with `os.path.join()` or use `tempfile.NamedTemporaryFile` to securely manage temporary files in a cross-platform and secure manner.
