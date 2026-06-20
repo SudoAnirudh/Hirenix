@@ -20,6 +20,7 @@ import { Sparkles, Loader2, Copy, FileText, Check, Rocket } from "lucide-react";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import { useReactToPrint } from "react-to-print";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 interface TrendPoint {
   score: number;
