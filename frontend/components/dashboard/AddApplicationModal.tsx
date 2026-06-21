@@ -85,7 +85,7 @@ export default function AddApplicationModal({
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="absolute top-6 right-6 p-2 rounded-full dark: text-slate-400 transition-colors"
+                  className="absolute top-6 right-6 p-2 rounded-full dark: text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 >
                   <X size={20} />
                 </button>
@@ -203,14 +203,14 @@ export default function AddApplicationModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-sm dark: transition-all"
+                      className="flex-1 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-sm dark: transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold text-sm shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                     >
                       {loading ? (
                         <Loader2 size={18} className="animate-spin" />
