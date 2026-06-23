@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
@@ -58,9 +59,15 @@ async def generate_roadmap(
     try:
         user_id = user["user_id"]
         
+        # Fetch data concurrently
+        res_task = asyncio.to_thread(lambda: db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        gh_task = asyncio.to_thread(lambda: db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        li_task = asyncio.to_thread(lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+
+        res_r, gh_r, li_r = await asyncio.gather(res_task, gh_task, li_task)
+
         # 1. Fetch Resume
         resume_text = ""
-        res_r = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if res_r.data:
             resume_text = res_r.data[0]["raw_text"]
         else:
@@ -68,13 +75,11 @@ async def generate_roadmap(
         
         # 2. Fetch GitHub
         gh_analysis = None
-        gh_r = db.table("github_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if gh_r.data:
             gh_analysis = gh_r.data[0]
             
         # 3. Fetch LinkedIn
         li_analysis = None
-        li_r = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         if li_r.data:
             li_analysis = li_r.data[0]
 
