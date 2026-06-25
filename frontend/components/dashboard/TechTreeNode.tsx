@@ -92,7 +92,7 @@ export default function TechTreeNode({
             <div
               tabIndex={0}
               aria-label="View resources"
-              className="p-2 rounded-xl bg-white/40 border border-white transition-colors cursor-pointer text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="p-2 rounded-xl bg-white/40 border border-white transition-colors cursor-pointer text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 hover:text-indigo-500 focus-visible:text-indigo-500"
             >
               <ExternalLink size={14} />
             </div>
