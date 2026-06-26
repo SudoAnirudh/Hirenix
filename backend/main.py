@@ -60,22 +60,7 @@ async def health_check():
 @app.on_event("startup")
 async def start_scheduler():
     import asyncio
-    from services.twitter_job_aggregator import sync_twitter_jobs
     from dependencies import get_supabase
-
-    async def periodic_job_scraper():
-        logger.info("Starting periodic job scraper background task (2-hour interval)...")
-        # Run shortly after startup so we don't delay initial server readiness
-        await asyncio.sleep(10)
-        while True:
-            try:
-                logger.info("Executing periodic job scraping...")
-                new_jobs = await sync_twitter_jobs()
-                logger.info(f"Periodic job scraping complete. Added {new_jobs} new jobs.")
-            except Exception as e:
-                logger.error(f"Error during periodic job scraping: {e}")
-            # Wait for 2 hours (7200 seconds)
-            await asyncio.sleep(7200)
 
     async def periodic_db_keepalive():
         logger.info("Starting periodic database keep-alive background task (12-hour interval)...")
@@ -92,7 +77,6 @@ async def start_scheduler():
             # Wait for 12 hours (43200 seconds)
             await asyncio.sleep(43200)
 
-    asyncio.create_task(periodic_job_scraper())
     asyncio.create_task(periodic_db_keepalive())
 
 
