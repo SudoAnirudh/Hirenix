@@ -61,6 +61,7 @@ async def health_check():
 async def start_scheduler():
     import asyncio
     from services.twitter_job_aggregator import sync_twitter_jobs
+    from dependencies import get_supabase
 
     async def periodic_job_scraper():
         logger.info("Starting periodic job scraper background task (2-hour interval)...")
@@ -76,7 +77,23 @@ async def start_scheduler():
             # Wait for 2 hours (7200 seconds)
             await asyncio.sleep(7200)
 
+    async def periodic_db_keepalive():
+        logger.info("Starting periodic database keep-alive background task (12-hour interval)...")
+        # Run shortly after startup
+        await asyncio.sleep(15)
+        while True:
+            try:
+                logger.info("Executing database keep-alive query...")
+                supabase_client = get_supabase()
+                supabase_client.table("profiles").select("id").limit(1).execute()
+                logger.info("Database keep-alive query completed successfully.")
+            except Exception as e:
+                logger.error(f"Error during database keep-alive query: {e}")
+            # Wait for 12 hours (43200 seconds)
+            await asyncio.sleep(43200)
+
     asyncio.create_task(periodic_job_scraper())
+    asyncio.create_task(periodic_db_keepalive())
 
 
 # End of main.py
