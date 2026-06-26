@@ -49,6 +49,19 @@ export async function signIn(email: string, password: string) {
   return { data, error };
 }
 
+export async function signInAnonymously(fullName?: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signInAnonymously({
+    options: {
+      data: {
+        plan: "Pro",
+        full_name: fullName?.trim() || "Guest User",
+      },
+    },
+  });
+  return { data, error };
+}
+
 export async function sendPasswordResetEmail(email: string) {
   const supabase = createClient();
   const redirectTo = buildRedirectUrl("/auth/reset-password");

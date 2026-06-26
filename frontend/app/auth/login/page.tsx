@@ -6,6 +6,7 @@ import {
   onAuthStateChange,
   sendPasswordResetEmail,
   signIn,
+  signInAnonymously,
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Brain, Loader2 } from "lucide-react";
@@ -19,6 +20,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [showGuestNameInput, setShowGuestNameInput] = useState(false);
+  const [guestName, setGuestName] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
@@ -76,6 +80,28 @@ export default function LoginPage() {
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGuestSignIn(name?: string) {
+    setGuestLoading(true);
+    setError("");
+    try {
+      const { error: err } = await signInAnonymously(name);
+      if (err) {
+        setError(err.message);
+        setGuestLoading(false);
+        return;
+      }
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred during guest sign in.";
+      setError(errorMessage);
+      setGuestLoading(false);
     }
   }
 
@@ -235,6 +261,58 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="relative flex py-6 items-center">
+            <div className="flex-grow border-t border-border"></div>
+            <span className="flex-shrink mx-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              Or
+            </span>
+            <div className="flex-grow border-t border-border"></div>
+          </div>
+
+          {!showGuestNameInput ? (
+            <Button
+              id="login-guest"
+              type="button"
+              variant="outline"
+              onClick={() => setShowGuestNameInput(true)}
+              disabled={loading || guestLoading}
+              className="w-full h-16 rounded-2xl border-border text-slate-800 dark:text-slate-200 bg-transparent text-lg font-bold transition-all active:scale-[0.97] mt-2"
+            >
+              Continue as Guest
+            </Button>
+          ) : (
+            <div className="space-y-3 animate-fade-in">
+              <input
+                type="text"
+                placeholder="Your Name (Optional)"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowGuestNameInput(false)}
+                  className="w-1/3 h-14 rounded-2xl border-border text-slate-800 dark:text-slate-200 bg-transparent font-bold transition-all active:scale-[0.97]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  id="login-guest-confirm"
+                  type="button"
+                  onClick={() => handleGuestSignIn(guestName)}
+                  isLoading={guestLoading}
+                  disabled={guestLoading}
+                  className="flex-1 h-14 rounded-2xl bg-brand-blue text-white font-bold transition-all active:scale-[0.97] border-none"
+                >
+                  Confirm
+                </Button>
+              </div>
+            </div>
+          )}
 
           <p className="text-center mt-10 text-muted-foreground font-medium">
             New to Hirenix?{""}
