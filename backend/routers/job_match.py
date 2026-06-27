@@ -158,9 +158,10 @@ async def scrape_jobs_for_fields(
     if not fields:
         raise HTTPException(status_code=400, detail="At least one field is required.")
 
-    # 1. Scrape jobs
+    # 1 & 2. Scrape jobs and fetch resume concurrently
     limit = max(1, min(payload.limit, 50))
-    jobs = await scrape_jobs(
+
+    scrape_task = scrape_jobs(
         fields,
         payload.location,
         payload.remote_only,
@@ -169,9 +170,8 @@ async def scrape_jobs_for_fields(
         payload.job_type or "any"
     )
     
-    # 2. Fetch user's latest resume for auto-matching
-    r = (
-        db.table("resumes")
+    resume_task = asyncio.to_thread(
+        lambda: db.table("resumes")
         .select("raw_text")
         .eq("user_id", user["user_id"])
         .order("created_at", desc=True)
@@ -179,6 +179,8 @@ async def scrape_jobs_for_fields(
         .execute()
     )
     
+    jobs, r = await asyncio.gather(scrape_task, resume_task)
+
     if r.data:
         resume_text = r.data[0]["raw_text"]
         
