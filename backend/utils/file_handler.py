@@ -1,10 +1,13 @@
 import aiofiles
+import logging
 import os
 import tempfile
 from fastapi import UploadFile
 
 
 import uuid
+
+logger = logging.getLogger(__name__)
 
 async def save_upload_temp(file: UploadFile) -> str:
     """Save an uploaded file to /tmp and return the temp path."""
@@ -28,3 +31,5 @@ def cleanup_temp(path: str) -> None:
         os.remove(real_path)
     except FileNotFoundError:
         pass
+    except Exception as e:
+        logger.error(f"Failed to cleanup temp file securely: {e}")
