@@ -6,3 +6,7 @@
 **Vulnerability:** User input was being directly interpolated into Supabase PostgREST `.or_()` clauses.
 **Learning:** Commas and parentheses in strings are interpreted as syntactic boundaries in PostgREST filters, leading to injection vulnerabilities.
 **Prevention:** Added a `sanitize_postgrest_filter` utility function to strip out commas, parentheses, and double-quotes from user input before usage in these clauses.
+## 2025-02-09 - Information Disclosure in File Deletion
+**Vulnerability:** A temporary file cleanup function caught `FileNotFoundError` but allowed other OS-level exceptions (like `PermissionError`) to propagate, potentially leaking sensitive internal paths or stack traces in unhandled 500 server errors.
+**Learning:** File operations are fragile and can fail for many reasons beyond the file missing. Failing to catch and suppress unexpected errors during cleanup violates the "fail securely" principle and creates information disclosure risks.
+**Prevention:** Always use broad exception handling (`except Exception as e:`) for non-critical cleanup operations to log errors securely without disrupting the application flow or leaking system details to users.
