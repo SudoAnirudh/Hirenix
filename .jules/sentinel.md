@@ -6,3 +6,7 @@
 **Vulnerability:** User input was being directly interpolated into Supabase PostgREST `.or_()` clauses.
 **Learning:** Commas and parentheses in strings are interpreted as syntactic boundaries in PostgREST filters, leading to injection vulnerabilities.
 **Prevention:** Added a `sanitize_postgrest_filter` utility function to strip out commas, parentheses, and double-quotes from user input before usage in these clauses.
+## 2025-01-08 - [Information Disclosure in Exception Handling]
+**Vulnerability:** Raw exception strings (`str(e)`) were being returned to the client in HTTP 500 responses within FastAPI routes.
+**Learning:** Exposing internal exception details can leak sensitive information such as stack traces, database schemas, or file paths, giving attackers insight into the application's internal structure.
+**Prevention:** Always catch exceptions, log the detailed error internally using a secure logger, and return a sanitized, generic error message (e.g., "Internal Server Error" or "Operation failed") in the `HTTPException`.
