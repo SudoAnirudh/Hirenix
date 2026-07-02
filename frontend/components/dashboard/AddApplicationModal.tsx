@@ -85,7 +85,7 @@ export default function AddApplicationModal({
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="absolute top-6 right-6 p-2 rounded-full dark: text-slate-400 transition-colors"
+                  className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
                 >
                   <X size={20} />
                 </button>

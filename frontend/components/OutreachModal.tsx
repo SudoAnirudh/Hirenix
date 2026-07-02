@@ -104,7 +104,7 @@ export default function OutreachModal({
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="w-12 h-12 rounded-2xl #F1F5F9] flex items-center justify-center text-[#A0AEC0] transition-colors"
+            className="w-12 h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[#A0AEC0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
           >
             <X size={24} />
           </button>
