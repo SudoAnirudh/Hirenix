@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,27 +20,27 @@ async def generate_cover_letter(
     # Fetch resume text
     actual_resume_id = payload.resume_id
     if payload.resume_id == "default":
-        r = (
+        r = await asyncio.to_thread(lambda: (
             db.table("resumes")
             .select("id, raw_text")
             .eq("user_id", user["user_id"])
             .order("created_at", desc=True)
             .limit(1)
             .execute()
-        )
+        ))
         if not r.data:
              raise HTTPException(status_code=404, detail="No resumes found for this user.")
         resume_text = r.data[0]["raw_text"]
         actual_resume_id = r.data[0]["id"]
     else:
-        r = (
+        r = await asyncio.to_thread(lambda: (
             db.table("resumes")
             .select("raw_text")
             .eq("id", payload.resume_id)
             .eq("user_id", user["user_id"])
             .single()
             .execute()
-        )
+        ))
         if not r.data:
             raise HTTPException(status_code=404, detail="Resume not found.")
         resume_text = r.data["raw_text"]
@@ -69,14 +70,14 @@ async def generate_cover_letter(
     
     # Save to database
     letter_id = str(uuid.uuid4())
-    db.table("cover_letters").insert({
+    await asyncio.to_thread(lambda: db.table("cover_letters").insert({
         "id": letter_id,
         "user_id": user["user_id"],
         "resume_id": actual_resume_id,
         "target_role": payload.target_role or "Unknown",
         "content": content,
         "tone": payload.tone
-    }).execute()
+    }).execute())
 
     return CoverLetterResponse(
         id=letter_id,
@@ -93,25 +94,25 @@ async def export_cover_letter(
     db=Depends(get_supabase_admin),
 ):
     """Exports a cover letter as PDF or Docx."""
-    r = (
+    r = await asyncio.to_thread(lambda: (
         db.table("cover_letters")
         .select("*")
         .eq("id", letter_id)
         .eq("user_id", user["user_id"])
         .single()
         .execute()
-    )
+    ))
     if not r.data:
         raise HTTPException(status_code=404, detail="Cover letter not found.")
 
     # Fetch user profile for headers
-    p = (
+    p = await asyncio.to_thread(lambda: (
         db.table("profiles")
         .select("full_name")
         .eq("id", user["user_id"])
         .single()
         .execute()
-    )
+    ))
     
     header_info = {
         "name": p.data.get("full_name", "Valued User"),
