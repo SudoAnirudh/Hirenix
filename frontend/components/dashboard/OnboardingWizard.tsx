@@ -138,7 +138,7 @@ export default function OnboardingWizard({
                     key={item.id}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setGoal(item.id)}
-                    className={`relative p-8 rounded-[32px] border text-left transition-all duration-300 ${
+                    className={`relative p-8 rounded-[32px] border text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19] ${
                       isSelected
                         ? `${item.border} bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)]`
                         : "border-white/10 bg-white/5"
@@ -228,7 +228,7 @@ export default function OnboardingWizard({
             <div className="mt-10 flex justify-between items-center">
               <button
                 onClick={() => setStep(2)}
-                className="text-slate-400 font-medium transition-colors"
+                className="text-slate-400 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0F19] rounded-md px-2 py-1 -ml-2"
               >
                 Back
               </button>
