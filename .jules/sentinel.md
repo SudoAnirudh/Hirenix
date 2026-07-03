@@ -6,3 +6,7 @@
 **Vulnerability:** User input was being directly interpolated into Supabase PostgREST `.or_()` clauses.
 **Learning:** Commas and parentheses in strings are interpreted as syntactic boundaries in PostgREST filters, leading to injection vulnerabilities.
 **Prevention:** Added a `sanitize_postgrest_filter` utility function to strip out commas, parentheses, and double-quotes from user input before usage in these clauses.
+## 2025-01-20 - Exception Detail Leakage in FastAPI
+**Vulnerability:** Raw exception messages were passed directly to clients in 500 error responses (`detail=str(e)`), potentially leaking sensitive internal paths, logic, or dependencies to attackers.
+**Learning:** Returning `str(e)` breaks the "fail securely" principle and exposes system internals.
+**Prevention:** Always log the detailed exception server-side and return a generic, sanitized error message to the client (e.g., "An internal error occurred").
