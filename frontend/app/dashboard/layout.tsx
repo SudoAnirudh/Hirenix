@@ -268,7 +268,9 @@ export default function DashboardLayout({
           {/* Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
+            aria-expanded={isMobileMenuOpen}
+            aria-label="Toggle mobile menu"
+            className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
               isMobileMenuOpen
                 ? "text-indigo-500 bg-indigo-500/10"
                 : "text-muted-foreground"
