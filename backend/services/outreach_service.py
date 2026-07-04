@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from typing import Optional, Any
 from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import OutreachDraftsResponse
@@ -16,8 +17,12 @@ async def generate_outreach_drafts(
     Generates personalized LinkedIn and Email outreach drafts using Hirenix AI.
     """
     try:
+        # ⚡ Bolt: Use asyncio.to_thread to unblock the event loop
+        # What: Wrapped synchronous Supabase query with await asyncio.to_thread.
+        # Why: The Supabase python client is synchronous. Calling .execute() blocks the async event loop and increases latency.
+        # Impact: Prevents event loop blocking, improving concurrent request handling.
         # 1. Fetch Job Match Data
-        match_query = db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        match_query = await asyncio.to_thread(lambda: db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute())
         if not match_query.data:
             logger.error(f"Job match {match_id} not found for user {user_id}")
             return None
@@ -30,7 +35,8 @@ async def generate_outreach_drafts(
         bridge_advice = match_data.get("metadata", {}).get("bridge_advice", [])
 
         # 2. Fetch LinkedIn Profile Summary (for personalization)
-        li_query = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        # ⚡ Bolt: Sequential async wrapper to avoid over-fetching while unblocking event loop
+        li_query = await asyncio.to_thread(lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
         
         profile_context = ""
         if li_query.data:
@@ -43,7 +49,7 @@ async def generate_outreach_drafts(
             profile_context = f"User Profile Summary: {profile_summary}\nKey Strengths: {', '.join(strengths)}"
         else:
             # Fallback to resume if LinkedIn not available
-            resume_query = db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+            resume_query = await asyncio.to_thread(lambda: db.table("resumes").select("raw_text").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
             if resume_query.data:
                 profile_context = f"Candidate Background: {resume_query.data[0].get('raw_text', '')[:1000]}"
 
