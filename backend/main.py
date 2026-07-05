@@ -4,7 +4,7 @@ import logging
 import sys
 
 from config import settings
-from routers import auth, resume, github, linkedin, job_match, interview, analytics, payments, roadmap, cover_letter, applications, jobs_board
+from routers import auth, resume, github, linkedin, job_match, interview, analytics, payments, roadmap, cover_letter, applications, jobs_board, agent
 
 # Logging setup
 logging.basicConfig(
@@ -45,6 +45,7 @@ app.include_router(roadmap.router, prefix="/roadmap", tags=["Roadmap"])
 app.include_router(cover_letter.router, prefix="/cover-letter", tags=["Cover Letter"])
 app.include_router(applications.router, prefix="/applications", tags=["Job Applications"])
 app.include_router(jobs_board.router, prefix="/jobs-board", tags=["Jobs Board"])
+app.include_router(agent.router, prefix="/agent", tags=["Agentic AI Foundation"])
 
 
 @app.get("/", tags=["Health"])

@@ -28,3 +28,12 @@ stripe==8.3.0
 feedparser==6.0.10
 reportlab==4.2.0
 python-docx==1.1.0
+
+# Agentic AI Foundation
+langgraph
+langchain-core
+langchain-openai
+langchain-google-genai
+langchain-groq
+langsmith
+

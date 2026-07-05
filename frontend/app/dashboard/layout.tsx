@@ -23,6 +23,7 @@ import LoadingScreen from "@/components/ui/LoadingScreen";
 
 const nav = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
+  { href: "/dashboard/assistant", icon: Brain, label: "AI Career Agent" },
   {
     href: "/dashboard/resume-templates",
     icon: FileText,
@@ -55,17 +56,18 @@ const nav = [
 
 const coreTabs = [
   nav[0], // Overview
-  nav[2], // Resume Analysis
-  nav[5], // Job Match
-  nav[6], // Mock Interview
+  nav[1], // AI Career Agent
+  nav[3], // Resume Analysis
+  nav[6], // Job Match
+  nav[7], // Mock Interview
 ];
 
 const moreTabs = [
-  nav[1], // Resume Templates
-  nav[3], // GitHub Intelligence
-  nav[4], // LinkedIn Optimization
-  nav[7], // Progress Tracker
-  nav[8], // Career Roadmap
+  nav[2], // Resume Templates
+  nav[4], // GitHub Intelligence
+  nav[5], // LinkedIn Optimization
+  nav[8], // Progress Tracker
+  nav[9], // Career Roadmap
 ];
 
 export default function DashboardLayout({

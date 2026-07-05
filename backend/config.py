@@ -25,6 +25,21 @@ class Settings(BaseSettings):
     # Groq
     groq_api_key: Optional[str] = None
 
+    # Gemini / Google
+    google_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+
+    # LangSmith / LangChain Observability
+    langchain_api_key: Optional[str] = None
+    langchain_tracing_v2: Optional[str] = "false"
+    langchain_project: Optional[str] = "hirenix-v2"
+
+    langsmith_tracing: Optional[str] = "false"
+    langsmith_endpoint: Optional[str] = "https://api.smith.langchain.com"
+    langsmith_api_key: Optional[str] = None
+    langsmith_project: Optional[str] = "Hirenix"
+
+
     # Apify
     apify_token: Optional[str] = None
 

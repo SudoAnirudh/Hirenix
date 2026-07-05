@@ -640,3 +640,83 @@ export async function updateApplication(
 export async function deleteApplication(appId: string) {
   return request(`/applications/${appId}`, { method: "DELETE" });
 }
+
+// ─── Agentic AI Career Assistant ──────────────────────────────────────────────
+export interface AgentMessage {
+  id?: string;
+  sender: string; // "user" | "assistant" | "ResumeAgent" | "JobAgent" etc.
+  content: string;
+  created_at?: string;
+}
+
+export interface PendingApproval {
+  id: string;
+  type: string; // "outreach_draft" etc.
+  draft: {
+    linkedin_request?: string;
+    cold_email?: string;
+    company_name?: string;
+    [key: string]: any;
+  };
+}
+
+export interface AgentChatResponse {
+  message: string;
+  sender: string;
+  pending_approval: PendingApproval | null;
+}
+
+export interface AgentApprovalRecord {
+  id: string;
+  user_id: string;
+  thread_id: string;
+  approval_type: string;
+  draft_content: any;
+  status: "pending" | "approved" | "rejected" | "modified";
+  created_at: string;
+  updated_at: string;
+}
+
+export async function chatWithAgent(
+  message: string,
+  threadId: string,
+): Promise<AgentChatResponse> {
+  return request<AgentChatResponse>("/agent/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, thread_id: threadId }),
+  });
+}
+
+export async function resolveAgentApproval(
+  approvalId: string,
+  action: "approved" | "rejected" | "modified",
+  modifiedDraft?: any,
+): Promise<{
+  status: string;
+  action: string;
+  message?: string;
+  sender?: string;
+}> {
+  return request("/agent/approve", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      approval_id: approvalId,
+      action,
+      modified_draft: modifiedDraft,
+    }),
+  });
+}
+
+export async function getAgentChatHistory(
+  threadId: string,
+): Promise<AgentMessage[]> {
+  return request<AgentMessage[]>(`/agent/history?thread_id=${threadId}`);
+}
+
+export async function getPendingAgentApprovals(): Promise<
+  AgentApprovalRecord[]
+> {
+  return request<AgentApprovalRecord[]>("/agent/approvals");
+}
