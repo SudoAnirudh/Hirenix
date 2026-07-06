@@ -390,7 +390,7 @@ async def transcribe(
         return {"text": text}
     except Exception as e:
         logger.error(f"Transcription route failure: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="An error occurred during transcription.")
 
 
 @router.post("/next-question", response_model=InterviewQuestion)
