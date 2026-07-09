@@ -5,6 +5,9 @@ from fastapi import UploadFile
 
 
 import uuid
+import logging
+
+logger = logging.getLogger("hirenix.file_handler")
 
 async def save_upload_temp(file: UploadFile) -> str:
     """Save an uploaded file to /tmp and return the temp path."""
@@ -26,5 +29,5 @@ def cleanup_temp(path: str) -> None:
         if not real_path.startswith(os.path.realpath(temp_dir)):
             return
         os.remove(real_path)
-    except FileNotFoundError:
-        pass
+    except Exception as e:
+        logger.error(f"Failed to securely remove temporary file: {e}")
