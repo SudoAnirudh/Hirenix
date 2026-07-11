@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from typing import Optional, Any
 from services.nvidia_client import invoke_nvidia_llm
 from models.analysis import OutreachDraftsResponse
@@ -16,8 +17,16 @@ async def generate_outreach_drafts(
     Generates personalized LinkedIn and Email outreach drafts using Hirenix AI.
     """
     try:
-        # 1. Fetch Job Match Data
-        match_query = db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        # 1 & 2. Fetch Job Match Data and LinkedIn Profile Summary concurrently
+        match_task = asyncio.to_thread(
+            lambda: db.table("job_matches").select("*").eq("id", match_id).eq("user_id", user_id).single().execute()
+        )
+        li_task = asyncio.to_thread(
+            lambda: db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
+        )
+
+        match_query, li_query = await asyncio.gather(match_task, li_task)
+
         if not match_query.data:
             logger.error(f"Job match {match_id} not found for user {user_id}")
             return None
@@ -30,7 +39,6 @@ async def generate_outreach_drafts(
         bridge_advice = match_data.get("metadata", {}).get("bridge_advice", [])
 
         # 2. Fetch LinkedIn Profile Summary (for personalization)
-        li_query = db.table("linkedin_analyses").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()
         
         profile_context = ""
         if li_query.data:
