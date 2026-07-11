@@ -228,7 +228,7 @@ export default function OnboardingWizard({
             <div className="mt-10 flex justify-between items-center">
               <button
                 onClick={() => setStep(2)}
-                className="text-slate-400 font-medium transition-colors"
+                className="text-slate-400 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-lg px-3 py-2 -ml-3"
               >
                 Back
               </button>
