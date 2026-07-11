@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from dependencies import get_current_user, get_supabase_admin
@@ -93,25 +94,30 @@ async def export_cover_letter(
     db=Depends(get_supabase_admin),
 ):
     """Exports a cover letter as PDF or Docx."""
-    r = (
-        db.table("cover_letters")
+    # ⚡ Bolt: Parallelize independent database queries during export
+    # What: Replaced sequential blocking Supabase calls with concurrent thread execution using asyncio.gather.
+    # Why: The synchronous python Supabase client calls `.execute()` serially, which blocks the async event loop and increases latency when assembling the export data.
+    # Impact: Reduces query overhead for cover letter generation from ~2N to ~1N, making PDF/Docx downloads snappier.
+    cover_letter_task = asyncio.to_thread(
+        lambda: db.table("cover_letters")
         .select("*")
         .eq("id", letter_id)
         .eq("user_id", user["user_id"])
         .single()
         .execute()
     )
-    if not r.data:
-        raise HTTPException(status_code=404, detail="Cover letter not found.")
-
-    # Fetch user profile for headers
-    p = (
-        db.table("profiles")
+    profile_task = asyncio.to_thread(
+        lambda: db.table("profiles")
         .select("full_name")
         .eq("id", user["user_id"])
         .single()
         .execute()
     )
+
+    r, p = await asyncio.gather(cover_letter_task, profile_task)
+
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Cover letter not found.")
     
     header_info = {
         "name": p.data.get("full_name", "Valued User"),
