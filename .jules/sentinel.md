@@ -10,3 +10,7 @@
 **Vulnerability:** OS-level file operations (like `os.remove`) during cleanup were only catching `FileNotFoundError`. Other exceptions could propagate and leak internal paths or stack traces in 500 responses.
 **Learning:** System operations can fail for many reasons (e.g., permissions, locks). Unhandled exceptions in cleanup routines break the "fail securely" principle and risk information disclosure.
 **Prevention:** Always catch broad exceptions like `Exception` in cleanup/teardown routines, log them securely, and prevent them from propagating to the client.
+## 2025-02-18 - [Information Disclosure in Exception Handling]
+**Vulnerability:** Raw exception strings (e.g., `detail=str(e)`) were being passed directly to `HTTPException` responses in `backend/routers/jobs_board.py` and `backend/routers/interview.py`.
+**Learning:** Exposing raw exception messages can leak sensitive internal information, stack traces, database schema details, or system paths to external clients. This violates the principle of failing securely.
+**Prevention:** Always log the detailed exception internally using a logger (e.g., `logger.error(f"Error: {e}")`) and return a sanitized, generic error message (e.g., `"Internal server error"`) to the client.
