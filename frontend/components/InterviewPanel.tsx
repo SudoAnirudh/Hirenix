@@ -803,12 +803,13 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             type="button"
             onClick={toggleListening}
             disabled={!speechSupported || submitting || transcribing}
-            className={`p-3.5 rounded-full transition-all active:scale-90 ${
+            className={`p-3.5 rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
               isListening
                 ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
                 : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
             } disabled:opacity-50`}
             title={isListening ? "Mute Microphone" : "Unmute Microphone"}
+            aria-label={isListening ? "Mute Microphone" : "Unmute Microphone"}
           >
             {isListening ? <Mic size={18} /> : <MicOff size={18} />}
           </button>
@@ -818,12 +819,13 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             type="button"
             onClick={() => setCameraOn(!cameraOn)}
             disabled={submitting || transcribing}
-            className={`p-3.5 rounded-full transition-all active:scale-90 ${
+            className={`p-3.5 rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
               cameraOn
                 ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
                 : "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
             }`}
             title={cameraOn ? "Stop Video" : "Start Video"}
+            aria-label={cameraOn ? "Stop Video" : "Start Video"}
           >
             {cameraOn ? <Video size={18} /> : <VideoOff size={18} />}
           </button>
@@ -854,8 +856,9 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             <button
               type="button"
               onClick={onExit}
-              className="p-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 transition-all active:scale-90"
+              className="p-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
               title="Hang Up / Exit Interview"
+              aria-label="Hang Up / Exit Interview"
             >
               <PhoneOff size={18} />
             </button>
@@ -866,7 +869,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               type="button"
               onClick={() => handleNext(false)}
               disabled={submitting || transcribing}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-blue hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-blue hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <span>Next</span>
               <ChevronRight size={14} />
@@ -876,7 +879,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               type="button"
               onClick={() => void handleFinish()}
               disabled={submitting || transcribing}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             >
               <span>{submitting ? "Submitting..." : "Submit Call"}</span>
             </button>
