@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import json
 import logging
@@ -289,13 +290,14 @@ async def load_user_context(supabase_client: Client, user_id: str) -> Dict[str, 
     }
 
     try:
-        # 1. Fetch Latest Resume
-        resume_res = supabase_client.table("resumes") \
-            .select("id, raw_text, ats_score, ats_breakdown") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
-            .limit(1) \
-            .execute()
+        # Execute queries concurrently in threads to prevent event loop blocking
+        # and reduce N+1 latency bottlenecks
+        resume_res, github_res, roadmap_res, job_res = await asyncio.gather(
+            asyncio.to_thread(lambda: supabase_client.table("resumes").select("id, raw_text, ats_score, ats_breakdown").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()),
+            asyncio.to_thread(lambda: supabase_client.table("github_analyses").select("production_index").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()),
+            asyncio.to_thread(lambda: supabase_client.table("roadmaps").select("target_role, roadmap_data").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute()),
+            asyncio.to_thread(lambda: supabase_client.table("job_matches").select("job_description").eq("user_id", user_id).order("created_at", desc=True).limit(1).execute())
+        )
 
         if resume_res.data:
             r = resume_res.data[0]
@@ -304,36 +306,12 @@ async def load_user_context(supabase_client: Client, user_id: str) -> Dict[str, 
             context["ats_score"] = float(r["ats_score"]) if r.get("ats_score") is not None else None
             context["ats_breakdown"] = r.get("ats_breakdown")
 
-        # 2. Fetch Latest GitHub Analysis
-        github_res = supabase_client.table("github_analyses") \
-            .select("production_index") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
-            .limit(1) \
-            .execute()
-
         if github_res.data:
             context["github_gpi"] = float(github_res.data[0]["production_index"]) if github_res.data[0].get("production_index") is not None else None
-
-        # 3. Fetch Latest Roadmap
-        roadmap_res = supabase_client.table("roadmaps") \
-            .select("target_role, roadmap_data") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
-            .limit(1) \
-            .execute()
 
         if roadmap_res.data:
             context["target_role"] = roadmap_res.data[0].get("target_role")
             context["roadmap_data"] = roadmap_res.data[0].get("roadmap_data")
-
-        # 4. Fetch Latest Job Match Job Description
-        job_res = supabase_client.table("job_matches") \
-            .select("job_description") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
-            .limit(1) \
-            .execute()
 
         if job_res.data:
             context["job_description"] = job_res.data[0].get("job_description")
