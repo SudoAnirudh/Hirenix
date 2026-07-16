@@ -658,11 +658,12 @@ export default function JobMatchPage() {
           </h3>
           <div className="p-8 md:p-10 rounded-[2.5rem] bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 shadow-lg backdrop-blur-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 items-end">
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <label htmlFor="search-specialization" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Specialization
               </label>
               <div className="relative">
                 <input
+                  id="search-specialization"
                   className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-10 pr-4 h-12 text-xs font-bold outline-none text-foreground transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                   placeholder="e.g. React, LLM, Python..."
                   value={fieldInput}
@@ -674,11 +675,12 @@ export default function JobMatchPage() {
               </div>
             </div>
             <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <label htmlFor="search-geo-preference" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Geo Preference
               </label>
               <div className="relative">
                 <input
+                  id="search-geo-preference"
                   className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-10 pr-4 h-12 text-xs font-bold outline-none text-foreground transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                   placeholder="e.g. India, Bangalore..."
                   value={jobLocation}
@@ -690,11 +692,12 @@ export default function JobMatchPage() {
               </div>
             </div>
             <div className="space-y-3 relative">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <label htmlFor="search-workplace" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Workplace
               </label>
               <div className="relative">
                 <select
+                  id="search-workplace"
                   className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-4 pr-10 h-12 text-xs font-bold outline-none text-foreground cursor-pointer appearance-none transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                   value={workplaceType}
                   onChange={(e) => setWorkplaceType(e.target.value)}
@@ -710,11 +713,12 @@ export default function JobMatchPage() {
               </div>
             </div>
             <div className="space-y-3 relative">
-              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <label htmlFor="search-job-type" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                 Job Type
               </label>
               <div className="relative">
                 <select
+                  id="search-job-type"
                   className="w-full bg-white/60 border border-slate-200/50 rounded-2xl pl-4 pr-10 h-12 text-xs font-bold outline-none text-foreground cursor-pointer appearance-none transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                   value={jobType}
                   onChange={(e) => setJobType(e.target.value)}
