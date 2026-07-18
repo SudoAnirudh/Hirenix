@@ -809,6 +809,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
             } disabled:opacity-50`}
             title={isListening ? "Mute Microphone" : "Unmute Microphone"}
+            aria-label={isListening ? "Mute Microphone" : "Unmute Microphone"}
           >
             {isListening ? <Mic size={18} /> : <MicOff size={18} />}
           </button>
@@ -824,6 +825,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 : "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
             }`}
             title={cameraOn ? "Stop Video" : "Start Video"}
+            aria-label={cameraOn ? "Stop Video" : "Start Video"}
           >
             {cameraOn ? <Video size={18} /> : <VideoOff size={18} />}
           </button>
@@ -856,6 +858,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               onClick={onExit}
               className="p-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 transition-all active:scale-90"
               title="Hang Up / Exit Interview"
+              aria-label="Hang Up / Exit Interview"
             >
               <PhoneOff size={18} />
             </button>

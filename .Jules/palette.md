@@ -1,0 +1,1 @@
+## 2024-07-18 - Missing ARIA Labels on Icon Buttons\n**Learning:** The `InterviewPanel` component uses icon-only buttons for critical actions (microphone and camera toggles) but relies solely on `title` attributes. Screen readers prefer explicit `aria-label`s for better accessibility.\n**Action:** Add `aria-label` to icon-only buttons like those in `InterviewPanel.tsx`.
