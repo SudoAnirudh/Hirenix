@@ -1,0 +1,1 @@
+I will fix the accessibility issues in `frontend/components/InterviewPanel.tsx`. Specifically, I will add `aria-label` attributes to the icon-only buttons for toggling microphone, toggling camera, and hanging up.
