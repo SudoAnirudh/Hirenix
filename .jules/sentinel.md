@@ -10,3 +10,7 @@
 **Vulnerability:** OS-level file operations (like `os.remove`) during cleanup were only catching `FileNotFoundError`. Other exceptions could propagate and leak internal paths or stack traces in 500 responses.
 **Learning:** System operations can fail for many reasons (e.g., permissions, locks). Unhandled exceptions in cleanup routines break the "fail securely" principle and risk information disclosure.
 **Prevention:** Always catch broad exceptions like `Exception` in cleanup/teardown routines, log them securely, and prevent them from propagating to the client.
+## 2024-07-20 - Exception Leakage in API Endpoints
+**Vulnerability:** Raw exception strings (e.g. `str(e)`) were being leaked in HTTP 500 error responses in `interview.py` and `jobs_board.py`.
+**Learning:** Returning `str(e)` in an HTTPException can expose internal application structure, file paths, or sensitive environmental configuration to malicious users.
+**Prevention:** Always log the full exception internally (using `logger.error`), but return a generic, non-sensitive error message to the client.
