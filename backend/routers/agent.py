@@ -123,7 +123,7 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
         logger.error(f"Error in agentic chat route: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Agent execution failed: {str(e)}"
+            detail="An internal error occurred during agent execution."
         )
 
 
@@ -206,7 +206,7 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
         logger.error(f"Error resuming graph execution: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Resuming agent execution failed: {str(e)}"
+            detail="An internal error occurred while resuming agent execution."
         )
 
 
