@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import uuid
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -93,28 +95,48 @@ async def export_cover_letter(
     db=Depends(get_supabase_admin),
 ):
     """Exports a cover letter as PDF or Docx."""
-    r = (
-        db.table("cover_letters")
-        .select("*")
-        .eq("id", letter_id)
-        .eq("user_id", user["user_id"])
-        .single()
-        .execute()
+
+    def fetch_cl():
+        return (
+            db.table("cover_letters")
+            .select("*")
+            .eq("id", letter_id)
+            .eq("user_id", user["user_id"])
+            .single()
+            .execute()
+        )
+
+    def fetch_profile():
+        return (
+            db.table("profiles")
+            .select("full_name")
+            .eq("id", user["user_id"])
+            .single()
+            .execute()
+        )
+
+    results = await asyncio.gather(
+        asyncio.to_thread(fetch_cl),
+        asyncio.to_thread(fetch_profile),
+        return_exceptions=True
     )
+
+    r, p = results
+
+    if isinstance(r, Exception):
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error fetching cover letter: {r}")
+        raise HTTPException(status_code=500, detail="Error fetching cover letter.")
+    if isinstance(p, Exception):
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error fetching user profile: {p}")
+        raise HTTPException(status_code=500, detail="Error fetching user profile.")
+
     if not r.data:
         raise HTTPException(status_code=404, detail="Cover letter not found.")
 
-    # Fetch user profile for headers
-    p = (
-        db.table("profiles")
-        .select("full_name")
-        .eq("id", user["user_id"])
-        .single()
-        .execute()
-    )
-    
     header_info = {
-        "name": p.data.get("full_name", "Valued User"),
+        "name": p.data.get("full_name", "Valued User") if p.data else "Valued User",
         "email": user.get("email", ""),
         "date": datetime.date.today().strftime("%B %d, %Y"),
         "location": "Global", # Can be updated if profile has location
