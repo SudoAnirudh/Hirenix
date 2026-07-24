@@ -10,3 +10,7 @@
 **Vulnerability:** OS-level file operations (like `os.remove`) during cleanup were only catching `FileNotFoundError`. Other exceptions could propagate and leak internal paths or stack traces in 500 responses.
 **Learning:** System operations can fail for many reasons (e.g., permissions, locks). Unhandled exceptions in cleanup routines break the "fail securely" principle and risk information disclosure.
 **Prevention:** Always catch broad exceptions like `Exception` in cleanup/teardown routines, log them securely, and prevent them from propagating to the client.
+## 2024-05-24 - Do not leak exception details in FastAPI 500 errors
+**Vulnerability:** Information Disclosure
+**Learning:** Exception details passed to HTTPException(`detail=str(e)`) leak internal application workings directly to the client, providing attackers with sensitive information.
+**Prevention:** Catch generic exceptions, log them securely internally, and provide a generic response to the client.
