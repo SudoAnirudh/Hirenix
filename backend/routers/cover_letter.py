@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from dependencies import get_current_user, get_supabase_admin
@@ -93,25 +94,28 @@ async def export_cover_letter(
     db=Depends(get_supabase_admin),
 ):
     """Exports a cover letter as PDF or Docx."""
-    r = (
-        db.table("cover_letters")
+    # ⚡ Bolt: Execute Supabase queries concurrently and off the main thread to prevent event loop blocking
+    r_task = asyncio.to_thread(
+        lambda: db.table("cover_letters")
         .select("*")
         .eq("id", letter_id)
         .eq("user_id", user["user_id"])
         .single()
         .execute()
     )
-    if not r.data:
-        raise HTTPException(status_code=404, detail="Cover letter not found.")
 
-    # Fetch user profile for headers
-    p = (
-        db.table("profiles")
+    p_task = asyncio.to_thread(
+        lambda: db.table("profiles")
         .select("full_name")
         .eq("id", user["user_id"])
         .single()
         .execute()
     )
+
+    r, p = await asyncio.gather(r_task, p_task)
+
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Cover letter not found.")
     
     header_info = {
         "name": p.data.get("full_name", "Valued User"),
