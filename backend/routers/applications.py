@@ -1,4 +1,5 @@
 import uuid
+import asyncio
 from fastapi import APIRouter, Depends
 from dependencies import get_current_user, get_supabase_admin
 from pydantic import BaseModel
@@ -27,11 +28,14 @@ async def create_application(
 ):
     """Adds a new job application record for tracking."""
     app_id = str(uuid.uuid4())
-    db.table("job_applications").insert({
-        "id": app_id,
-        "user_id": user["user_id"],
-        **payload.model_dump()
-    }).execute()
+    # ⚡ Bolt: Offload synchronous database query
+    await asyncio.to_thread(
+        lambda: db.table("job_applications").insert({
+            "id": app_id,
+            "user_id": user["user_id"],
+            **payload.model_dump()
+        }).execute()
+    )
     return {"message": "Application tracked successfully.", "id": app_id}
 
 @router.get("/", response_model=List[dict])
@@ -40,12 +44,15 @@ async def list_applications(
     db=Depends(get_supabase_admin),
 ):
     """Lists all tracked applications for the current user."""
-    r = (
-        db.table("job_applications")
-        .select("*")
-        .eq("user_id", user["user_id"])
-        .order("created_at", desc=True)
-        .execute()
+    # ⚡ Bolt: Offload synchronous database query
+    r = await asyncio.to_thread(
+        lambda: (
+            db.table("job_applications")
+            .select("*")
+            .eq("user_id", user["user_id"])
+            .order("created_at", desc=True)
+            .execute()
+        )
     )
     return r.data
 
@@ -57,9 +64,12 @@ async def update_application(
     db=Depends(get_supabase_admin),
 ):
     """Updates status or notes for an application."""
-    db.table("job_applications").update(
-        payload.model_dump(exclude_none=True)
-    ).eq("id", app_id).eq("user_id", user["user_id"]).execute()
+    # ⚡ Bolt: Offload synchronous database query
+    await asyncio.to_thread(
+        lambda: db.table("job_applications").update(
+            payload.model_dump(exclude_none=True)
+        ).eq("id", app_id).eq("user_id", user["user_id"]).execute()
+    )
     return {"message": "Application updated."}
 
 @router.delete("/{app_id}")
@@ -69,5 +79,8 @@ async def delete_application(
     db=Depends(get_supabase_admin),
 ):
     """Removes an application record."""
-    db.table("job_applications").delete().eq("id", app_id).eq("user_id", user["user_id"]).execute()
+    # ⚡ Bolt: Offload synchronous database query
+    await asyncio.to_thread(
+        lambda: db.table("job_applications").delete().eq("id", app_id).eq("user_id", user["user_id"]).execute()
+    )
     return {"message": "Application removed."}
