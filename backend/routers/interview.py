@@ -3,6 +3,7 @@ import asyncio
 import logging
 from typing import Dict, List
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi.responses import StreamingResponse
 from dependencies import get_current_user, get_supabase_admin
 from services.interview_engine import (
     generate_questions,
@@ -390,7 +391,7 @@ async def transcribe(
         return {"text": text}
     except Exception as e:
         logger.error(f"Transcription route failure: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Transcription failed due to an internal error.")
 
 
 @router.post("/next-question", response_model=InterviewQuestion)

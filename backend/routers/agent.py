@@ -1,10 +1,9 @@
 import logging
-import uuid
 from typing import Dict, Any, Optional, Literal
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage
 
 from dependencies import get_current_user, get_supabase_admin
 from services.agentic.supervisor import get_compiled_graph
@@ -123,7 +122,7 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
         logger.error(f"Error in agentic chat route: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Agent execution failed: {str(e)}"
+            detail="Agent execution failed due to an internal error."
         )
 
 
@@ -206,7 +205,7 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
         logger.error(f"Error resuming graph execution: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Resuming agent execution failed: {str(e)}"
+            detail="Resuming agent execution failed due to an internal error."
         )
 
 
