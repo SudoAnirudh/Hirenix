@@ -1,0 +1,5 @@
+🚨 Severity: MEDIUM
+💡 Vulnerability: Raw exception details and stack trace fragments were being exposed to the client in HTTP 500 responses across multiple routers (`jobs_board.py`, `agent.py`, `interview.py`), which is an information disclosure vulnerability.
+🎯 Impact: Attackers could gain insights into internal system architecture, database states, or underlying libraries, facilitating further targeted attacks.
+🔧 Fix: Sanitized error responses by replacing `str(e)` with generic error messages and added `# SECURITY` comments. Real exceptions are now only logged internally via `logger.error`.
+✅ Verification: Run backend tests to ensure endpoints no longer return raw error strings.

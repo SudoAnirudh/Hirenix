@@ -78,4 +78,6 @@ async def trigger_jobs_sync(
         new_jobs = await sync_twitter_jobs()
         return {"status": "success", "message": f"Sync complete. Added {new_jobs} jobs."}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Sync failed: {e}")
+        # SECURITY: Do not expose raw exception details to the client
+        raise HTTPException(status_code=500, detail="Could not sync jobs.")
