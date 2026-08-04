@@ -453,11 +453,15 @@ export default function AgentAssistantPage() {
                 <div className="space-y-4">
                   {/* LinkedIn Invitation */}
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <label
+                      htmlFor="linkedin-note"
+                      className="text-[9px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+                    >
                       <Edit3 size={10} />
                       LinkedIn Note (Limit 300 Chars)
                     </label>
                     <textarea
+                      id="linkedin-note"
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-brand-blue/40 rounded-xl p-4 min-h-[90px] resize-none outline-none text-xs font-medium leading-relaxed"
                       value={editLinkedin}
                       onChange={(e) => setEditLinkedin(e.target.value)}
@@ -466,11 +470,15 @@ export default function AgentAssistantPage() {
 
                   {/* Cold Email Copy */}
                   <div className="space-y-2">
-                    <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <label
+                      htmlFor="recruiter-email"
+                      className="text-[9px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+                    >
                       <Edit3 size={10} />
                       Recruiter Email Body
                     </label>
                     <textarea
+                      id="recruiter-email"
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-brand-blue/40 rounded-xl p-4 min-h-[160px] resize-none outline-none text-xs font-medium leading-relaxed"
                       value={editEmail}
                       onChange={(e) => setEditEmail(e.target.value)}
