@@ -116,6 +116,7 @@ export default function CoverLetterModal({
                   <button
                     key={t}
                     onClick={() => setTone(t)}
+                    aria-label={`Select ${t} tone`}
                     className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
                       tone === t
                         ? "bg-white border-[#7C9ADD] text-[#7C9ADD] shadow-sm scale-[1.02]"
@@ -174,6 +175,7 @@ export default function CoverLetterModal({
                       onClick={handleCopy}
                       className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
                       title="Copy to Clipboard"
+                      aria-label="Copy to Clipboard"
                     >
                       {copied ? (
                         <Check size={18} className="text-emerald-500" />
