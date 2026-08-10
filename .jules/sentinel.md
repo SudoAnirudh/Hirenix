@@ -10,3 +10,7 @@
 **Vulnerability:** OS-level file operations (like `os.remove`) during cleanup were only catching `FileNotFoundError`. Other exceptions could propagate and leak internal paths or stack traces in 500 responses.
 **Learning:** System operations can fail for many reasons (e.g., permissions, locks). Unhandled exceptions in cleanup routines break the "fail securely" principle and risk information disclosure.
 **Prevention:** Always catch broad exceptions like `Exception` in cleanup/teardown routines, log them securely, and prevent them from propagating to the client.
+## 2024-05-27 - [Exception Detail Leakage in HTTPException]
+**Vulnerability:** Passing `str(e)` directly to `HTTPException(detail=...)` exposes raw stack traces and internal application logic to the client when an unhandled error occurs.
+**Learning:** Exposing internal error details violates the "Fail securely" principle and provides attackers with valuable information about the system's architecture and dependencies.
+**Prevention:** Always log the full exception internally (e.g., `logger.error(e)`) and return a generic, sanitized error message to the client in HTTP responses.
