@@ -78,7 +78,7 @@ export default function ResumeUploader({ onResult }: Props) {
     <div
       {...getRootProps()}
       id="resume-dropzone"
-      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-[32px] bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group ${
+      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed rounded-[32px] bg-white/40 border-white/60 shadow-glass backdrop-blur-xl group focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#7C9ADD]/50 ${
         isDragActive
           ? "bg-[#7C9ADD]/5 border-[#7C9ADD] scale-[0.99] shadow-inner"
           : " #7C9ADD]/40"
