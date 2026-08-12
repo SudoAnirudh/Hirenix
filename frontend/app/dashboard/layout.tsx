@@ -176,6 +176,7 @@ export default function DashboardLayout({
               >
                 <Link
                   href={href}
+                  aria-current={pathname === href ? "page" : undefined}
                   className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
                     pathname === href
                       ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
@@ -243,6 +244,7 @@ export default function DashboardLayout({
               <Link
                 key={href}
                 href={href}
+                aria-current={isActive ? "page" : undefined}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
                   isActive ? "text-indigo-500" : "text-muted-foreground"
@@ -270,6 +272,9 @@ export default function DashboardLayout({
           {/* Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu-content"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
               isMobileMenuOpen
                 ? "text-indigo-500 bg-indigo-500/10"
@@ -292,6 +297,7 @@ export default function DashboardLayout({
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
+            id="mobile-menu-content"
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
