@@ -19,6 +19,13 @@ class RepoMetric(BaseModel):
     has_deployment: bool
     size_kb: int
     commits_last_90_days: int
+    is_fork: bool = False
+    has_tests: bool = False
+    dependency_health_score: float = 50.0
+    maintenance_lifespan_days: int = 0
+    semantic_commit_ratio: float = 0.0
+    atomic_commit_ratio: float = 0.0
+    uses_branches: bool = False
 
 
 class GitHubMetrics(BaseModel):
@@ -27,10 +34,31 @@ class GitHubMetrics(BaseModel):
     languages: List[str]
     language_distribution: Dict[str, float]
     top_repos: List[RepoMetric]
-    consistency_score: float      # 0–100
-    project_depth_score: float    # 0–100
-    stack_diversity_score: float  # 0–100
-    production_readiness_score: float  # 0–100
+    
+    # 4 Core Metric Categories (0–100)
+    code_quality_score: float
+    git_hygiene_score: float
+    collaboration_score: float
+    longevity_impact_score: float
+
+    # Granular Sub-metrics
+    original_repos_count: int = 0
+    total_repos_scanned: int = 0
+    stack_focus_score: float = 50.0
+    testing_density_score: float = 0.0
+    dependency_health_score: float = 50.0
+    semantic_commit_ratio: float = 0.0
+    atomic_commit_ratio: float = 0.0
+    branching_hygiene_score: float = 50.0
+    pr_description_quality_score: float = 50.0
+    external_contributions_count: int = 0
+    avg_maintenance_lifespan_days: int = 0
+    
+    # Backward compatibility fields
+    consistency_score: float = 50.0
+    project_depth_score: float = 50.0
+    stack_diversity_score: float = 50.0
+    production_readiness_score: float = 50.0
     ai_summary: Optional[str] = None
 
 
@@ -41,3 +69,4 @@ class GitHubAnalysisResponse(BaseModel):
     metrics: GitHubMetrics
     strengths: List[str]
     recommendations: List[str]
+

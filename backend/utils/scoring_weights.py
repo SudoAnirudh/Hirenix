@@ -19,12 +19,15 @@ ATS_RULES = {
 REQUIRED_SECTIONS = {"education", "experience", "skills", "projects"}
 
 # ─── GitHub Performance Index ─────────────────────────────────────────────────
-GPI_WEIGHTS = {
-    "consistency_score": 0.25,
-    "project_depth_score": 0.25,
-    "stack_diversity_score": 0.25,
-    "production_readiness_score": 0.25,
+GPI_CATEGORY_WEIGHTS = {
+    "code_quality_score": 0.30,       # Code Quality & Architecture Metrics
+    "git_hygiene_score": 0.25,        # Workflow & Git Hygiene Metrics
+    "collaboration_score": 0.25,      # Open Source & Collaboration Metrics
+    "longevity_impact_score": 0.20,   # Project Longevity & Impact Metrics
 }
+
+# Legacy mapping for backwards compatibility
+GPI_WEIGHTS = GPI_CATEGORY_WEIGHTS
 
 # ─── Resume Evolution Score ───────────────────────────────────────────────────
 EVOLUTION_WEIGHTS = {
@@ -32,3 +35,4 @@ EVOLUTION_WEIGHTS = {
     "interview_score": 0.40,
     "gpi_score": 0.20,
 }
+

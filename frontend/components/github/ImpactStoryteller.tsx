@@ -1,7 +1,6 @@
 "use client";
 import { Copy, Check, Sparkles, BookOpen } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
 interface Repo {
@@ -11,6 +10,8 @@ interface Repo {
   stars: number;
   forks: number;
   commits_last_90_days: number;
+  has_tests?: boolean;
+  maintenance_lifespan_days?: number;
 }
 
 interface ImpactStorytellerProps {
@@ -23,28 +24,39 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
   const generatePoints = (repo: Repo) => {
     const points = [];
 
-    // Pattern 1: Authority & Scale
-    if (repo.stars > 10) {
+    // Pattern 1: Authority, Scale & Testing Rigor
+    if (repo.has_tests) {
       points.push(
-        `Architected and scaled"${repo.name}" (${repo.language}), achieving a top-tier rating of ${repo.stars} stars through community-driven open source excellence.`,
+        `Architected "${repo.name}" (${repo.language || "TypeScript"}), implementing automated unit/integration test suites to enforce high reliability and zero-regression deployments.`,
+      );
+    } else if (repo.stars > 10) {
+      points.push(
+        `Architected and scaled "${repo.name}" (${repo.language}), earning ${repo.stars} stars through open-source community adoption.`,
       );
     } else {
       points.push(
-        `Engineered a robust ${repo.language || "software"} ecosystem in"${repo.name}", focusing on modular architecture and production-ready code patterns.`,
+        `Engineered a robust ${repo.language || "software"} ecosystem in "${repo.name}", focusing on modular architecture and production-ready code patterns.`,
       );
     }
 
-    // Pattern 2: Velocity & Impact
-    if (repo.commits_last_90_days > 5) {
+    // Pattern 2: Velocity & Project Longevity
+    if (
+      repo.maintenance_lifespan_days &&
+      repo.maintenance_lifespan_days >= 180
+    ) {
       points.push(
-        `Demonstrated high technical velocity with ${repo.commits_last_90_days} commits in a 90-day window, maintaining feature parity and resolving critical performance bottlenecks.`,
+        `Demonstrated long-term engineering stewardship over ${repo.name}, actively maintaining feature enhancements and architectural refactoring for ${repo.maintenance_lifespan_days} days.`,
+      );
+    } else if (repo.commits_last_90_days > 5) {
+      points.push(
+        `Maintained high technical velocity with ${repo.commits_last_90_days} commits over a 90-day window, resolving performance bottlenecks and shipping key features.`,
       );
     }
 
     // Pattern 3: Domain Expertise
     if (repo.description) {
       points.push(
-        `Led development of technical solutions for ${repo.description.toLowerCase()}, leveraging ${repo.language} to deliver optimized performance and user value.`,
+        `Led development of technical solutions for ${repo.description.toLowerCase()}, leveraging ${repo.language || "modern tech stack"} to deliver optimized performance and user value.`,
       );
     }
 
@@ -61,15 +73,16 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 border border-violet-500/20">
+        <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
           <Sparkles size={20} />
         </div>
         <div>
           <h3 className="text-xl font-bold font-heading dark:text-white">
             Impact Storyteller™
           </h3>
-          <p className="text-xs text-[#64748B]">
-            Convert code velocity into resume impact
+          <p className="text-xs text-[#64748B] dark:text-slate-400">
+            Convert forensic code velocity and test density into resume impact
+            statements
           </p>
         </div>
       </div>
@@ -80,7 +93,7 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
             key={repo.name}
             className="glass-card p-6 border-violet-500/10 transition-all group"
           >
-            <h4 className="flex items-center gap-2 font-bold text-sm text-violet-500 uppercase tracking-widest mb-4">
+            <h4 className="flex items-center gap-2 font-bold text-sm text-violet-400 uppercase tracking-widest mb-4">
               <BookOpen size={14} />
               {repo.name}
             </h4>
@@ -102,7 +115,7 @@ export default function ImpactStoryteller({ repos }: ImpactStorytellerProps) {
                       {copiedIndex === globalIdx ? (
                         <Check size={14} className="text-emerald-500" />
                       ) : (
-                        <Copy size={14} className="text-slate-400 group-" />
+                        <Copy size={14} className="text-slate-400" />
                       )}
                     </button>
                   </div>
