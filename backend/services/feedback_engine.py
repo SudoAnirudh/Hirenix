@@ -7,15 +7,47 @@ from services.groq_client import invoke_groq_llm
 logger = logging.getLogger("hirenix.feedback_engine")
 
 
+async def infer_target_role(schema: ParsedResumeSchema) -> str:
+    """Dynamically infer candidate's target role using zero-shot LLM synthesis without hardcoded rules."""
+    if schema.experiences:
+        for exp in schema.experiences:
+            if exp.title and len(exp.title.strip()) > 3:
+                return exp.title.strip()
+
+    prompt = f"""Synthesize the single most accurate, professional target job title for this candidate based on their profile:
+- Summary: {schema.summary or 'Not specified'}
+- Education: {', '.join(schema.education) or 'Not specified'}
+- Skills: {', '.join(schema.skills[:15]) or 'Not specified'}
+- Projects: {', '.join(schema.projects[:4]) or 'Not specified'}
+
+Return ONLY a concise, professional target role title (e.g., "Junior Full-Stack Engineer", "Cybersecurity Analyst", "Entry-Level ML Engineer", "Junior Systems Engineer", "Data Analyst"). No quotes, no preamble, no markdown."""
+
+    try:
+        res = await invoke_groq_llm(
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=64,
+        )
+        if res and "choices" in res and res["choices"]:
+            title = res["choices"][0]["message"]["content"].strip().strip('"\'`')
+            if title and len(title) > 3:
+                return title
+    except Exception as e:
+        logger.warning(f"LLM role inference failed: {e}")
+
+    return "Entry-Level Software Engineer"
+
+
 async def generate_contextual_gap_analysis(
     schema: ParsedResumeSchema,
     ats_breakdown: Dict[str, float],
-    target_role: str = "Software Engineer",
+    target_role: Optional[str] = None,
 ) -> List[str]:
     """
     Generates dynamic, context-aware resume gap analysis feedback.
     Identifies missing sub-skills, formatting deficits, and structural improvements.
     """
+    role = target_role or await infer_target_role(schema)
     feedback: List[str] = []
 
     # Rule-based contextual checks
@@ -25,7 +57,10 @@ async def generate_contextual_gap_analysis(
         if schema.experiences: present_sections.add("experience")
         if schema.education: present_sections.add("education")
         if schema.projects: present_sections.add("projects")
-        missing = sorted({"education", "experience", "skills", "projects"} - present_sections)
+        
+        # For freshers without formal work experience, projects substitute for work history
+        required = {"education", "skills", "projects"} if not schema.experiences else {"education", "experience", "skills", "projects"}
+        missing = sorted(required - present_sections)
         if missing:
             feedback.append(f"Missing core section(s): {', '.join(missing).capitalize()}. Adding these increases ATS parseability.")
 
@@ -36,7 +71,7 @@ async def generate_contextual_gap_analysis(
         feedback.append("Recent work experiences show lower skill density than older roles. Feature modern tools in your current/latest experience entries.")
 
     # LLM-based intelligent gap analysis
-    prompt = f"""You are a senior technical hiring manager reviewing a candidate's parsed resume for a {target_role} position.
+    prompt = f"""You are a senior technical hiring manager reviewing a candidate's parsed resume for a {role} position.
 Extracted Resume Summary:
 - Skills: {', '.join(schema.skills[:15]) or 'None specified'}
 - Experiences: {len(schema.experiences)} roles parsed

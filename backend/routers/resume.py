@@ -1,10 +1,11 @@
 import uuid
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from dependencies import get_current_user, get_supabase_admin
 from services.resume_parser import parse_resume
 from services.ats_scorer import compute_ats_score
 from models.resume import ResumeUploadResponse, ResumeGetResponse
 from datetime import datetime, timezone
+from typing import Optional
 
 router = APIRouter()
 MAX_RESUME_SIZE_BYTES = 10 * 1024 * 1024
@@ -13,6 +14,7 @@ MAX_RESUME_SIZE_BYTES = 10 * 1024 * 1024
 @router.post("/upload-resume", response_model=ResumeUploadResponse)
 async def upload_resume(
     file: UploadFile = File(...),
+    target_role: Optional[str] = Form(None),
     user: dict = Depends(get_current_user),
     db=Depends(get_supabase_admin),
 ):
@@ -56,7 +58,7 @@ async def upload_resume(
         multi_aspect_scores,
         gap_analysis,
         synthetic_bullet_rewrites,
-    ) = await compute_ats_score(sections, raw_text, schema=parsed_schema)
+    ) = await compute_ats_score(sections, raw_text, schema=parsed_schema, target_role=target_role)
 
     # Persist to DB
     now = datetime.now(timezone.utc)

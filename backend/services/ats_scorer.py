@@ -100,6 +100,7 @@ async def compute_ats_score(
     raw_text: str,
     semantic_similarity: float | None = None,
     schema: Optional[ParsedResumeSchema] = None,
+    target_role: Optional[str] = None,
 ) -> Tuple[float, dict, List[str], float, dict, List[str], List[BulletRewrite]]:
     """
     Compute ATS score using upgraded hybrid approach:
@@ -133,7 +134,7 @@ async def compute_ats_score(
     breakdown.update(multi_aspect_breakdown)
 
     # 4. Dynamic LLM Gap Analysis & Synthetic Rewriting
-    gap_analysis = await generate_contextual_gap_analysis(active_schema, breakdown)
+    gap_analysis = await generate_contextual_gap_analysis(active_schema, breakdown, target_role=target_role)
     synthetic_rewrites = await generate_synthetic_bullet_rewrites(active_schema)
 
     feedback = gap_analysis
