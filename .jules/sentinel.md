@@ -10,3 +10,7 @@
 **Vulnerability:** OS-level file operations (like `os.remove`) during cleanup were only catching `FileNotFoundError`. Other exceptions could propagate and leak internal paths or stack traces in 500 responses.
 **Learning:** System operations can fail for many reasons (e.g., permissions, locks). Unhandled exceptions in cleanup routines break the "fail securely" principle and risk information disclosure.
 **Prevention:** Always catch broad exceptions like `Exception` in cleanup/teardown routines, log them securely, and prevent them from propagating to the client.
+## 2025-01-08 - [Information Disclosure via HTTPException details]
+**Vulnerability:** Raw exception messages (`str(e)`) were being passed directly to `HTTPException` details and returned to clients in error responses.
+**Learning:** Returning raw exceptions exposes internal system workings, file paths, or potentially sensitive data to external actors, aiding in reconnaissance.
+**Prevention:** Always log the full exception internally (e.g., using `logger.error`) and return a generic, sanitized error message to the client in HTTP responses.
