@@ -39,16 +39,24 @@ async def upload_resume(
     except Exception:
         pass  # Storage bucket may not exist; ATS scoring proceeds without file URL
 
-    # Parse resume
-    sections, raw_text = parse_resume(content)
+    # Parse resume with layout-aware markdown and LLM JSON schema
+    sections, raw_text, parsed_schema = await parse_resume(content)
     if len(raw_text.strip()) < 40:
         raise HTTPException(
             status_code=422,
             detail="Could not extract readable text from this PDF. Please upload a text-based PDF (not an image scan).",
         )
 
-    # ATS scoring
-    ats_score, ats_breakdown, feedback = await compute_ats_score(sections, raw_text)
+    # Next-Gen Enterprise ATS scoring
+    (
+        ats_score,
+        ats_breakdown,
+        feedback,
+        xyz_score,
+        multi_aspect_scores,
+        gap_analysis,
+        synthetic_bullet_rewrites,
+    ) = await compute_ats_score(sections, raw_text, schema=parsed_schema)
 
     # Persist to DB
     now = datetime.now(timezone.utc)
@@ -66,10 +74,6 @@ async def upload_resume(
         }
     ).execute()
 
-    # ⚡ Bolt: Batch insert resume sections to avoid N+1 queries
-    # What: Replaced a loop of individual `.insert().execute()` calls with a single bulk insert list.
-    # Why: Executing queries inside a loop causes multiple synchronous network roundtrips to Supabase, slowing down resume upload.
-    # Impact: Reduces database calls from O(N) to O(1), improving upload latency by roughly N * ~50ms.
     if sections:
         sections_data = [
             {
@@ -92,6 +96,10 @@ async def upload_resume(
         ats_breakdown=ats_breakdown,
         feedback=feedback,
         created_at=now,
+        xyz_score=xyz_score,
+        multi_aspect_scores=multi_aspect_scores,
+        gap_analysis=gap_analysis,
+        synthetic_bullet_rewrites=synthetic_bullet_rewrites,
     )
 
 
@@ -121,12 +129,27 @@ async def get_resume(
         ResumeSection(section_type=s["section_type"], content=s["content"])
         for s in (sections_r.data or [])
     ]
+    ats_breakdown = r.data.get("ats_breakdown") or {}
+    xyz_score = ats_breakdown.get("xyz_bullet_quality", 0.0)
+
+    multi_aspect_scores = {
+        "skills_vector_sim": ats_breakdown.get("skills_vector_sim", 0.0),
+        "experience_vector_sim": ats_breakdown.get("experience_vector_sim", 0.0),
+        "overall_context_sim": ats_breakdown.get("overall_context_sim", 0.0),
+        "combined_multi_aspect_score": ats_breakdown.get("combined_multi_aspect_score", 0.0),
+    }
+
     return ResumeGetResponse(
         resume_id=resume_id,
         file_url=r.data["file_url"],
         ats_score=r.data["ats_score"],
-        ats_breakdown=r.data.get("ats_breakdown") or {},
+        ats_breakdown=ats_breakdown,
         sections=sections,
         feedback=r.data.get("feedback") or [],
         created_at=r.data["created_at"],
+        xyz_score=xyz_score,
+        multi_aspect_scores=multi_aspect_scores,
+        gap_analysis=r.data.get("feedback") or [],
+        synthetic_bullet_rewrites=[],
     )
+

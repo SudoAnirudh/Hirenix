@@ -26,7 +26,7 @@ async def _get_nvidia_embedding(text: str) -> Optional[List[float]]:
     # Using a common retrieval model
     payload = {
         "input": [text[:2000]], # NVIDIA embeddings usually have a token limit
-        "model": "nvidia/llama-3.2-nv-embedqa-1b-v2",
+        "model": "nvidia/nv-embedqa-e5-v5",
         "input_type": "query",
         "encoding_format": "float"
     }
