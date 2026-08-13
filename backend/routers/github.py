@@ -16,7 +16,9 @@ async def analyze_github(
 ):
     """Fetch GitHub profile data and compute GitHub Performance Index (GPI)."""
     try:
-        result = await analyze_github_profile(payload.username)
+        result = await analyze_github_profile(
+            payload.username, target_role=payload.target_role or "fullstack"
+        )
     except Exception as e:
         import logging
         logger = logging.getLogger("hirenix.github")

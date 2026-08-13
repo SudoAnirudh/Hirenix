@@ -5,6 +5,7 @@ from pydantic import Field
 
 class GitHubAnalysisRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=39, pattern=r"^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
+    target_role: Optional[str] = Field("fullstack", pattern=r"^(fullstack|frontend|backend|ml_ai)$")
 
 
 class RepoMetric(BaseModel):
@@ -26,6 +27,11 @@ class RepoMetric(BaseModel):
     semantic_commit_ratio: float = 0.0
     atomic_commit_ratio: float = 0.0
     uses_branches: bool = False
+    docstring_score: float = 50.0
+    type_safety_score: float = 50.0
+    has_secrets_risk: bool = False
+    has_dockerfile: bool = False
+    has_ci_workflow: bool = False
 
 
 class GitHubMetrics(BaseModel):
@@ -41,7 +47,8 @@ class GitHubMetrics(BaseModel):
     collaboration_score: float
     longevity_impact_score: float
 
-    # Granular Sub-metrics
+    # Granular Sub-metrics & Advanced Features
+    target_role: str = "fullstack"
     original_repos_count: int = 0
     total_repos_scanned: int = 0
     stack_focus_score: float = 50.0
@@ -52,6 +59,12 @@ class GitHubMetrics(BaseModel):
     branching_hygiene_score: float = 50.0
     pr_description_quality_score: float = 50.0
     external_contributions_count: int = 0
+    merged_external_prs: int = 0
+    open_external_prs: int = 0
+    reputable_repos_contributed: int = 0
+    docstring_coverage_score: float = 50.0
+    type_safety_score: float = 50.0
+    security_clean_score: float = 100.0
     avg_maintenance_lifespan_days: int = 0
     
     # Backward compatibility fields
@@ -69,4 +82,5 @@ class GitHubAnalysisResponse(BaseModel):
     metrics: GitHubMetrics
     strengths: List[str]
     recommendations: List[str]
+
 

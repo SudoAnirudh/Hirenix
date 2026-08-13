@@ -2,7 +2,7 @@ import httpx
 import logging
 import re
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from config import settings
 from models.github import GitHubAnalysisResponse, GitHubMetrics, RepoMetric
 from utils.scoring_weights import GPI_CATEGORY_WEIGHTS
@@ -19,6 +19,15 @@ LAZY_COMMIT_PATTERN = re.compile(
     r"^(update|fixed|wip|changes|commit|stuff|asdf|fix|test|done)$", re.IGNORECASE
 )
 
+SECRET_PATTERNS = [
+    re.compile(r"sk_live_[0-9a-zA-Z]{24}"),
+    re.compile(r"ghp_[0-9a-zA-Z]{36}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+    re.compile(r"AIzaSy[0-9A-Za-z\-_]{35}"),
+    re.compile(r"-----BEGIN PRIVATE KEY-----"),
+    re.compile(r"""(api_key|aws_secret|secret_key)\s*=\s*['"][A-Za-z0-9_\-+=/]{16,}['"]""", re.IGNORECASE),
+]
+
 
 def _auth_headers() -> dict:
     headers = {
@@ -33,7 +42,7 @@ def _auth_headers() -> dict:
 
 async def _inspect_repo_quality(
     client: httpx.AsyncClient, username: str, repo_name: str
-) -> Tuple[bool, float, float, float, bool]:
+) -> Tuple[bool, float, float, float, bool, float, float, bool, bool, bool]:
     """
     Inspect a flagship repository for:
     - has_tests (bool)
@@ -41,14 +50,23 @@ async def _inspect_repo_quality(
     - semantic_commit_ratio (float 0-100)
     - atomic_commit_ratio (float 0-100)
     - uses_branches (bool)
+    - docstring_score (float 0-100)
+    - type_safety_score (float 0-100)
+    - has_secrets_risk (bool)
+    - has_dockerfile (bool)
+    - has_ci_workflow (bool)
     """
     has_tests = False
     dep_health = 50.0
     semantic_ratio = 50.0
     atomic_ratio = 50.0
     uses_branches = False
+    docstring_score = 50.0
+    type_safety_score = 50.0
+    has_secrets_risk = False
+    has_dockerfile = False
+    has_ci_workflow = False
 
-    # 1. Check for tests & dependency files via contents API
     try:
         r = await client.get(
             f"{GITHUB_API}/repos/{username}/{repo_name}/contents",
@@ -59,12 +77,18 @@ async def _inspect_repo_quality(
             contents = r.json()
             file_names = [item.get("name", "").lower() for item in contents if isinstance(item, dict)]
             
+            # Check dockerfile & CI workflows
+            if any(d in file_names for d in ["dockerfile", "docker-compose.yml", "docker-compose.yaml"]):
+                has_dockerfile = True
+            if ".github" in file_names or ".gitlab-ci.yml" in file_names:
+                has_ci_workflow = True
+
             # Check tests
             test_indicators = {"test", "tests", "__tests__", "spec", "e2e", "cypress", "pytest"}
             if any(name in test_indicators or name.startswith("test") for name in file_names):
                 has_tests = True
 
-            # Check dependency health
+            # Dependency health check
             if "package.json" in file_names:
                 pkg_r = await client.get(
                     f"{GITHUB_API}/repos/{username}/{repo_name}/contents/package.json",
@@ -79,7 +103,6 @@ async def _inspect_repo_quality(
                         deps = pkg_data.get("dependencies", {})
                         dev_deps = pkg_data.get("devDependencies", {})
                         total_deps = len(deps) + len(dev_deps)
-                        # Penalize extreme dependency bloat (>60) or encourage reasonable count (5-30)
                         if total_deps == 0:
                             dep_health = 60.0
                         elif 1 <= total_deps <= 35:
@@ -110,10 +133,54 @@ async def _inspect_repo_quality(
                         dep_health = 60.0
             elif any(d in file_names for d in ["cargo.toml", "go.mod", "pyproject.toml"]):
                 dep_health = 85.0
-    except Exception as e:
-        logger.debug(f"Repo contents check failed for {repo_name}: {e}")
 
-    # 2. Check recent commits for Git Hygiene (Semantic + Granularity + Branching)
+            # 3. Code Health, Type Safety & Secret Scanning on sample source files
+            sample_code_files = [
+                item for item in contents 
+                if isinstance(item, dict) and item.get("type") == "file" and 
+                any(item.get("name", "").lower().endswith(ext) for ext in [".py", ".ts", ".tsx", ".js", ".go", ".java", ".cpp"])
+            ]
+            
+            doc_hits = 0
+            type_hits = 0
+            scanned_files = 0
+
+            for sample_file in sample_code_files[:3]:
+                scanned_files += 1
+                try:
+                    f_resp = await client.get(
+                        sample_file.get("url", ""),
+                        headers=_auth_headers(),
+                        timeout=5.0,
+                    )
+                    if f_resp.status_code == 200:
+                        import base64
+                        code_txt = base64.b64decode(f_resp.json().get("content", "")).decode("utf-8", errors="ignore")
+                        
+                        # Docstring check
+                        if '"""' in code_txt or "'''" in code_txt or "/**" in code_txt:
+                            doc_hits += 1
+
+                        # Type safety check
+                        if any(pattern in code_txt for pattern in ["interface ", "type ", ": string", ": number", "def ", "-> ", ": List[", ": Dict["]):
+                            type_hits += 1
+
+                        # Secret scanner check
+                        for sec_pat in SECRET_PATTERNS:
+                            if sec_pat.search(code_txt):
+                                has_secrets_risk = True
+                                break
+                except Exception:
+                    pass
+
+            if scanned_files > 0:
+                docstring_score = round((doc_hits / scanned_files) * 100.0, 1)
+                type_safety_score = round((type_hits / scanned_files) * 100.0, 1)
+
+    except Exception as e:
+        logger.debug(f"Repo contents quality check failed for {repo_name}: {e}")
+
+    # 4. Check recent commits for Git Hygiene
     try:
         commits_r = await client.get(
             f"{GITHUB_API}/repos/{username}/{repo_name}/commits",
@@ -126,7 +193,6 @@ async def _inspect_repo_quality(
             if isinstance(commits, list) and len(commits) > 0:
                 semantic_count = 0
                 lazy_count = 0
-                atomic_count = 0
                 branch_merge_count = 0
 
                 for c in commits:
@@ -149,15 +215,29 @@ async def _inspect_repo_quality(
     except Exception as e:
         logger.debug(f"Commits inspection failed for {repo_name}: {e}")
 
-    return has_tests, dep_health, semantic_ratio, atomic_ratio, uses_branches
+    return (
+        has_tests,
+        dep_health,
+        semantic_ratio,
+        atomic_ratio,
+        uses_branches,
+        docstring_score,
+        type_safety_score,
+        has_secrets_risk,
+        has_dockerfile,
+        has_ci_workflow,
+    )
 
 
-async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
-    """Fetch GitHub profile data and compute 4 core metric categories using the 3-step pipeline."""
-    logger.info(f"Starting GitHub analysis for user: {username}")
+async def analyze_github_profile(
+    username: str, target_role: str = "fullstack"
+) -> GitHubAnalysisResponse:
+    """Fetch GitHub profile data and compute 4 core metric categories using 3-step pipeline & role benchmarks."""
+    target_role = target_role.lower() if target_role else "fullstack"
+    logger.info(f"Starting GitHub analysis for user: {username} (Role: {target_role})")
+    
     async with httpx.AsyncClient(timeout=25) as client:
         try:
-            # User info
             user_r = await client.get(f"{GITHUB_API}/users/{username}", headers=_auth_headers())
             if user_r.status_code == 404:
                 raise Exception(f"GitHub user '{username}' not found. Please check the spelling.")
@@ -167,7 +247,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                 raise Exception("GitHub API rate limit reached. Please try again later.")
             user_r.raise_for_status()
 
-            # All Repositories
             repos_r = await client.get(
                 f"{GITHUB_API}/users/{username}/repos",
                 params={"per_page": 100, "sort": "updated"},
@@ -186,12 +265,9 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         total_repos_scanned = len(repos)
         original_repos = [r for r in repos if not r.get("fork", False)]
         original_repos_count = len(original_repos)
-        
-        # Fallback to all repos if user has no original repos
         eval_repos = original_repos if original_repos else repos
 
         # ─── PIPELINE STEP 2: Identify Core Flagship Projects ─────────────────────
-        # Rank by impact score: stars * 3 + forks * 2 + min(size/100, 20)
         def _flagship_score(r: dict) -> float:
             return (
                 r.get("stargazers_count", 0) * 3.0
@@ -200,7 +276,7 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             )
 
         sorted_repos = sorted(eval_repos, key=_flagship_score, reverse=True)
-        flagship_repos = sorted_repos[:3]  # Focus 80% evaluation here
+        flagship_repos = sorted_repos[:3]
         top_repos_list = sorted_repos[:5]
 
         # ─── PIPELINE STEP 3: Audit Recent Activity (90-Day Audit) ────────────────
@@ -237,18 +313,20 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                         if is_recent:
                             if evt_type == "PushEvent":
                                 recent_pushes_count += 1
-                            # External contribution check
                             if repo_name and not repo_name.lower().startswith(f"{username.lower()}/"):
                                 if evt_type in ("PushEvent", "PullRequestEvent", "PullRequestReviewEvent", "IssuesEvent"):
                                     external_contributions_count += 1
         except Exception as e:
             logger.debug(f"Public events audit failed: {e}")
 
-        # ─── PR Description Quality & OS Audit ───────────────────────────────────
+        # ─── ADVANCED FEATURE 1: Merged vs Unmerged PRs & Repo Reputation ────────
         pr_quality_score = 50.0
-        external_pr_repos = set()
+        merged_external_prs = 0
+        open_external_prs = 0
+        reputable_repos_contributed = 0
+
         try:
-            # 1. Search user PRs for description quality
+            # PR Description Quality
             prs_r = await client.get(
                 f"{GITHUB_API}/search/issues",
                 params={"q": f"type:pr author:{username}", "per_page": 20},
@@ -262,27 +340,53 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     avg_len = sum(body_lengths) / len(body_lengths)
                     pr_quality_score = round(min(100.0, max(30.0, (avg_len / 150.0) * 100.0)), 1)
 
-            # 2. Search for external PRs in non-owned repositories (contributions via forks)
+            # Search External PRs (by author in non-owned repos)
             ext_prs_r = await client.get(
                 f"{GITHUB_API}/search/issues",
-                params={"q": f"type:pr author:{username} -user:{username}", "per_page": 20},
+                params={"q": f"type:pr author:{username} -user:{username}", "per_page": 30},
                 headers=_auth_headers(),
                 timeout=6.0,
             )
             if ext_prs_r.status_code == 200:
                 ext_prs = ext_prs_r.json().get("items", [])
+                external_repo_paths = set()
+                
                 for p in ext_prs:
+                    state = p.get("state")
+                    is_pull = "pull_request" in p
+                    pull_info = p.get("pull_request", {})
+                    is_merged = bool(pull_info.get("merged_at"))
+
+                    if is_merged or (state == "closed" and "merged" in str(p.get("labels", [])).lower()):
+                        merged_external_prs += 1
+                    elif state == "open":
+                        open_external_prs += 1
+
                     repo_url = p.get("repository_url", "")
                     if repo_url and "/repos/" in repo_url:
                         repo_path = repo_url.split("/repos/")[1]
-                        external_pr_repos.add(repo_path)
+                        external_repo_paths.add(repo_path)
 
-                external_contributions_count = max(
-                    external_contributions_count, len(external_pr_repos)
-                )
+                external_contributions_count = max(external_contributions_count, len(external_repo_paths))
+
+                # Check reputation (>100 stars) for top external repos
+                repo_cache = {}
+                for repo_path in list(external_repo_paths)[:5]:
+                    try:
+                        tr_r = await client.get(
+                            f"{GITHUB_API}/repos/{repo_path}",
+                            headers=_auth_headers(),
+                            timeout=4.0,
+                        )
+                        if tr_r.status_code == 200:
+                            tr_stars = tr_r.json().get("stargazers_count", 0)
+                            if tr_stars >= 100:
+                                reputable_repos_contributed += 1
+                    except Exception:
+                        pass
+
         except Exception as e:
-            logger.debug(f"PR search audit failed: {e}")
-
+            logger.debug(f"External PR & reputation audit failed: {e}")
 
         # ─── Language Focus vs Diversity ─────────────────────────────────────────
         lang_counts = {}
@@ -295,18 +399,17 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         lang_dist = {lang: (count / total_lang_repos) * 100 for lang, count in lang_counts.items()}
         languages = sorted(lang_counts.keys(), key=lambda x: lang_counts[x], reverse=True)
 
-        # Primary stack focus calculation
         top_two_share = sum(sorted(lang_dist.values(), reverse=True)[:2])
         if len(languages) <= 3 and top_two_share >= 70:
             stack_focus_score = 95.0
         elif top_two_share >= 60:
             stack_focus_score = 85.0
         elif len(languages) > 8 and top_two_share < 35:
-            stack_focus_score = 40.0  # Scattered mess penalty
+            stack_focus_score = 40.0
         else:
             stack_focus_score = 70.0
 
-        # ─── Deep Inspection of Flagship Repositories ──────────────────────────────
+        # ─── ADVANCED FEATURE 2: Deep Quality, Type Safety & Secret Inspection ───
         repo_metrics: list[RepoMetric] = []
         three_months_iso = three_months_ago.isoformat()
         
@@ -316,12 +419,14 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         atomic_commit_ratios = []
         branching_flags = []
         lifespan_days_list = []
+        docstring_scores = []
+        type_safety_scores = []
+        secrets_detected_flags = []
 
         for r in top_repos_list:
             r_name = r["name"]
             is_flagship = r in flagship_repos
 
-            # Commits in last 90 days
             commits_count = 0
             try:
                 commits_r = await client.get(
@@ -341,7 +446,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             except Exception:
                 pass
 
-            # Maintenance Lifespan Calculation
             created_str = r.get("created_at")
             pushed_str = r.get("pushed_at")
             lifespan_days = 0
@@ -355,18 +459,42 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
 
             lifespan_days_list.append(lifespan_days)
 
-            # Deep quality inspection for top flagship repos
-            has_tests, dep_health, sem_ratio, atom_ratio, uses_branches = False, 50.0, 50.0, 50.0, False
+            (
+                has_tests,
+                dep_health,
+                sem_ratio,
+                atom_ratio,
+                uses_branches,
+                doc_score,
+                type_score,
+                has_sec_risk,
+                has_docker,
+                has_ci_wf,
+            ) = (False, 50.0, 50.0, 50.0, False, 50.0, 50.0, False, False, False)
+
             if is_flagship:
-                has_tests, dep_health, sem_ratio, atom_ratio, uses_branches = await _inspect_repo_quality(
-                    client, username, r_name
-                )
+                (
+                    has_tests,
+                    dep_health,
+                    sem_ratio,
+                    atom_ratio,
+                    uses_branches,
+                    doc_score,
+                    type_score,
+                    has_sec_risk,
+                    has_docker,
+                    has_ci_wf,
+                ) = await _inspect_repo_quality(client, username, r_name)
+
                 if has_tests:
                     tested_flagship_count += 1
                 dep_health_scores.append(dep_health)
                 semantic_commit_ratios.append(sem_ratio)
                 atomic_commit_ratios.append(atom_ratio)
                 branching_flags.append(uses_branches)
+                docstring_scores.append(doc_score)
+                type_safety_scores.append(type_score)
+                secrets_detected_flags.append(has_sec_risk)
 
             repo_metrics.append(
                 RepoMetric(
@@ -377,7 +505,7 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     stars=r.get("stargazers_count", 0),
                     forks=r.get("forks_count", 0),
                     has_readme=bool(r.get("description") or r.get("has_wiki")),
-                    has_ci=bool(r.get("has_downloads", True)),
+                    has_ci=has_ci_wf or bool(r.get("has_downloads", True)),
                     has_deployment=bool(r.get("homepage")),
                     size_kb=r.get("size", 0),
                     commits_last_90_days=commits_count,
@@ -388,12 +516,15 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     semantic_commit_ratio=round(sem_ratio, 1),
                     atomic_commit_ratio=round(atom_ratio, 1),
                     uses_branches=uses_branches,
+                    docstring_score=round(doc_score, 1),
+                    type_safety_score=round(type_score, 1),
+                    has_secrets_risk=has_sec_risk,
+                    has_dockerfile=has_docker,
+                    has_ci_workflow=has_ci_wf,
                 )
             )
 
         # ─── CORE METRIC CATEGORY COMPUTATIONS ────────────────────────────────────
-
-        # Category 1: Code Quality & Architecture
         testing_density_score = round(
             (tested_flagship_count / max(1, len(flagship_repos))) * 100.0, 1
         )
@@ -401,9 +532,27 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             sum(dep_health_scores) / max(1, len(dep_health_scores)), 1
         ) if dep_health_scores else 65.0
 
+        avg_docstring_score = round(
+            sum(docstring_scores) / max(1, len(docstring_scores)), 1
+        ) if docstring_scores else 50.0
+
+        avg_type_safety_score = round(
+            sum(type_safety_scores) / max(1, len(type_safety_scores)), 1
+        ) if type_safety_scores else 50.0
+
+        security_clean_score = 100.0 if not any(secrets_detected_flags) else 30.0
+
         code_quality_score = round(
-            stack_focus_score * 0.35 + testing_density_score * 0.35 + avg_dep_health * 0.30, 1
+            stack_focus_score * 0.25
+            + testing_density_score * 0.25
+            + avg_dep_health * 0.20
+            + avg_docstring_score * 0.15
+            + avg_type_safety_score * 0.15,
+            1,
         )
+
+        if security_clean_score < 100.0:
+            code_quality_score = max(0.0, round(code_quality_score - 20.0, 1))
 
         # Category 2: Workflow & Git Hygiene
         avg_semantic_ratio = round(
@@ -422,10 +571,15 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             avg_semantic_ratio * 0.40 + avg_atomic_ratio * 0.35 + branching_score * 0.25, 1
         )
 
-        # Category 3: Open Source & Collaboration
-        external_contrib_score = round(min(100.0, external_contributions_count * 20.0), 1)
+        # Category 3: Open Source & Collaboration (Weighted for Merged PRs & Reputation)
+        pr_collaboration_base = (
+            merged_external_prs * 3.0 + open_external_prs * 1.5 + (external_contributions_count - merged_external_prs - open_external_prs) * 0.5
+        )
+        reputation_bonus = min(30.0, reputable_repos_contributed * 15.0)
+        ext_contrib_score = round(min(100.0, pr_collaboration_base * 10.0 + reputation_bonus + (external_contributions_count * 5.0)), 1)
+        
         collaboration_score = round(
-            pr_quality_score * 0.40 + external_contrib_score * 0.45 + min(100.0, recent_pushes_count * 5.0) * 0.15,
+            pr_quality_score * 0.35 + ext_contrib_score * 0.50 + min(100.0, recent_pushes_count * 5.0) * 0.15,
             1,
         )
 
@@ -434,7 +588,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             sum(lifespan_days_list) / max(1, len(lifespan_days_list))
         ) if lifespan_days_list else 30
 
-        # Lifespan score: >180 days = 95+, 90-180 = 80, 30-90 = 65, <3 days = 20 (tutorial clone penalty)
         if avg_lifespan_days >= 180:
             lifespan_score = 95.0
         elif avg_lifespan_days >= 90:
@@ -456,20 +609,57 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             lifespan_score * 0.60 + social_proof_score * 0.40, 1
         )
 
-        # ─── OVERALL GPI SCORE COMPUTATION ───────────────────────────────────────
+        # ─── ADVANCED FEATURE 3: Role-Specific Metric Benchmarking ──────────────
+        role_weights = {
+            "code_quality_score": 0.30,
+            "git_hygiene_score": 0.25,
+            "collaboration_score": 0.25,
+            "longevity_impact_score": 0.20,
+        }
+
+        if target_role == "backend":
+            role_weights = {
+                "code_quality_score": 0.35,
+                "git_hygiene_score": 0.25,
+                "longevity_impact_score": 0.25,
+                "collaboration_score": 0.15,
+            }
+            # Bonus for Dockerfile & CI Workflows
+            if any(r.has_dockerfile for r in repo_metrics):
+                code_quality_score = min(100.0, round(code_quality_score + 5.0, 1))
+            if any(r.has_ci_workflow for r in repo_metrics):
+                git_hygiene_score = min(100.0, round(git_hygiene_score + 5.0, 1))
+
+        elif target_role == "frontend":
+            role_weights = {
+                "code_quality_score": 0.30,
+                "longevity_impact_score": 0.30,
+                "git_hygiene_score": 0.20,
+                "collaboration_score": 0.20,
+            }
+            # Bonus for production deployment links
+            with_deploy_ratio = sum(1 for r in repo_metrics if r.has_deployment) / max(1, len(repo_metrics))
+            longevity_impact_score = min(100.0, round(longevity_impact_score + with_deploy_ratio * 10.0, 1))
+
+        elif target_role == "ml_ai":
+            role_weights = {
+                "code_quality_score": 0.35,
+                "longevity_impact_score": 0.35,
+                "git_hygiene_score": 0.15,
+                "collaboration_score": 0.15,
+            }
+            # Bonus for Jupyter Notebooks & Data Scripts
+            notebook_count = sum(1 for r in eval_repos if r.get("language") == "Jupyter Notebook")
+            if notebook_count > 0:
+                code_quality_score = min(100.0, round(code_quality_score + 8.0, 1))
+
         gpi = (
-            code_quality_score * GPI_CATEGORY_WEIGHTS["code_quality_score"]
-            + git_hygiene_score * GPI_CATEGORY_WEIGHTS["git_hygiene_score"]
-            + collaboration_score * GPI_CATEGORY_WEIGHTS["collaboration_score"]
-            + longevity_impact_score * GPI_CATEGORY_WEIGHTS["longevity_impact_score"]
+            code_quality_score * role_weights["code_quality_score"]
+            + git_hygiene_score * role_weights["git_hygiene_score"]
+            + collaboration_score * role_weights["collaboration_score"]
+            + longevity_impact_score * role_weights["longevity_impact_score"]
         )
         gpi_score = round(gpi, 1)
-
-        # Legacy backward compatibility metrics
-        consistency = round(min(100.0, (recent_pushes_count / 10.0) * 50.0 + (total_original_stars / 20.0) * 50.0), 1)
-        project_depth = round(min(100.0, (avg_lifespan_days / 180.0) * 100.0), 1)
-        stack_diversity = round(min(100.0, (len(languages) / 6.0) * 100.0), 1)
-        production_readiness = code_quality_score
 
         metrics = GitHubMetrics(
             total_repos=len(eval_repos),
@@ -483,6 +673,7 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             collaboration_score=collaboration_score,
             longevity_impact_score=longevity_impact_score,
             # Sub-metrics
+            target_role=target_role,
             original_repos_count=original_repos_count,
             total_repos_scanned=total_repos_scanned,
             stack_focus_score=stack_focus_score,
@@ -493,26 +684,33 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             branching_hygiene_score=branching_score,
             pr_description_quality_score=pr_quality_score,
             external_contributions_count=external_contributions_count,
+            merged_external_prs=merged_external_prs,
+            open_external_prs=open_external_prs,
+            reputable_repos_contributed=reputable_repos_contributed,
+            docstring_coverage_score=avg_docstring_score,
+            type_safety_score=avg_type_safety_score,
+            security_clean_score=security_clean_score,
             avg_maintenance_lifespan_days=avg_lifespan_days,
             # Legacy fallback
-            consistency_score=consistency,
-            project_depth_score=project_depth,
-            stack_diversity_score=stack_diversity,
-            production_readiness_score=production_readiness,
+            consistency_score=round(min(100.0, (recent_pushes_count / 10.0) * 50.0 + (total_original_stars / 20.0) * 50.0), 1),
+            project_depth_score=round(min(100.0, (avg_lifespan_days / 180.0) * 100.0), 1),
+            stack_diversity_score=round(min(100.0, (len(languages) / 6.0) * 100.0), 1),
+            production_readiness_score=code_quality_score,
         )
 
         # ─── AI Deep Dive ────────────────────────────────────────────────────────
         ai_summary = "AI analysis could not be generated."
         if settings.groq_api_key:
             prompt = f"""
-            Analyze this GitHub profile for developer '{username}' based on our 4-category forensic framework:
+            Analyze this GitHub profile for developer '{username}' targeted as a {target_role.upper()} engineer:
+            - Role Benchmark: {target_role.upper()}
             - Original Repos Isolated: {original_repos_count} of {total_repos_scanned} total repos.
-            - Code Quality & Architecture ({code_quality_score}/100): Testing density {testing_density_score}%, Dependency health {avg_dep_health}/100, Primary stack focus {stack_focus_score}/100.
+            - Code Quality & Architecture ({code_quality_score}/100): Testing density {testing_density_score}%, Docstring coverage {avg_docstring_score}%, Type safety {avg_type_safety_score}%, Dependency health {avg_dep_health}/100, Security clean score {security_clean_score}/100.
             - Workflow & Git Hygiene ({git_hygiene_score}/100): Semantic commits {avg_semantic_ratio}%, Atomic commits {avg_atomic_ratio}%.
-            - Open Source & Collaboration ({collaboration_score}/100): External contributions {external_contributions_count}, PR description score {pr_quality_score}/100.
+            - Open Source & Collaboration ({collaboration_score}/100): Merged PRs {merged_external_prs}, Open PRs {open_external_prs}, Reputable repos (>100 stars) {reputable_repos_contributed}.
             - Project Longevity & Impact ({longevity_impact_score}/100): Avg project maintenance lifespan {avg_lifespan_days} days.
 
-            Provide a concise 3-4 sentence forensic assessment highlighting technical rigor, git discipline, open-source impact, and software engineering maturity.
+            Provide a concise 3-4 sentence forensic assessment highlighting technical rigor, open-source impact, code safety, and suitability for a {target_role.upper()} role.
             Return ONLY the raw summary text.
             """
             ai_resp = await invoke_groq_llm([{"role": "user", "content": prompt}])
@@ -524,25 +722,31 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
         # ─── Strategic Strengths & Actionable Recommendations ───────────────────
         strengths, recs = [], []
         
+        if merged_external_prs > 0:
+            strengths.append(f"Merged Open Source Contributor: {merged_external_prs} merged pull request(s) in external repositories.")
+        if reputable_repos_contributed > 0:
+            strengths.append(f"Reputable OS Impact: Contributed pull requests to {reputable_repos_contributed} high-reputation open-source repo(s) (>100 stars).")
         if testing_density_score >= 50:
             strengths.append(f"High Testing Density: {tested_flagship_count} flagship project(s) feature automated test suites.")
-        if avg_semantic_ratio >= 60:
-            strengths.append("Strong Git Hygiene: Consistent semantic commit messages (feat, fix, docs).")
-        if external_contributions_count > 0:
-            strengths.append(f"Open Source Contributor: Active contributions to {external_contributions_count} external repositories.")
+        if avg_docstring_score >= 50 and avg_type_safety_score >= 50:
+            strengths.append(f"Clean Code & Type Safety: Strong docstring coverage ({avg_docstring_score}%) and type annotations ({avg_type_safety_score}%).")
         if avg_lifespan_days >= 180:
             strengths.append(f"Project Commitment: Maintained core flagship projects for an average of {avg_lifespan_days} days.")
         if not strengths:
             strengths.append("Active original repository owner with ongoing technical development.")
 
+        if security_clean_score < 100.0:
+            recs.append("CRITICAL: Remove hardcoded API keys or plaintext credentials from public source code.")
         if testing_density_score < 50:
             recs.append("Add unit & integration test suites (/tests folder) to flagship repositories.")
+        if avg_docstring_score < 50:
+            recs.append("Improve inline docstring / JSDoc documentation across core functions.")
+        if avg_type_safety_score < 50:
+            recs.append("Adopt explicit Type Annotations (TypeScript interfaces / Python type hints) for type safety.")
         if avg_semantic_ratio < 60:
-            recs.append("Adopt Conventional Commits (e.g., 'feat: add auth', 'fix: null pointer') over generic messages.")
+            recs.append("Adopt Conventional Commits (e.g., 'feat: add auth', 'fix: null pointer') over generic commit messages.")
         if avg_lifespan_days < 90:
             recs.append("Maintain flagship projects consistently beyond 6 months to demonstrate long-term project stewardship.")
-        if external_contributions_count == 0:
-            recs.append("Contribute pull requests to open-source projects outside your own repositories.")
 
         return GitHubAnalysisResponse(
             analysis_id="",
@@ -552,5 +756,6 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
             strengths=strengths,
             recommendations=recs,
         )
+
 
 

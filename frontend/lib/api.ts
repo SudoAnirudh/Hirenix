@@ -255,11 +255,14 @@ export async function getJobSuggestions(limit = 6) {
 }
 
 // ─── GitHub ───────────────────────────────────────────────────────────────────
-export async function analyzeGithub(username: string) {
+export async function analyzeGithub(
+  username: string,
+  targetRole: string = "fullstack",
+) {
   return request("/github/analyze-github", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ username, target_role: targetRole }),
   });
 }
 

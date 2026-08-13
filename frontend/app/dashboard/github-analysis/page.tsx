@@ -36,11 +36,17 @@ interface Repo {
   semantic_commit_ratio: number;
   atomic_commit_ratio: number;
   uses_branches: boolean;
+  docstring_score: number;
+  type_safety_score: number;
+  has_secrets_risk: boolean;
+  has_dockerfile: boolean;
+  has_ci_workflow: boolean;
 }
 
 interface AnalysisResult {
   gpi_score: number;
   metrics: {
+    target_role: string;
     code_quality_score: number;
     git_hygiene_score: number;
     collaboration_score: number;
@@ -56,6 +62,12 @@ interface AnalysisResult {
     branching_hygiene_score: number;
     pr_description_quality_score: number;
     external_contributions_count: number;
+    merged_external_prs: number;
+    open_external_prs: number;
+    reputable_repos_contributed: number;
+    docstring_coverage_score: number;
+    type_safety_score: number;
+    security_clean_score: number;
     avg_maintenance_lifespan_days: number;
 
     languages: string[];
@@ -71,6 +83,7 @@ interface AnalysisResult {
 
 export default function GitHubAnalysisPage() {
   const [username, setUsername] = useState("");
+  const [targetRole, setTargetRole] = useState("fullstack");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState("");
@@ -81,7 +94,7 @@ export default function GitHubAnalysisPage() {
     setError("");
     setResult(null);
     try {
-      const data = await analyzeGithub(username.trim());
+      const data = await analyzeGithub(username.trim(), targetRole);
       setResult(data as AnalysisResult);
     } catch (e: unknown) {
       const msg =
@@ -92,6 +105,13 @@ export default function GitHubAnalysisPage() {
     }
   }
 
+  const roleOptions = [
+    { id: "fullstack", label: "Fullstack Engineer" },
+    { id: "backend", label: "Backend / Systems" },
+    { id: "frontend", label: "Frontend Engineer" },
+    { id: "ml_ai", label: "ML / AI Engineer" },
+  ];
+
   const categoryMetrics = result
     ? [
         {
@@ -99,21 +119,21 @@ export default function GitHubAnalysisPage() {
           value: result.metrics.code_quality_score,
           icon: Code2,
           color: "from-cyan-500 to-blue-500",
-          details: `Testing Density: ${Math.round(result.metrics.testing_density_score)}% • Dep Health: ${Math.round(result.metrics.dependency_health_score)}/100`,
+          details: `Tests: ${Math.round(result.metrics.testing_density_score)}% • Docstrings: ${Math.round(result.metrics.docstring_coverage_score)}% • Type Safety: ${Math.round(result.metrics.type_safety_score)}%`,
         },
         {
           label: "Workflow & Git Hygiene",
           value: result.metrics.git_hygiene_score,
           icon: GitCommit,
           color: "from-violet-500 to-purple-500",
-          details: `Semantic Commits: ${Math.round(result.metrics.semantic_commit_ratio)}% • Atomic Granularity: ${Math.round(result.metrics.atomic_commit_ratio)}%`,
+          details: `Semantic Commits: ${Math.round(result.metrics.semantic_commit_ratio)}% • Atomic: ${Math.round(result.metrics.atomic_commit_ratio)}%`,
         },
         {
           label: "Open Source & Collaboration",
           value: result.metrics.collaboration_score,
           icon: Users,
           color: "from-emerald-500 to-teal-500",
-          details: `External Contribs: ${result.metrics.external_contributions_count} repos • PR Desc Quality: ${Math.round(result.metrics.pr_description_quality_score)}/100`,
+          details: `Merged PRs: ${result.metrics.merged_external_prs} • Open PRs: ${result.metrics.open_external_prs} • High-Star Repos: ${result.metrics.reputable_repos_contributed}`,
         },
         {
           label: "Project Longevity & Impact",
@@ -158,7 +178,30 @@ export default function GitHubAnalysisPage() {
       </div>
 
       {/* Username Search Input */}
-      <div className="glass-card p-6 md:p-8 border-violet-500/20 border">
+      {/* Username Search & Role Input */}
+      <div className="glass-card p-6 md:p-8 border-violet-500/20 border space-y-6">
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 block">
+            Target Candidate Benchmark Role
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {roleOptions.map((role) => (
+              <button
+                key={role.id}
+                type="button"
+                onClick={() => setTargetRole(role.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  targetRole === role.id
+                    ? "bg-violet-500 text-white border-violet-400 shadow-lg shadow-violet-500/20"
+                    : "bg-white/5 text-slate-300 border-white/10 hover:bg-white/10"
+                }`}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Github
