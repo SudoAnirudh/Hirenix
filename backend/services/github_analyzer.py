@@ -246,10 +246,12 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
 
         # ─── PR Description Quality & OS Audit ───────────────────────────────────
         pr_quality_score = 50.0
+        external_pr_repos = set()
         try:
+            # 1. Search user PRs for description quality
             prs_r = await client.get(
                 f"{GITHUB_API}/search/issues",
-                params={"q": f"type:pr author:{username}", "per_page": 10},
+                params={"q": f"type:pr author:{username}", "per_page": 20},
                 headers=_auth_headers(),
                 timeout=6.0,
             )
@@ -259,8 +261,28 @@ async def analyze_github_profile(username: str) -> GitHubAnalysisResponse:
                     body_lengths = [len(p.get("body") or "") for p in prs]
                     avg_len = sum(body_lengths) / len(body_lengths)
                     pr_quality_score = round(min(100.0, max(30.0, (avg_len / 150.0) * 100.0)), 1)
+
+            # 2. Search for external PRs in non-owned repositories (contributions via forks)
+            ext_prs_r = await client.get(
+                f"{GITHUB_API}/search/issues",
+                params={"q": f"type:pr author:{username} -user:{username}", "per_page": 20},
+                headers=_auth_headers(),
+                timeout=6.0,
+            )
+            if ext_prs_r.status_code == 200:
+                ext_prs = ext_prs_r.json().get("items", [])
+                for p in ext_prs:
+                    repo_url = p.get("repository_url", "")
+                    if repo_url and "/repos/" in repo_url:
+                        repo_path = repo_url.split("/repos/")[1]
+                        external_pr_repos.add(repo_path)
+
+                external_contributions_count = max(
+                    external_contributions_count, len(external_pr_repos)
+                )
         except Exception as e:
             logger.debug(f"PR search audit failed: {e}")
+
 
         # ─── Language Focus vs Diversity ─────────────────────────────────────────
         lang_counts = {}
