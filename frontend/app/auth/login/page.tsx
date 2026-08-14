@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   getSession,
-  onAuthStateChange,
   sendPasswordResetEmail,
   signIn,
   signInAnonymously,
@@ -46,16 +45,8 @@ export default function LoginPage() {
 
     hydrateSession();
 
-    const subscription = onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        router.replace("/dashboard");
-        router.refresh();
-      }
-    });
-
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, [router]);
 

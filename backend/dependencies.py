@@ -33,13 +33,6 @@ def get_supabase_admin() -> Client:
     return create_client(settings.supabase_url, settings.supabase_service_key)
 
 
-def _decode_hs_secret() -> str | bytes:
-    try:
-        return base64.b64decode(settings.jwt_secret)
-    except Exception:
-        return settings.jwt_secret
-
-
 def _get_jwks() -> list[dict]:
     now = time.time()
     cached_keys = _jwks_cache.get("keys")
@@ -59,7 +52,7 @@ def _get_jwks() -> list[dict]:
     return keys
 
 
-def _get_signing_key(token: str) -> tuple[object, list[str]]:
+def _decode_token(token: str) -> dict:
     try:
         header = jwt.get_unverified_header(token)
     except jwt.DecodeError as exc:
@@ -70,8 +63,39 @@ def _get_signing_key(token: str) -> tuple[object, list[str]]:
         raise MalformedTokenError("Token header missing alg")
 
     if algorithm in {"HS256", settings.jwt_algorithm}:
-        return _decode_hs_secret(), [algorithm]
+        # Attempt local decoding using candidate symmetric keys.
+        # 1. Raw secret (most common for copy-pasted secrets)
+        # 2. Base64-decoded bytes
+        candidates = [settings.jwt_secret]
+        try:
+            decoded = base64.b64decode(settings.jwt_secret)
+            if decoded != settings.jwt_secret.encode("utf-8"):
+                candidates.append(decoded)
+        except Exception:
+            pass
 
+        last_exc = None
+        for key in candidates:
+            try:
+                return jwt.decode(
+                    token,
+                    key,
+                    algorithms=[algorithm],
+                    audience="authenticated",
+                    issuer=f"{settings.supabase_url.rstrip('/')}/auth/v1",
+                    options={"verify_exp": True},
+                )
+            except jwt.InvalidSignatureError as exc:
+                last_exc = exc
+            except jwt.ExpiredSignatureError as exc:
+                # Signature is correct, but token is expired
+                raise exc
+
+        if last_exc:
+            raise last_exc
+        raise jwt.InvalidTokenError("Could not verify token signature with available secrets")
+
+    # Asymmetric key verification
     if algorithm not in SUPPORTED_ASYMMETRIC_ALGORITHMS:
         raise jwt.InvalidAlgorithmError(f"Unsupported JWT algorithm: {algorithm}")
 
@@ -81,21 +105,17 @@ def _get_signing_key(token: str) -> tuple[object, list[str]]:
 
     for jwk in _get_jwks():
         if jwk.get("kid") == key_id:
-            return jwt.PyJWK.from_dict(jwk).key, [algorithm]
+            signing_key = jwt.PyJWK.from_dict(jwk).key
+            return jwt.decode(
+                token,
+                signing_key,
+                algorithms=[algorithm],
+                audience="authenticated",
+                issuer=f"{settings.supabase_url.rstrip('/')}/auth/v1",
+                options={"verify_exp": True},
+            )
 
     raise jwt.InvalidTokenError(f"No signing key found for kid={key_id}")
-
-
-def _decode_token(token: str) -> dict:
-    signing_key, algorithms = _get_signing_key(token)
-    return jwt.decode(
-        token,
-        signing_key,
-        algorithms=algorithms,
-        audience="authenticated",
-        issuer=f"{settings.supabase_url.rstrip('/')}/auth/v1",
-        options={"verify_exp": True},
-    )
 
 
 async def get_current_user(
