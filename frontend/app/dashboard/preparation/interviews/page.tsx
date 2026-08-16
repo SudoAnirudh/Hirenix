@@ -141,16 +141,16 @@ function InterviewView({
   return (
     <div className="animate-fade-up w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 p-5 glass-card rounded-[24px]">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-brand-blue/10 flex items-center justify-center border border-brand-blue/20">
-            <BrainCircuit size={20} className="text-brand-blue" />
+      <div className="flex items-center justify-between mb-6 p-4 border border-border bg-card rounded-xl shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+            <BrainCircuit size={16} className="text-primary" />
           </div>
           <div>
-            <h1 className="font-display font-bold text-2xl tracking-tight text-foreground">
+            <h1 className="font-heading font-bold text-lg tracking-tight text-foreground">
               Interview Studio
             </h1>
-            <p className="text-[11px] font-body text-muted-foreground">
+            <p className="text-[10px] font-body text-muted-foreground">
               {session.target_role} · {session.interview_type.replace("_", "")}
             </p>
           </div>
@@ -158,9 +158,9 @@ function InterviewView({
 
         <button
           onClick={onExit}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-50 text-red-500 border border-red-100 text-[10px] font-bold uppercase tracking-widest transition-all shadow-sm active:scale-95"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 text-xs font-semibold transition-colors active:scale-95"
         >
-          <RotateCcw size={14} />
+          <RotateCcw size={13} />
           Exit Session
         </button>
       </div>
@@ -289,51 +289,41 @@ function MockInterviewPageContent() {
   /* ─────────────────────── SETUP SCREEN ─────────────────────── */
   if (phase === "setup") {
     return (
-      <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 overflow-hidden font-body">
-        {/* Ambient Background Orbs */}
-        <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.08] blur-[140px] rounded-full z-0 pointer-events-none"></div>
-        <div
-          className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.08] blur-[140px] rounded-full z-0 pointer-events-none"
-          style={{ animationDelay: "-4s" }}
-        ></div>
-
-        <main className="relative z-10 pt-32 pb-32 px-6 w-full mx-auto">
+      <div className="relative w-full text-foreground overflow-hidden font-body">
+        <main className="relative z-10 py-6 w-full mx-auto max-w-4xl">
           {/* Setup Header */}
-          <div className="text-center mb-20 animate-fade-up">
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-card/60 border border-white shadow-sm mb-8">
-              <Sparkles size={14} className="text-brand-blue" />
-              <span className="text-[10px] font-black tracking-[0.3em] text-brand-blue uppercase">
-                Curated Performance Studio
-              </span>
+          <div className="mb-8 animate-fade-up">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider mb-3">
+              <Sparkles size={12} />
+              Curated Performance Studio
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter mb-8 text-foreground leading-[0.95]">
-              Configure Your <br className="hidden md:block" />
-              <span className="text-brand-blue">Interview Session</span>
+            <h1 className="text-3xl font-display font-extrabold text-foreground tracking-tight mb-2">
+              Configure Your Interview Session
             </h1>
-            <p className="text-muted-foreground font-body text-xl max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="text-muted-foreground text-sm max-w-2xl leading-relaxed">
               Fine-tune your technical persona. Hirenix AI adapts its logic,
-              depth, and delivery based on your unique career vector.
+              depth, and delivery based on your target role and experience.
             </p>
           </div>
 
           {/* Main Configuration Card */}
           <div
-            className="glass-card p-10 md:p-16 rounded-[48px] bg-card/40 border border-white/60 shadow-glass backdrop-blur-2xl relative overflow-hidden animate-fade-up"
+            className="border border-border bg-card p-6 md:p-10 rounded-xl shadow-xs relative overflow-hidden animate-fade-up"
             style={{ animationDelay: "0.1s" }}
           >
             <div className="space-y-16">
               {/* Role & Experience Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <Target size={14} className="text-muted-foreground" />
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Target Industry Role
                     </label>
                   </div>
-                  <div className="relative group">
+                  <div className="relative">
                     <select
-                      className="w-full bg-card/50 border border-white rounded-3xl py-5 px-8 focus:ring-4 focus:ring-brand-blue/10 text-foreground font-display font-bold text-xl shadow-sm transition-all outline-none appearance-none"
+                      className="w-full bg-card border border-border rounded-lg py-2.5 px-4 focus:ring-2 focus:ring-primary/50 text-foreground font-semibold text-sm transition-all outline-none"
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                     >
@@ -345,21 +335,21 @@ function MockInterviewPageContent() {
                     </select>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 mb-2">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
                     <BarChart3 size={14} className="text-muted-foreground" />
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       Seniority Vector
                     </label>
                   </div>
-                  <div className="flex p-2 bg-card/50 border border-white rounded-[24px] shadow-sm backdrop-blur-md">
+                  <div className="flex p-1 bg-slate-50 dark:bg-slate-900 border border-border rounded-lg">
                     {EXPERIENCE_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
-                        className={`flex-1 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl transition-all ${
+                        className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${
                           experienceLevel === opt.value
-                            ? "bg-card text-brand-blue shadow-lg shadow-brand-blue/10"
-                            : "text-muted-foreground"
+                            ? "bg-card text-primary shadow-xs border border-border/50"
+                            : "text-muted-foreground hover:text-foreground"
                         }`}
                         onClick={() => setExperienceLevel(opt.value)}
                         type="button"
@@ -372,16 +362,16 @@ function MockInterviewPageContent() {
               </div>
 
               {/* Resume Context Selection */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-2">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   <FileText size={14} className="text-muted-foreground" />
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     Resume Context
                   </label>
                 </div>
-                <div className="relative group">
+                <div className="relative">
                   <select
-                    className="w-full bg-card/50 border border-white rounded-3xl py-5 px-8 focus:ring-4 focus:ring-brand-blue/10 text-foreground font-display font-bold text-xl shadow-sm transition-all outline-none appearance-none"
+                    className="w-full bg-card border border-border rounded-lg py-2.5 px-4 focus:ring-2 focus:ring-primary/50 text-foreground font-semibold text-sm transition-all outline-none"
                     value={resumeId}
                     onChange={(e) => setResumeId(e.target.value)}
                   >
@@ -396,52 +386,52 @@ function MockInterviewPageContent() {
                     ))}
                   </select>
                 </div>
-                <p className="text-[10px] text-muted-foreground font-medium pl-2 leading-relaxed">
+                <p className="text-[10px] text-muted-foreground pl-1">
                   Selecting a resume allows the AI to tailor questions
                   specifically to your background, projects, and skills.
                 </p>
               </div>
 
               {/* Interview Type Selection */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 mb-2">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
                   <BrainCircuit size={14} className="text-muted-foreground" />
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                     Specialization Track
                   </label>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {TRACK_OPTIONS.map((opt) => {
                     const isSelected = interviewType === opt.value;
                     return (
                       <button
                         key={opt.value}
-                        className={`group relative p-8 rounded-[32px] text-left border-2 transition-all duration-500 overflow-hidden ${
+                        className={`group relative p-5 rounded-xl text-left border transition-all duration-200 block cursor-pointer ${
                           isSelected
-                            ? "border-brand-blue bg-card shadow-2xl shadow-brand-blue/20"
-                            : "border-white bg-card/30"
+                            ? "border-primary bg-primary/5 text-foreground shadow-xs"
+                            : "border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-900/40"
                         }`}
                         onClick={() => setInterviewType(opt.value)}
                         type="button"
                       >
                         <div
-                          className={`mb-4 w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 ${isSelected ? "bg-brand-blue text-card-foreground shadow-lg" : "bg-card text-brand-blue"}`}
+                          className={`mb-3 w-8 h-8 rounded-md flex items-center justify-center transition-all ${isSelected ? "bg-primary text-white" : "bg-slate-100 dark:bg-slate-800 text-primary"}`}
                         >
-                          {opt.value === "technical" && <Target size={24} />}
+                          {opt.value === "technical" && <Target size={16} />}
                           {opt.value === "behavioral" && (
-                            <MessageSquareText size={24} />
+                            <MessageSquareText size={16} />
                           )}
                           {opt.value === "system_design" && (
-                            <LayoutTemplate size={24} />
+                            <LayoutTemplate size={16} />
                           )}
-                          {opt.value === "mixed" && <Sparkles size={24} />}
+                          {opt.value === "mixed" && <Sparkles size={16} />}
                         </div>
                         <span
-                          className={`block font-display font-bold text-lg tracking-tight mb-1 ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
+                          className={`block font-bold text-sm tracking-tight mb-0.5 ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
                         >
                           {opt.label}
                         </span>
-                        <span className="text-[11px] text-muted-foreground font-medium leading-relaxed opacity-80">
+                        <span className="text-[10px] text-muted-foreground leading-relaxed">
                           {opt.desc}
                         </span>
                       </button>
@@ -450,17 +440,17 @@ function MockInterviewPageContent() {
                 </div>
               </div>
 
-              {/* Difficulty & Questions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-3">
+              {/* Difficulty & Questions & Answer Mode */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
                       <Shield size={14} className="text-muted-foreground" />
-                      <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                         Challenge Depth
                       </label>
                     </div>
-                    <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/10 px-4 py-1.5 rounded-full">
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-md">
                       {intensity === 1
                         ? "Foundational"
                         : intensity === 2
@@ -468,9 +458,9 @@ function MockInterviewPageContent() {
                           : "Expert"}
                     </span>
                   </div>
-                  <div className="relative pt-4">
+                  <div className="relative pt-2">
                     <input
-                      className="w-full h-2 bg-card/40 rounded-full appearance-none cursor-pointer accent-brand-blue"
+                      className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-primary"
                       max="3"
                       min="1"
                       step="1"
@@ -478,86 +468,72 @@ function MockInterviewPageContent() {
                       value={intensity}
                       onChange={(e) => setIntensity(parseInt(e.target.value))}
                     />
-                    <div className="flex justify-between mt-6 px-1">
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <div className="flex justify-between mt-3 px-0.5">
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                         Entry
                       </span>
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        Master
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Expert
                       </span>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-2">
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
                     <RotateCcw size={14} className="text-muted-foreground" />
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">
-                      Session Duration
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Session Questions
                     </label>
                   </div>
-                  <div className="flex items-center gap-6 bg-card/50 border border-white p-3 rounded-[24px] shadow-sm backdrop-blur-md">
+                  <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-border p-1.5 rounded-lg">
                     <button
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center bg-card text-brand-blue transition-all shadow-sm active:scale-90"
+                      className="w-8 h-8 rounded-md flex items-center justify-center bg-card border border-border text-primary transition-all shadow-xs"
                       type="button"
                       onClick={() =>
                         setNumQuestions((prev) => Math.max(1, prev - 1))
                       }
                     >
-                      <RotateCcw size={18} className="-rotate-90" />
+                      <span className="text-sm font-bold">-</span>
                     </button>
                     <div className="flex-1 text-center">
-                      <span className="font-display font-bold text-3xl text-foreground">
+                      <span className="font-bold text-base text-foreground">
                         {numQuestions}
-                      </span>
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-3">
-                        Questions
                       </span>
                     </div>
                     <button
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center bg-card text-brand-blue transition-all shadow-sm active:scale-90"
+                      className="w-8 h-8 rounded-md flex items-center justify-center bg-card border border-border text-primary transition-all shadow-xs"
                       type="button"
                       onClick={() =>
                         setNumQuestions((prev) => Math.min(20, prev + 1))
                       }
                     >
-                      <RotateCcw size={18} className="rotate-90" />
+                      <span className="text-sm font-bold">+</span>
                     </button>
                   </div>
                 </div>
-              </div>
 
-              {/* Answer Mode */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] block mb-2">
+                <div className="space-y-3">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
                     Delivery Paradigm
                   </label>
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     {ANSWER_MODES.map((mode) => {
                       const isSelected = answerMode === mode.value;
                       const Icon = mode.icon;
                       return (
                         <button
                           key={mode.value}
-                          className={`flex-1 py-6 flex flex-col items-center gap-3 border-2 transition-all rounded-[24px] ${
+                          className={`flex-1 py-2 flex items-center justify-center gap-2 border transition-all rounded-lg cursor-pointer text-[10px] font-bold ${
                             isSelected
-                              ? "border-brand-blue bg-card shadow-xl shadow-brand-blue/10"
-                              : "border-white bg-card/30 text-muted-foreground"
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-border bg-card text-muted-foreground"
                           }`}
                           onClick={() => setAnswerMode(mode.value)}
                           type="button"
                         >
-                          <Icon
-                            size={24}
-                            className={
-                              isSelected
-                                ? "text-brand-blue"
-                                : "text-muted-foreground"
-                            }
-                          />
-                          <span className="text-[10px] font-black uppercase tracking-widest">
-                            {mode.label}
-                          </span>
+                          <Icon size={12} />
+                          {mode.label}
                         </button>
                       );
                     })}
@@ -566,26 +542,26 @@ function MockInterviewPageContent() {
               </div>
 
               {/* Action Area */}
-              <div className="pt-10">
+              <div className="pt-6 border-t border-border">
                 <button
-                  className="w-full bg-linear-to-r from-foreground to-muted-foreground text-card-foreground py-8 rounded-[32px] font-display font-black text-2xl flex items-center justify-center gap-6 shadow-2xl shadow-foreground/30 active:scale-[0.98] transition-all group"
+                  className="w-full bg-foreground text-card py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all"
                   type="button"
                   onClick={() => setPhase("checks")}
                 >
                   <span>Initiate Studio Session</span>
-                  <ChevronRight size={32} className=" transition-transform" />
+                  <ChevronRight size={16} />
                 </button>
-                <div className="flex items-center justify-center gap-3 mt-8 opacity-60">
-                  <span className="w-8 h-px bg-muted-foreground" />
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em]">
-                    Hirenix V1.0 · Powered by AI
+                <div className="flex items-center justify-center gap-2 mt-6 opacity-60">
+                  <span className="w-6 h-px bg-muted-foreground" />
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Hirenix Studio
                   </p>
-                  <span className="w-8 h-px bg-muted-foreground" />
+                  <span className="w-6 h-px bg-muted-foreground" />
                 </div>
               </div>
 
               {error && (
-                <div className="mt-8 p-6 rounded-3xl bg-red-50 border border-red-100 text-red-600 text-[11px] font-black uppercase tracking-widest text-center animate-shake">
+                <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-100 text-red-700 text-xs font-semibold text-center">
                   {error}
                 </div>
               )}
@@ -595,10 +571,10 @@ function MockInterviewPageContent() {
 
         {/* Success Indicator (Floating Status Pill) */}
         {!loading && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 backdrop-blur-lg bg-surface/80 border border-border/20 px-4 py-2 rounded-full flex items-center gap-3 shadow-lg z-50">
-            <div className="w-2 h-2 rounded-full bg-emerald animate-pulse"></div>
-            <span className="text-xs font-bold text-primary tracking-wide">
-              Mentor is ready to curate
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 backdrop-blur bg-card/80 border border-border px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg z-50">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-[10px] font-bold text-foreground tracking-wide">
+              Mentor is ready
             </span>
           </div>
         )}
@@ -611,17 +587,17 @@ function MockInterviewPageContent() {
             0%,
             100% {
               transform: scale(1);
-              opacity: 0.15;
+              opacity: 0.1;
             }
             50% {
-              transform: scale(1.1);
-              opacity: 0.25;
+              transform: scale(1.05);
+              opacity: 0.15;
             }
           }
           @keyframes fade-up {
             from {
               opacity: 0;
-              transform: translateY(20px);
+              transform: translateY(10px);
             }
             to {
               opacity: 1;
@@ -629,7 +605,7 @@ function MockInterviewPageContent() {
             }
           }
           .animate-fade-up {
-            animation: fade-up 0.6s ease-out forwards;
+            animation: fade-up 0.4s ease-out forwards;
           }
         `}</style>
       </div>
@@ -640,13 +616,6 @@ function MockInterviewPageContent() {
   if (phase === "checks") {
     return (
       <div className="fixed inset-0 z-[100] min-h-screen w-screen h-screen bg-[#FDF9F3] text-foreground overflow-y-auto font-body flex items-center justify-center p-6">
-        {/* Ambient Background Orbs */}
-        <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
-        <div
-          className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
-          style={{ animationDelay: "-4s" }}
-        ></div>
-
         <div className="relative z-10 w-full max-w-4xl mx-auto flex justify-center">
           <PreInterviewChecks
             onReady={() => void handleStart()}
@@ -661,14 +630,7 @@ function MockInterviewPageContent() {
   if (phase === "interview" && session) {
     return (
       <ProctorProvider enabled={true}>
-        <div className="fixed inset-0 z-[100] min-h-screen w-screen h-screen bg-[#FDF9F3] text-foreground overflow-y-auto font-body px-6 py-20">
-          {/* Ambient Background Orbs */}
-          <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
-          <div
-            className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
-            style={{ animationDelay: "-4s" }}
-          ></div>
-
+        <div className="fixed inset-0 z-[100] min-h-screen w-screen h-screen bg-[#FDF9F3] text-foreground overflow-y-auto font-body px-6 py-12">
           <div className="relative z-10 w-full mx-auto">
             <InterviewView
               session={session}
@@ -683,70 +645,25 @@ function MockInterviewPageContent() {
 
   /* ─────────────────────── REPORT PHASE ─────────────────────── */
   return (
-    <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 overflow-hidden font-body py-24 px-6 animate-fade-up">
-      {/* Ambient Background Orbs */}
-      <div className="fixed w-[800px] h-[800px] bg-brand-blue top-[-300px] left-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"></div>
-      <div
-        className="fixed w-[700px] h-[700px] bg-brand-green bottom-[-200px] right-[-200px] animate-breathe opacity-[0.05] blur-[140px] rounded-full z-0 pointer-events-none"
-        style={{ animationDelay: "-4s" }}
-      ></div>
-
-      <div className="relative z-10 w-full mx-auto">
+    <div className="relative min-h-screen bg-[#FDF9F3] text-foreground -m-8 font-body py-16 px-6 animate-fade-up">
+      <div className="relative z-10 w-full max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-20">
-          <div className="w-24 h-24 rounded-[36px] flex items-center justify-center mx-auto mb-10 bg-brand-green text-card-foreground shadow-2xl shadow-brand-green/40 transform transition-transform">
-            <Trophy size={48} />
-          </div>
-          <h1 className="font-display font-bold text-6xl md:text-8xl mb-6 tracking-tighter text-foreground leading-tight">
-            Session <span className="text-brand-green">Complete</span>
+        <div className="text-center mb-12">
+          <h1 className="font-bold text-4xl mb-4 tracking-tight">
+            Session Complete
           </h1>
-          <p className="text-xl font-body text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-            Exceptional effort. You&apos;ve completed the benchmark for{""}
-            <span className="font-bold text-foreground underline decoration-[#7C9ADD]/30 underline-offset-8 decoration-4">
-              {session?.target_role}
-            </span>
-            .
+          <p className="text-muted-foreground">
+            Performance analysis for {session?.target_role}.
           </p>
-
-          {session && (
-            <div className="inline-flex items-center gap-6 mt-12 px-8 py-3 rounded-full bg-card/60 border border-white shadow-sm backdrop-blur-md">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-blue">
-                {session.interview_type.replace("_", "")}
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-border" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-blue">
-                {session.experience_level}
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-border" />
-              <div className="flex items-center gap-2">
-                <Shield size={12} className="text-brand-green" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-green">
-                  Validated Session
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Performance Report */}
-        <div className="animate-fade-up" style={{ animationDelay: "0.2s" }}>
+        <div className="animate-fade-up">
           {sessionSummary?.feedback?.length ? (
-            <div className="glass-card p-12 md:p-20 mb-16 rounded-[48px] border border-white/60 bg-card/40 shadow-glass backdrop-blur-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-linear-to-br from-brand-green/10 to-brand-blue/5 blur-[120px] pointer-events-none" />
+            <div className="border border-border bg-card p-8 mb-8 rounded-lg">
+              <h3 className="font-bold text-lg mb-8">Performance Analytics</h3>
 
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16 relative z-10">
-                <div className="flex items-center gap-5">
-                  <span className="w-16 h-0.5 bg-linear-to-r from-brand-blue to-transparent rounded-full" />
-                  <h3 className="font-display font-bold text-3xl tracking-tight text-foreground">
-                    Aggregated Performance Index
-                  </h3>
-                </div>
-                <div className="px-6 py-2 rounded-full bg-brand-blue/10 border border-brand-blue/20 text-brand-blue text-[10px] font-black uppercase tracking-[0.3em]">
-                  Validated Analytics
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-12 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                 {[
                   { label: "Clarity", key: "clarity_score" as const },
                   { label: "Technical", key: "technical_score" as const },
@@ -764,21 +681,18 @@ function MockInterviewPageContent() {
                     sessionSummary.feedback.reduce((s, a) => s + a[key], 0) /
                     sessionSummary.feedback.length;
                   return (
-                    <div key={label} className="flex flex-col gap-5 group">
+                    <div key={label} className="space-y-2">
                       <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground group- transition-colors">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                           {label}
                         </span>
-                        <span className="font-display font-bold text-xl text-brand-blue">
-                          {avg.toFixed(1)}
-                          <span className="text-sm text-muted-foreground font-medium ml-1">
-                            / 10
-                          </span>
+                        <span className="font-bold text-sm">
+                          {avg.toFixed(1)} / 10
                         </span>
                       </div>
-                      <div className="h-2.5 rounded-full bg-card/20 border border-border/20 shadow-inner overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-brand-blue shadow-lg transition-all duration-1000"
+                          className="h-full rounded-full bg-primary"
                           style={{ width: `${avg * 10}%` }}
                         />
                       </div>
@@ -786,79 +700,15 @@ function MockInterviewPageContent() {
                   );
                 })}
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16 pt-12 border-t border-brand-blue/10 relative z-10">
-                <div className="p-8 rounded-[32px] bg-brand-green/5 border border-brand-green/10">
-                  <h4 className="text-[10px] font-black mb-6 uppercase tracking-[0.3em] text-brand-green">
-                    Strategic Alphas
-                  </h4>
-                  <div className="space-y-4">
-                    {(sessionSummary.overall_strengths?.length
-                      ? sessionSummary.overall_strengths
-                      : Array.from(
-                          new Set(
-                            sessionSummary.feedback.flatMap(
-                              (item) => item.strengths,
-                            ),
-                          ),
-                        )
-                    )
-                      .slice(0, 6)
-                      .map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="w-2 h-2 rounded-full bg-brand-green mt-1.5 shrink-0" />
-                          <p className="text-sm font-body text-muted-foreground leading-relaxed font-medium">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-
-                <div className="p-8 rounded-[32px] bg-brand-blue/5 border border-brand-blue/10">
-                  <h4 className="text-[10px] font-black mb-6 uppercase tracking-[0.3em] text-brand-blue">
-                    Gap Optimization
-                  </h4>
-                  <div className="space-y-4">
-                    {(sessionSummary.overall_improvements?.length
-                      ? sessionSummary.overall_improvements
-                      : Array.from(
-                          new Set(
-                            sessionSummary.feedback.flatMap(
-                              (item) => item.improvements,
-                            ),
-                          ),
-                        )
-                    )
-                      .slice(0, 6)
-                      .map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="w-2 h-2 rounded-full bg-brand-blue mt-1.5 shrink-0" />
-                          <p className="text-sm font-body text-muted-foreground leading-relaxed font-medium">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
             </div>
           ) : null}
         </div>
 
-        {/* Per-question analysis (pros/cons) */}
+        {/* Per-question analysis */}
         {session && sessionSummary?.feedback?.length ? (
-          <div className="glass-card p-12 md:p-16 rounded-[48px] border border-white/60 bg-card/40 shadow-glass backdrop-blur-2xl relative overflow-hidden mb-16">
-            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-linear-to-br from-brand-blue/10 to-brand-green/5 blur-[120px] pointer-events-none" />
-
-            <div className="flex items-center gap-5 mb-12 relative z-10">
-              <span className="w-16 h-0.5 bg-linear-to-r from-brand-green to-transparent rounded-full" />
-              <h3 className="font-display font-bold text-3xl tracking-tight text-foreground">
-                Per-question analysis
-              </h3>
-            </div>
-
-            <div className="space-y-6 relative z-10">
+          <div className="border border-border bg-card p-8 rounded-lg mb-8">
+            <h3 className="font-bold text-lg mb-8">Detailed Breakdown</h3>
+            <div className="space-y-6">
               {session.questions.map((qq, idx) => {
                 const fb = sessionSummary.feedback.find(
                   (f) => f.question_id === qq.question_id,
@@ -867,60 +717,26 @@ function MockInterviewPageContent() {
                 return (
                   <div
                     key={qq.question_id}
-                    className="p-8 rounded-[32px] bg-card/50 border border-white/70 shadow-sm"
+                    className="p-6 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-border"
                   >
-                    <div className="flex items-start justify-between gap-6 mb-6">
-                      <div className="min-w-0">
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-3">
-                          Question {idx + 1} · {qq.category.replace("_", "")}
-                        </div>
-                        <div className="font-display font-bold text-xl text-foreground leading-snug">
-                          {qq.question}
-                        </div>
-                      </div>
-                      <div className="shrink-0 px-5 py-3 rounded-[24px] bg-card/70 border border-white text-center">
-                        <div className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
-                          Score
-                        </div>
-                        <div className="font-display font-black text-2xl text-brand-blue tabular-nums">
-                          {fb.score}
-                          <span className="text-sm text-muted-foreground font-medium ml-1">
-                            /10
-                          </span>
-                        </div>
-                      </div>
+                    <div className="flex justify-between items-start gap-4 mb-4">
+                      <p className="font-bold text-sm">{qq.question}</p>
+                      <span className="px-2 py-1 bg-card border border-border rounded text-[10px] font-bold">
+                        {fb.score}/10
+                      </span>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 rounded-[24px] bg-brand-green/5 border border-brand-green/10">
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-green mb-4">
-                          Pros
-                        </div>
-                        <ul className="space-y-3">
-                          {fb.strengths?.slice(0, 4).map((s, i) => (
-                            <li
-                              key={i}
-                              className="text-sm font-body text-muted-foreground leading-relaxed font-medium"
-                            >
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="text-xs text-muted-foreground">
+                        <span className="block font-bold text-emerald-600 mb-1">
+                          Strengths
+                        </span>
+                        {fb.strengths?.join(", ")}
                       </div>
-                      <div className="p-6 rounded-[24px] bg-brand-blue/5 border border-brand-blue/10">
-                        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-blue mb-4">
-                          Cons / Improvements
-                        </div>
-                        <ul className="space-y-3">
-                          {fb.improvements?.slice(0, 4).map((s, i) => (
-                            <li
-                              key={i}
-                              className="text-sm font-body text-muted-foreground leading-relaxed font-medium"
-                            >
-                              {s}
-                            </li>
-                          ))}
-                        </ul>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="block font-bold text-primary mb-1">
+                          Improvements
+                        </span>
+                        {fb.improvements?.join(", ")}
                       </div>
                     </div>
                   </div>
@@ -930,23 +746,16 @@ function MockInterviewPageContent() {
           </div>
         ) : null}
 
-        {/* Overall improvement guidance */}
+        {/* Guidance */}
         {sessionSummary?.feedback?.length ? (
-          <div className="glass-card p-12 md:p-16 rounded-[48px] border border-white/60 bg-card/40 shadow-glass backdrop-blur-2xl relative overflow-hidden mb-16">
-            <div className="absolute bottom-0 right-0 w-[520px] h-[520px] bg-linear-to-br from-brand-green/10 to-brand-blue/5 blur-[120px] pointer-events-none" />
-            <div className="flex items-center gap-5 mb-10 relative z-10">
-              <span className="w-16 h-0.5 bg-linear-to-r from-brand-blue to-transparent rounded-full" />
-              <h3 className="font-display font-bold text-3xl tracking-tight text-foreground">
-                How to improve overall performance
-              </h3>
-            </div>
-
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-8 rounded-[32px] bg-card/50 border border-white/70">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-5">
+          <div className="border border-border bg-card p-8 rounded-lg mb-8">
+            <h3 className="font-bold text-lg mb-6">Optimization Roadmap</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="p-6 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-border">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-4">
                   Your next 3 reps
                 </div>
-                <ol className="space-y-4 text-sm font-body text-muted-foreground font-medium leading-relaxed list-decimal list-inside">
+                <ol className="space-y-3 text-xs font-body text-muted-foreground leading-relaxed list-decimal list-inside">
                   <li>Open with a 1-sentence summary answer.</li>
                   <li>
                     Use a 2-3 bullet structure (tradeoffs → example → result).
@@ -976,30 +785,29 @@ function MockInterviewPageContent() {
         ) : null}
 
         {/* Optional user feedback */}
-        <div className="glass-card p-12 md:p-16 rounded-[48px] border border-white/60 bg-card/40 shadow-glass backdrop-blur-2xl relative overflow-hidden mb-10">
-          <div className="absolute top-0 right-0 w-[420px] h-[420px] bg-linear-to-br from-brand-blue/10 to-brand-green/5 blur-[120px] pointer-events-none" />
-          <div className="flex items-center gap-5 mb-10 relative z-10">
-            <span className="w-16 h-0.5 bg-linear-to-r from-brand-green to-transparent rounded-full" />
-            <h3 className="font-display font-bold text-3xl tracking-tight text-foreground">
+        <div className="border border-border bg-card p-6 md:p-10 rounded-xl shadow-xs relative overflow-hidden mb-6">
+          <div className="flex items-center gap-3 mb-8 relative z-10">
+            <span className="w-2.5 h-6 bg-primary rounded-md" />
+            <h3 className="font-display font-bold text-2xl tracking-tight text-foreground">
               Feedback (optional)
             </h3>
           </div>
 
           <div className="relative z-10 space-y-8">
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-4">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
                 Rate this session
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => setUserRating(n)}
-                    className={`px-5 py-3 rounded-[24px] border text-sm font-black transition-all ${
+                    className={`px-4 py-2.5 rounded-lg border text-xs font-bold transition-all ${
                       userRating === n
-                        ? "bg-brand-blue text-card-foreground border-brand-blue"
-                        : "bg-card/60 text-foreground border-white/70"
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-900"
                     }`}
                   >
                     {n}
@@ -1009,11 +817,11 @@ function MockInterviewPageContent() {
             </div>
 
             <div>
-              <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-4">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">
                 What should we improve?
               </div>
               <textarea
-                className="w-full rounded-[32px] p-6 min-h-[140px] bg-card/60 border border-white/70 shadow-inner outline-none text-foreground placeholder:text-muted-foreground"
+                className="w-full rounded-lg p-4 min-h-[140px] bg-card border border-border outline-none text-xs text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
                 value={userFeedback}
                 onChange={(e) => setUserFeedback(e.target.value)}
                 placeholder="Optional: share what felt off (question quality, pacing, voice transcript, scoring, UI)..."
@@ -1030,7 +838,7 @@ function MockInterviewPageContent() {
                     sessionId: sessionSummary?.session_id,
                   });
                 }}
-                className="px-10 py-4 rounded-[28px] bg-linear-to-r from-foreground to-muted-foreground text-card-foreground font-display font-black shadow-2xl active:scale-[0.98] transition-all"
+                className="btn-primary px-6 py-2.5 rounded-lg text-xs"
               >
                 Submit feedback
               </button>
@@ -1038,16 +846,13 @@ function MockInterviewPageContent() {
           </div>
         </div>
 
-        {/* Restart button with premium styling */}
-        <div className="flex justify-center mt-12 mb-20 relative z-10">
+        {/* Restart button */}
+        <div className="flex justify-center mt-8 mb-16 relative z-10">
           <button
-            className="flex items-center justify-center gap-6 px-14 py-8 rounded-[32px] bg-linear-to-r from-foreground to-muted-foreground text-card-foreground font-display font-black text-2xl shadow-2xl shadow-foreground/30 active:scale-[0.98] transition-all group"
+            className="btn-primary py-3 px-8 rounded-lg text-sm flex items-center gap-2"
             onClick={handleRestart}
           >
-            <RotateCcw
-              size={28}
-              className=" transition-transform duration-700"
-            />
+            <RotateCcw size={16} />
             <span>Initialize New Session</span>
           </button>
         </div>

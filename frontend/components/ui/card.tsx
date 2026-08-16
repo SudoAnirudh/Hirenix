@@ -1,28 +1,23 @@
 "use client";
 
 import * as React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
-  ({ className, children, ...props }, ref) => (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-20px" }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "rounded-[32px] border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl shadow-glass overflow-hidden relative transition-colors duration-500 group",
-        className,
-      )}
-      {...props}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/5 to-transparent opacity-0 transition-opacity duration-500 pointer-events-none" />
-      {children as React.ReactNode}
-    </motion.div>
-  ),
-);
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-xl border border-slate-200 dark:border-slate-800 bg-card text-card-foreground shadow-xs overflow-hidden relative",
+      className,
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+));
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<

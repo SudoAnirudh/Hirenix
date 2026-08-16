@@ -25,25 +25,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center whitespace-nowrap rounded-[32px] font-heading tracking-tight font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--indigo)/50 disabled:pointer-events-none disabled:opacity-50";
+      "inline-flex items-center justify-center whitespace-nowrap rounded-lg font-heading tracking-tight font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.99]";
 
     const variants = {
-      primary: "bg-brand-blue text-white shadow-sm active:scale-[0.98]",
-      ghost: "bg-transparent text-slate-700 dark:text-slate-300 dark:",
+      primary: "bg-primary text-primary-foreground shadow-sm hover:opacity-90",
+      ghost:
+        "bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900",
       outline:
-        "bg-transparent text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 dark: active:scale-[0.98]",
-      shine:
-        "relative overflow-hidden bg-brand-blue text-white shadow-sm active:scale-[0.98]",
-      glow: "bg-brand-green text-white shadow-sm active:scale-[0.98]",
+        "bg-transparent text-slate-800 dark:text-slate-200 border border-border hover:bg-slate-50 dark:hover:bg-slate-900",
+      shine: "bg-primary text-primary-foreground shadow-sm hover:opacity-90",
+      glow: "bg-brand-green text-white shadow-sm hover:opacity-90",
       glass:
-        "bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white/60 dark:border-slate-800 text-slate-800 dark:text-slate-200 shadow-sm dark: active:scale-[0.98]",
+        "bg-slate-100 dark:bg-slate-900 border border-border text-slate-800 dark:text-slate-200 shadow-sm hover:bg-slate-200 dark:hover:bg-slate-800",
     };
 
     const sizes = {
-      default: "h-12 px-6 py-2 text-sm",
-      sm: "h-10 px-4 text-xs",
-      lg: "h-14 px-8 text-base",
-      icon: "h-12 w-12",
+      default: "h-11 px-5 py-2 text-sm",
+      sm: "h-9 px-3.5 text-xs",
+      lg: "h-13 px-7 text-base",
+      icon: "h-11 w-11",
     };
 
     return (

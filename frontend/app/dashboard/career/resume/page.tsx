@@ -370,7 +370,7 @@ function Field({
       </label>
       <input
         type="text"
-        className="input-base py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-border rounded-xl focus:border-indigo-500 w-full"
+        className="input-base py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-border rounded-lg focus:border-primary w-full"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -395,7 +395,7 @@ function BulletsField({
         </span>
       </label>
       <textarea
-        className="input-base py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-border rounded-xl resize-none w-full"
+        className="input-base py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-border rounded-lg resize-none w-full"
         rows={4}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -409,7 +409,7 @@ function AddBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-center gap-1.5 py-2 border-2 border-dashed border-border hover:border-indigo-500 rounded-xl text-xs font-bold text-muted-foreground hover:text-indigo-500 transition-colors mt-3"
+      className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-border hover:border-primary rounded-lg text-xs font-semibold text-muted-foreground hover:text-primary transition-colors mt-3"
     >
       <Plus className="w-4 h-4" /> {label}
     </button>
@@ -1023,12 +1023,12 @@ export default function ResumeWorkspacePage() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-slate-50 dark:bg-slate-900 border border-border p-1 rounded-2xl w-fit">
+        <div className="flex bg-slate-50 dark:bg-slate-900 border border-border p-1 rounded-lg w-fit">
           <button
             onClick={() => setActiveTab("builder")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-xs font-bold transition-all ${
               activeTab === "builder"
-                ? "bg-indigo-500 text-white shadow"
+                ? "bg-primary text-white shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -1036,9 +1036,9 @@ export default function ResumeWorkspacePage() {
           </button>
           <button
             onClick={() => setActiveTab("scanner")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-md text-xs font-bold transition-all ${
               activeTab === "scanner"
-                ? "bg-indigo-500 text-white shadow"
+                ? "bg-primary text-white shadow-xs"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -1049,7 +1049,7 @@ export default function ResumeWorkspacePage() {
 
       {/* Tab Panels */}
       {activeTab === "builder" ? (
-        <div className="flex flex-col xl:flex-row border border-border rounded-3xl overflow-hidden bg-card/45 shadow-sm min-h-[680px]">
+        <div className="flex flex-col xl:flex-row border border-border rounded-xl overflow-hidden bg-card/45 shadow-sm min-h-[680px]">
           {/* Left panel: Form editor */}
           <div className="w-full xl:w-[420px] shrink-0 border-b xl:border-b-0 xl:border-r border-border flex flex-col overflow-y-auto max-h-[680px] custom-scrollbar bg-slate-50/20 dark:bg-slate-900/10">
             <AccordionSection
@@ -1159,7 +1159,7 @@ export default function ResumeWorkspacePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-up">
           {/* Uploader Left */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
+            <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-4">
                 ATS Document Scan
               </h3>
@@ -1173,9 +1173,7 @@ export default function ResumeWorkspacePage() {
             </div>
 
             {scannerResult && (
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
-
+              <div className="bg-card border border-border rounded-xl p-6 shadow-sm flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden">
                 <div className="relative w-36 h-36 flex items-center justify-center">
                   <svg
                     className="w-full h-full transform -rotate-90"
@@ -1233,7 +1231,7 @@ export default function ResumeWorkspacePage() {
 
             {/* Structure Checklist */}
             {scannerResult && (
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-sm space-y-4">
+              <div className="bg-card border border-border rounded-xl p-6 shadow-sm space-y-4">
                 <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Formatting & structure audit
                 </h3>
@@ -1292,7 +1290,7 @@ export default function ResumeWorkspacePage() {
           {/* Feedback details Right */}
           <div className="lg:col-span-8 space-y-6">
             {!scannerResult ? (
-              <div className="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-border bg-card rounded-2xl h-80">
+              <div className="flex flex-col items-center justify-center p-12 text-center border border-border bg-card rounded-xl h-80">
                 <FileText className="w-12 h-12 text-muted-foreground mb-4 opacity-40" />
                 <h3 className="font-bold text-sm text-foreground">
                   No analysis logged
@@ -1303,7 +1301,7 @@ export default function ResumeWorkspacePage() {
                 </p>
               </div>
             ) : (
-              <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-[500px]">
+              <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm flex flex-col min-h-[500px]">
                 {/* Navigation header for analysis tabs */}
                 <div className="px-6 py-4 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 flex flex-wrap gap-2 shrink-0">
                   {[
@@ -1315,9 +1313,9 @@ export default function ResumeWorkspacePage() {
                     <button
                       key={tab.id}
                       onClick={() => setScannerTab(tab.id as any)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      className={`px-4 py-2 rounded-md text-xs font-bold transition-all ${
                         scannerTab === tab.id
-                          ? "bg-primary text-primary-foreground shadow-sm"
+                          ? "bg-primary text-primary-foreground shadow-xs"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
@@ -1348,9 +1346,9 @@ export default function ResumeWorkspacePage() {
                                     {Math.round(val)}%
                                   </span>
                                 </div>
-                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
                                   <div
-                                    className="h-full bg-primary rounded-full transition-all duration-1000"
+                                    className="h-full bg-primary rounded-lg transition-all duration-1000"
                                     style={{ width: `${Number(val)}%` }}
                                   />
                                 </div>
@@ -1364,8 +1362,8 @@ export default function ResumeWorkspacePage() {
                   {/* 2. XYZ Rewriter */}
                   {scannerTab === "rewrites" && (
                     <div className="space-y-4 animate-fade-in">
-                      <div className="p-4 rounded-xl bg-purple-50/20 dark:bg-purple-950/10 border border-purple-100 dark:border-purple-900/50 space-y-1">
-                        <h4 className="text-xs font-bold text-purple-500 flex items-center gap-1.5">
+                      <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 space-y-1">
+                        <h4 className="text-xs font-bold text-primary flex items-center gap-1.5">
                           <Sparkles size={14} /> XYZ Formula Optimization
                         </h4>
                         <p className="text-[10px] text-muted-foreground leading-normal">
@@ -1393,7 +1391,7 @@ export default function ResumeWorkspacePage() {
                                     <span className="text-[9px] font-black uppercase text-rose-500 tracking-wider">
                                       Original statement
                                     </span>
-                                    <p className="text-xs text-muted-foreground bg-card border border-border p-3 rounded-lg leading-relaxed">
+                                    <p className="text-xs text-muted-foreground bg-card border border-border p-3 rounded-md leading-relaxed">
                                       {item.original_bullet}
                                     </p>
                                   </div>
@@ -1416,7 +1414,7 @@ export default function ResumeWorkspacePage() {
                                         Copy rewrite
                                       </button>
                                     </div>
-                                    <p className="text-xs text-foreground bg-card border border-indigo-500/30 p-3 rounded-lg leading-relaxed font-medium">
+                                    <p className="text-xs text-foreground bg-card border border-primary/30 p-3 rounded-md leading-relaxed font-medium">
                                       {item.rewritten_bullet}
                                     </p>
                                   </div>
@@ -1432,7 +1430,7 @@ export default function ResumeWorkspacePage() {
                           )}
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground border border-dashed border-border rounded-xl">
+                        <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground border border-dashed border-border rounded-lg">
                           <CheckCircle className="w-8 h-8 text-emerald-500 mb-2" />
                           <p className="text-xs font-bold">
                             Excellent statement phrasing!
@@ -1482,7 +1480,7 @@ export default function ResumeWorkspacePage() {
                         {scannerResult.sections?.map((s, idx) => (
                           <div
                             key={idx}
-                            className="border border-border rounded-xl overflow-hidden bg-card"
+                            className="border border-border rounded-lg overflow-hidden bg-card"
                           >
                             <div className="px-4 py-2 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 text-[10px] font-black uppercase text-muted-foreground tracking-wider">
                               {s.section_type}

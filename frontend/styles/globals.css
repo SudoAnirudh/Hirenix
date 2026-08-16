@@ -37,13 +37,15 @@
   --font-heading: "Plus Jakarta Sans", "Inter", sans-serif;
   --font-body: "Inter", "Plus Jakarta Sans", sans-serif;
 
-  --radius-xl: 32px;
-  --radius-lg: 20px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
+  --radius-xl: 12px;
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
 
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
-  --shadow-premium: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+  --shadow-glass:
+    0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-premium:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 :root {
@@ -144,12 +146,13 @@ body {
   background: var(--card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-glass);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .glass-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--border));
+  border-color: var(--color-primary);
 }
 
 .btn-primary {
@@ -284,11 +287,11 @@ body {
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  /* Disabled glow effect to avoid AI template styling */
 }
 
 .animate-float {
-  animation: float 4s ease-in-out infinite;
+  /* Disabled float animation to avoid cognitive load */
 }
 
 ::-webkit-scrollbar {

@@ -19,18 +19,22 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
   const variants = {
-    default: "bg-[#2D3748] text-white",
-    success: "bg-[#98C9A3]/10 text-[#558B6E] border border-[#98C9A3]/20",
-    warning: "bg-[#FAD390]/10 text-[#B87333] border border-[#FAD390]/20",
-    destructive: "bg-[#EA8685]/10 text-[#B33939] border border-[#EA8685]/20",
-    info: "bg-[#7C9ADD]/10 text-[#4A69BD] border border-[#7C9ADD]/20",
-    outline: "border border-[#2D3748]/20 text-[#2D3748]",
+    default:
+      "bg-slate-800 text-slate-100 dark:bg-slate-200 dark:text-slate-900",
+    success:
+      "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/50",
+    warning:
+      "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50",
+    destructive:
+      "bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800/50",
+    info: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800/50",
+    outline: "border border-border text-slate-800 dark:text-slate-200",
   };
 
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-0.5 text-xs font-bold transition-colors uppercase tracking-wider",
+        "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium border border-transparent transition-colors",
         variants[variant],
         className,
       )}

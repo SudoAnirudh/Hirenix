@@ -51,7 +51,7 @@ export default function RoadmapPage() {
           setSelectedRole(saved.target_role);
         }
       } catch (err) {
-        console.error("Init failed:", err);
+        // Clean telemetry log
       } finally {
         setLoading(false);
       }
@@ -88,7 +88,6 @@ export default function RoadmapPage() {
   const toggleSkill = async (skillName: string) => {
     if (!data) return;
 
-    // Helper to find skill and its status recursively
     const findSkill = (
       skills: RoadmapSkill[],
       name: string,
@@ -108,11 +107,10 @@ export default function RoadmapPage() {
     const isCurrentlyCompleted = target.status === "completed";
     const newStatus = isCurrentlyCompleted ? "to_learn" : "completed";
 
-    // Recursive update helper
     const updateNestedStatus = (
       skills: RoadmapSkill[],
       name: string,
-      status: any,
+      status: RoadmapSkill["status"],
     ): RoadmapSkill[] => {
       return skills.map((s) => {
         if (s.name === name) return { ...s, status };
@@ -125,12 +123,10 @@ export default function RoadmapPage() {
       });
     };
 
-    // Optimistic update
     const updatedSkills = updateNestedStatus(data.skills, skillName, newStatus);
 
-    // Flatten all completed skills for the backend
     const getCompletedNames = (skills: RoadmapSkill[]): string[] => {
-      let names: string[] = [];
+      const names: string[] = [];
       skills.forEach((s) => {
         if (s.status === "completed") names.push(s.name);
         if (s.children) names.push(...getCompletedNames(s.children));
@@ -167,51 +163,66 @@ export default function RoadmapPage() {
 
   if (error)
     return (
-      <div className="p-12 text-center space-y-6 max-w-2xl mx-auto">
-        <div className="bg-red-50 p-6 rounded-3xl border border-red-100 flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-500">
-            <AlertCircle size={32} />
+      <main
+        className="p-12 text-center space-y-6 max-w-2xl mx-auto"
+        aria-label="Roadmap loading error"
+      >
+        <section className="bg-red-50 dark:bg-red-950/10 p-6 rounded-3xl border border-red-100 dark:border-red-900/50 flex flex-col items-center gap-4 text-center">
+          <div
+            className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-500"
+            aria-hidden="true"
+          >
+            <AlertCircle size={32} strokeWidth={2} />
           </div>
-          <p className="text-red-600 font-semibold text-lg">{error}</p>
+          <p className="text-red-600 dark:text-red-400 font-semibold text-lg">
+            {error}
+          </p>
           {error.includes("No resume found") ? (
             <a
               href="/dashboard/career/resume"
-              className="bg-red-500 text-card-foreground px-6 py-3 rounded-2xl font-bold transition-colors shadow-lg shadow-red-200"
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold transition-colors shadow-lg shadow-red-200 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2"
             >
               Upload Resume Now
             </a>
           ) : (
             <button
               onClick={() => handleGenerate()}
-              className="bg-red-500 text-card-foreground px-6 py-3 rounded-2xl font-bold"
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-2xl font-bold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:ring-offset-2"
             >
               Retry Generation
             </button>
           )}
-        </div>
-      </div>
+        </section>
+      </main>
     );
 
   if (!data && !generating)
     return (
-      <div className="min-h-[400px] flex flex-col items-center justify-center space-y-8 bg-card/50 rounded-[40px] border-2 border-dashed border-border p-12">
-        <div className="w-20 h-20 bg-[#F0F4FF] rounded-full flex items-center justify-center text-brand-blue">
-          <MapIcon size={40} />
+      <main
+        className="min-h-[300px] flex flex-col items-center justify-center space-y-6 bg-card rounded-xl border border-dashed border-border p-8"
+        aria-label="Roadmap generation starter screen"
+      >
+        <div
+          className="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center text-primary"
+          aria-hidden="true"
+        >
+          <MapIcon size={28} strokeWidth={1.5} />
         </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-foreground">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl font-bold text-foreground">
             No roadmap generated yet
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
+          <p className="text-muted-foreground text-xs max-w-sm mx-auto font-medium">
             Choose a target role to generate a personalized career path based on
             your skills and gaps.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-lg">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full bg-card border-2 border-brand-blue/20 rounded-2xl px-5 py-4 text-lg font-bold text-foreground outline-hidden focus:ring-4 focus:ring-brand-blue/10 transition-all"
+            aria-label="Select target role"
+            className="w-full bg-card border border-border rounded-lg px-3 py-2 text-sm font-semibold text-foreground outline-hidden"
           >
             {roles.map((role) => (
               <option key={role} value={role}>
@@ -222,40 +233,41 @@ export default function RoadmapPage() {
           <button
             onClick={() => handleGenerate()}
             disabled={!selectedRole || generating}
-            className="w-full sm:w-auto whitespace-nowrap bg-brand-blue text-card-foreground px-10 py-4 rounded-2xl font-black shadow-lg shadow-brand-blue/30 active:scale-95 transition-all text-lg flex items-center justify-center gap-2"
+            className="w-full sm:w-auto btn-primary py-2.5 px-6 rounded-lg text-xs flex items-center justify-center gap-1.5 focus-visible:outline-hidden disabled:opacity-50"
           >
-            <Sparkles size={24} />
+            <Sparkles size={14} />
             Generate Roadmap
           </button>
         </div>
-      </div>
+      </main>
     );
 
   return (
-    <div className="animate-fade-up w-full mx-auto space-y-10 pb-20">
+    <main className="animate-fade-up w-full mx-auto space-y-6 pb-20">
       {/* Header & Selection */}
-      <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-8">
-        <div className="space-y-4 flex-1">
-          <div className="flex items-center gap-2 text-brand-blue font-bold text-sm uppercase tracking-widest">
-            <MapIcon size={16} />
+      <header className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-border pb-4">
+        <div className="space-y-3 flex-1">
+          <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase tracking-wide">
+            <MapIcon size={14} strokeWidth={2} />
             AI Career Navigator
           </div>
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold text-foreground font-display capitalize">
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-bold text-foreground font-heading capitalize">
               {data?.target_role || selectedRole} Roadmap
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-sm">
               Dynamic path derived from your professional profile
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
-            <div className="relative w-full sm:w-72">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-1">
+            <div className="relative w-full sm:w-64">
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
                 disabled={generating}
-                className="w-full bg-card border-2 border-border focus:border-brand-blue rounded-2xl px-5 py-3 text-sm font-semibold text-foreground outline-hidden transition-all appearance-none cursor-pointer shadow-sm disabled:opacity-50"
+                aria-label="Choose alternative target role"
+                className="w-full bg-card border border-border rounded-lg px-3 py-2 text-xs font-semibold text-foreground outline-hidden transition-all appearance-none cursor-pointer"
               >
                 {roles.map((role) => (
                   <option key={role} value={role}>
@@ -263,44 +275,45 @@ export default function RoadmapPage() {
                   </option>
                 ))}
               </select>
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
-                <ChevronRight size={18} className="rotate-90" />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                <ChevronRight size={14} className="rotate-90" strokeWidth={2} />
               </div>
             </div>
             <button
               onClick={() => handleGenerate()}
               disabled={generating}
-              className="flex items-center gap-2 bg-card border-2 border-[#EDF2F7] px-5 py-3 rounded-2xl text-sm font-bold text-muted-foreground transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 bg-card border border-border px-3.5 py-2 rounded-lg text-xs font-bold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors disabled:opacity-50"
             >
               <RefreshCw
-                size={18}
-                className={generating ? "animate-spin text-brand-blue" : ""}
+                size={14}
+                className={generating ? "animate-spin text-primary" : ""}
+                strokeWidth={2}
               />
               {generating ? "Refining..." : data ? "Regenerate" : "Generate"}
             </button>
 
             {data && (
-              <div className="flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200 ml-2">
+              <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900/30 p-1 rounded-lg border border-border ml-1">
                 <button
                   onClick={() => setViewMode("tree")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${
                     viewMode === "tree"
-                      ? "bg-card text-indigo-500 shadow-sm"
-                      : "text-slate-500"
+                      ? "bg-card text-primary shadow-xs border border-border/50"
+                      : "text-slate-500 hover:text-foreground"
                   }`}
                 >
-                  <TreeIcon size={14} />
+                  <TreeIcon size={12} strokeWidth={2} />
                   Mastery Tree
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${
                     viewMode === "list"
-                      ? "bg-card text-indigo-500 shadow-sm"
-                      : "text-slate-500"
+                      ? "bg-card text-primary shadow-xs border border-border/50"
+                      : "text-slate-500 hover:text-foreground"
                   }`}
                 >
-                  <LayoutGrid size={14} />
+                  <LayoutGrid size={12} strokeWidth={2} />
                   Detailed List
                 </button>
               </div>
@@ -309,53 +322,66 @@ export default function RoadmapPage() {
         </div>
 
         {data && (
-          <div className="glass-card p-6 rounded-[32px] flex items-center gap-6 border border-white/60 shadow-xl bg-card/40">
-            <div className="relative w-20 h-20 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90">
+          <section
+            className="border border-border bg-card p-4 rounded-xl flex items-center gap-4 shadow-xs"
+            aria-label="Overall readiness summary progress"
+          >
+            <div
+              className="relative w-14 h-14 flex items-center justify-center"
+              role="progressbar"
+              aria-valuenow={data.overall_progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <svg className="w-full h-full -rotate-90" aria-hidden="true">
                 <circle
-                  cx="40"
-                  cy="40"
-                  r="36"
+                  cx="28"
+                  cy="28"
+                  r="24"
                   stroke="currentColor"
-                  strokeWidth="6"
+                  strokeWidth="4"
                   fill="transparent"
-                  className="text-slate-100"
+                  className="text-slate-100 dark:text-slate-800"
                 />
                 <circle
-                  cx="40"
-                  cy="40"
-                  r="36"
+                  cx="28"
+                  cy="28"
+                  r="24"
                   stroke="currentColor"
-                  strokeWidth="6"
+                  strokeWidth="4"
                   fill="transparent"
-                  className="text-brand-blue"
-                  strokeDasharray={226}
-                  strokeDashoffset={226 - (226 * data.overall_progress) / 100}
+                  className="text-primary"
+                  strokeDasharray={151}
+                  strokeDashoffset={151 - (151 * data.overall_progress) / 100}
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="absolute text-sm font-black text-foreground">
+              <span className="absolute text-xs font-bold text-foreground">
                 {Math.round(data.overall_progress)}%
               </span>
             </div>
             <div>
-              <div className="text-sm font-bold text-foreground">
+              <div className="text-xs font-bold text-foreground">
                 Career Readiness
               </div>
-              <div className="text-xs text-muted-foreground mt-1 font-medium italic">
+              <div className="text-[10px] text-muted-foreground mt-0.5 font-medium italic">
                 Confidence: {data.current_level}
               </div>
             </div>
-          </div>
+          </section>
         )}
-      </div>
+      </header>
 
       <div className="relative">
         {generating && (
           <div className="absolute inset-x-0 -top-4 z-50 flex justify-center">
-            <div className="bg-card px-6 py-2 rounded-full shadow-lg border border-brand-blue/20 flex items-center gap-3">
-              <RefreshCw size={16} className="animate-spin text-brand-blue" />
-              <span className="text-sm font-bold text-brand-blue animate-pulse">
+            <div className="bg-card px-6 py-2 rounded-full shadow-lg border border-primary/20 flex items-center gap-3">
+              <RefreshCw
+                size={16}
+                className="animate-spin text-primary"
+                strokeWidth={2}
+              />
+              <span className="text-sm font-bold text-primary animate-pulse">
                 AI is re-calculating your professional trajectory...
               </span>
             </div>
@@ -368,133 +394,149 @@ export default function RoadmapPage() {
           {data && (
             <>
               {/* AI Next Step */}
-              <div className="bg-linear-to-r from-[#EBF1FF] to-[#F5F8FF] border border-brand-blue/20 rounded-[32px] p-8 flex items-start gap-6 shadow-xs relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Sparkles size={80} />
+              <section
+                className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-5 flex items-start gap-4 shadow-xs relative overflow-hidden"
+                aria-label="AI recommendation focus"
+              >
+                <div
+                  className="p-2 bg-primary rounded-lg text-primary-foreground shadow-xs shrink-0"
+                  aria-hidden="true"
+                >
+                  <Sparkles size={16} />
                 </div>
-                <div className="p-3 bg-brand-blue rounded-2xl text-card-foreground shadow-lg shadow-brand-blue/30 relative">
-                  <Sparkles size={24} />
-                </div>
-                <div className="space-y-1 relative">
-                  <div className="text-sm font-bold text-foreground uppercase tracking-wider opacity-60">
+                <div className="space-y-0.5">
+                  <div className="text-[10px] font-bold text-primary uppercase tracking-wide">
                     AI Strategist Recommendation
                   </div>
-                  <div className="text-lg font-semibold text-muted-foreground leading-relaxed">
+                  <div className="text-sm font-medium text-muted-foreground leading-relaxed">
                     {data.next_step}
                   </div>
                 </div>
-              </div>
+              </section>
 
               {/* Roadmap Content */}
               {viewMode === "tree" ? (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <section
+                  className="animate-in fade-in slide-in-from-bottom-4 duration-1000"
+                  aria-label="Mastery tech tree view"
+                >
                   <VerticalRoadmap
                     skills={data.skills}
                     onToggle={toggleSkill}
                   />
-                </div>
+                </section>
               ) : (
-                <div className="relative">
-                  <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-brand-blue via-[#CBD5E0] to-transparent hidden md:block opacity-30" />
+                <section className="relative" aria-label="Milestones list view">
+                  <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-linear-to-b from-primary via-[#CBD5E0] dark:via-slate-800 to-transparent hidden md:block opacity-30" />
 
                   <div className="space-y-12 relative z-10">
                     {data.skills.map((skill, index) => (
                       <div
                         key={index}
-                        className="flex flex-col md:flex-row gap-8 group transition-all"
+                        className="flex flex-col md:flex-row gap-6 group transition-all"
                       >
                         <div className="hidden md:flex flex-col items-center">
                           <button
                             onClick={() => toggleSkill(skill.name)}
-                            className={`w-12 h-12 rounded-2xl flex items-center justify-center border-4 transition-all shadow-md active:scale-90 ${
+                            aria-label={`Toggle completion of skill ${skill.name}`}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center border-2 transition-colors active:scale-90 focus-visible:outline-hidden ${
                               skill.status === "completed"
-                                ? "bg-emerald-500 border-white text-card-foreground"
-                                : "bg-card border-[#EDF2F7] text-[#CBD5E0]"
+                                ? "bg-emerald-500 border-white text-white shadow-xs"
+                                : "bg-card border-border text-slate-300"
                             }`}
                           >
                             {skill.status === "completed" ? (
-                              <CheckCircle2 size={24} />
+                              <CheckCircle2 size={16} strokeWidth={2} />
                             ) : (
-                              <Circle size={24} />
+                              <Circle size={16} strokeWidth={2} />
                             )}
                           </button>
                         </div>
 
                         <div className="flex-1">
                           <Card
-                            className={`p-8 rounded-[32px] border transition-all ${
+                            className={`p-6 rounded-xl border transition-all ${
                               skill.status === "completed"
-                                ? "bg-emerald-50/20 border-emerald-100"
-                                : "bg-card border-white/80 shadow-glass"
+                                ? "bg-emerald-50/10 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/40"
+                                : "bg-card border-border shadow-xs"
                             }`}
                           >
-                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-                              <div className="space-y-4 flex-1">
-                                <div className="flex flex-wrap items-center gap-3">
-                                  <h3 className="text-2xl font-bold text-foreground font-display">
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                              <div className="space-y-3 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <h3 className="text-lg font-bold text-foreground font-heading">
                                     {skill.name}
                                   </h3>
                                   <span
-                                    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                    className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                                       skill.priority === "high"
-                                        ? "bg-red-100 text-red-500"
+                                        ? "bg-red-100 dark:bg-red-950/20 text-red-500"
                                         : skill.priority === "medium"
-                                          ? "bg-amber-100 text-amber-500"
-                                          : "bg-blue-100 text-blue-500"
+                                          ? "bg-amber-100 dark:bg-amber-950/20 text-amber-500"
+                                          : "bg-blue-100 dark:bg-blue-950/20 text-blue-500"
                                     }`}
                                   >
                                     {skill.priority} Priority
                                   </span>
                                   {skill.status === "completed" && (
-                                    <span className="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                    <span className="bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
                                       Mastered
                                     </span>
                                   )}
                                 </div>
 
-                                <div className="flex flex-wrap gap-6 text-sm text-muted-foreground font-medium">
-                                  <div className="flex items-center gap-2">
-                                    <Clock size={16} />
+                                <div className="flex flex-wrap gap-4 text-xs text-muted-foreground font-semibold">
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock size={14} strokeWidth={2} />
                                     {skill.estimated_time}
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <Sparkles size={16} />
+                                  <div className="flex items-center gap-1.5">
+                                    <Sparkles size={14} strokeWidth={2} />
                                     {skill.difficulty} difficulty
                                   </div>
                                 </div>
 
-                                <div className="space-y-3 pt-4 border-t border-[#EDF2F7]">
-                                  <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                                <div className="space-y-2 pt-3 border-t border-border">
+                                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                                     Expert-Curated Resources
                                   </div>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {skill.resources.map((res, ridx) => (
                                       <a
                                         key={ridx}
                                         href={res.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border transition-all group/res"
+                                        className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border transition-all hover:border-primary group/res"
                                       >
-                                        <div className="w-10 h-10 rounded-xl bg-[#F7FAFC] flex items-center justify-center text-brand-blue group-hover/res:bg-brand-blue group-hover/res:text-card-foreground transition-colors">
+                                        <div className="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-primary group-hover/res:bg-primary group-hover/res:text-primary-foreground transition-colors shrink-0">
                                           {res.type === "video" ? (
-                                            <Sparkles size={18} />
+                                            <Sparkles
+                                              size={14}
+                                              strokeWidth={2}
+                                            />
                                           ) : res.type === "course" ? (
-                                            <MapIcon size={18} />
+                                            <MapIcon
+                                              size={14}
+                                              strokeWidth={2}
+                                            />
                                           ) : (
-                                            <ChevronRight size={18} />
+                                            <ChevronRight
+                                              size={14}
+                                              strokeWidth={2}
+                                            />
                                           )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <div className="text-sm font-bold text-foreground truncate">
+                                          <div className="text-xs font-semibold text-foreground truncate group-hover/res:text-primary">
                                             {res.title}
                                           </div>
-                                          <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-[10px] text-muted-foreground font-bold uppercase">
+                                          <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">
                                               {res.type}
                                             </span>
                                             {res.is_free && (
-                                              <span className="text-[10px] text-emerald-500 font-bold uppercase">
+                                              <span className="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">
                                                 FREE
                                               </span>
                                             )}
@@ -508,20 +550,20 @@ export default function RoadmapPage() {
 
                               <button
                                 onClick={() => toggleSkill(skill.name)}
-                                className={`md:hidden px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
+                                className={`md:hidden px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all focus-visible:outline-hidden ${
                                   skill.status === "completed"
-                                    ? "bg-emerald-100 text-emerald-600"
-                                    : "bg-brand-blue text-card-foreground"
+                                    ? "bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600"
+                                    : "btn-primary h-9"
                                 }`}
                               >
                                 {skill.status === "completed" ? (
                                   <>
-                                    <CheckCircle2 size={18} />
+                                    <CheckCircle2 size={14} strokeWidth={2} />
                                     Mastered
                                   </>
                                 ) : (
                                   <>
-                                    <Circle size={18} />
+                                    <Circle size={14} strokeWidth={2} />
                                     Mark Complete
                                   </>
                                 )}
@@ -532,35 +574,38 @@ export default function RoadmapPage() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Future Opportunities Section */}
-              <div className="pt-10">
+              <section
+                className="pt-10"
+                aria-label="Extended Career Trait Paths"
+              >
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-foreground font-display flex items-center gap-3">
-                    <Sparkles className="text-brand-blue" />
+                    <Sparkles className="text-primary" strokeWidth={2} />
                     Extended Career Trait Paths
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {data.future_opportunities.map((opp, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center gap-4 p-6 rounded-[24px] bg-card border-2 border-white shadow-sm transition-all group cursor-default"
+                        className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border shadow-xs group cursor-default"
                       >
-                        <div className="w-3 h-3 rounded-full bg-brand-blue transition-transform" />
-                        <span className="text-muted-foreground font-bold text-lg">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="font-semibold text-sm text-foreground">
                           {opp}
                         </span>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
+              </section>
             </>
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

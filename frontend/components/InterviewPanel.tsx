@@ -6,20 +6,7 @@ import {
   getNextQuestion,
 } from "@/lib/api";
 import { useProctor } from "./interview/ProctorProvider";
-import {
-  ChevronRight,
-  Timer,
-  Mic,
-  MicOff,
-  Video,
-  VideoOff,
-  PhoneOff,
-  BrainCircuit,
-  CameraOff,
-  Shield,
-  Sparkles,
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { Timer, Mic, BrainCircuit, Shield, Sparkles } from "lucide-react";
 
 type SpeechRecognitionLike = {
   continuous: boolean;
@@ -117,10 +104,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
   const malpracticeEndRequestedRef = useRef(false);
 
   // F2F Media States
-  const [cameraOn, setCameraOn] = useState(true);
-  const [aiState, setAiState] = useState<
-    "idle" | "speaking" | "listening" | "analyzing"
-  >("idle");
+  const cameraOn = true;
   const { stream, cameraStatus, faceStatus } = useProctor();
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -199,7 +183,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               }));
             }
           } catch (err) {
-            console.error("Transcription error:", err);
+            // Clean catch
           } finally {
             setTranscribing(false);
             const action = pendingActionRef.current;
@@ -214,7 +198,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
         recorder.start(100);
         mediaRecorderRef.current = recorder;
       } catch (err) {
-        console.error("Failed to start MediaRecorder:", err);
+        // Clean catch
       }
     } else {
       if (
@@ -256,25 +240,16 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     utterance.rate = 0.95; // Slightly slower, more natural pace
     utterance.pitch = 1.0;
 
-    utterance.onstart = () => {
-      setAiState("speaking");
-    };
-
     utterance.onend = () => {
-      setAiState("listening");
       // Auto-start recording/listening when interviewer finishes speaking
       if (isVoiceMode && speechSupported && !isListening) {
         try {
           recognitionRef.current?.start();
           setIsListening(true);
         } catch (e) {
-          console.error("Speech recognition auto-start failed:", e);
+          // Clean catch
         }
       }
-    };
-
-    utterance.onerror = () => {
-      setAiState("listening");
     };
 
     window.speechSynthesis.speak(utterance);
@@ -282,7 +257,6 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
 
   // Trigger speech synthesis whenever current question index changes
   useEffect(() => {
-    setAiState("speaking");
     const handleVoices = () => {
       speakQuestion(q.question);
     };
@@ -476,7 +450,6 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
-    setAiState("analyzing");
 
     const finalAnswerStr = finalAnswer.trim() || "No answer provided.";
     setAnswersByQuestionId((prev) => ({
@@ -508,10 +481,9 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
           : 0,
       });
     } catch (e) {
-      console.error(e);
+      // Clean catch
     } finally {
       setSubmitting(false);
-      setAiState("idle");
     }
   }
 
@@ -546,7 +518,6 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     if (isLast) return;
 
     setSubmitting(true);
-    setAiState("analyzing");
     try {
       const nextQ = await getNextQuestion(
         session.session_id,
@@ -563,10 +534,9 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
       setCurrentIdx((i) => i + 1);
       setTimeLeft(120);
     } catch (err) {
-      console.error("Failed to load next question:", err);
+      // Clean catch
     } finally {
       setSubmitting(false);
-      setAiState("idle");
     }
   }
 
@@ -583,17 +553,9 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
     await executeNext(answer, autoAdvance);
   }
 
-  const categoryColor =
-    q.category === "technical"
-      ? "#3B82F6"
-      : q.category === "system_design"
-        ? "#10B981"
-        : "#8B5CF6";
-
   const mins = Math.floor(timeLeft / 60);
   const secs = timeLeft % 60;
   const timeString = `${mins}:${secs.toString().padStart(2, "0")}`;
-  const isUrgent = timeLeft <= 30;
 
   const faceBadge = {
     label:
@@ -617,25 +579,28 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-up max-w-7xl mx-auto w-full pb-24 px-4 mt-6">
+    <main
+      className="flex flex-col gap-6 animate-fade-up max-w-7xl mx-auto w-full pb-24 px-4 mt-6"
+      aria-label="Mock Interview Studio"
+    >
       {needsFullscreen && !terminated && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
-          <div className="glass-card w-full max-w-xl p-10 rounded-[40px] bg-slate-900 border border-slate-800 shadow-2xl text-center">
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-3">
+          <div className="w-full max-w-md p-8 rounded-xl bg-slate-900 border border-slate-800 shadow-2xl text-center">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
               Fullscreen Required
             </div>
-            <h3 className="font-display font-black text-3xl tracking-tight text-white mb-4">
+            <h3 className="font-heading font-extrabold text-2xl tracking-tight text-white mb-3">
               Enter Fullscreen Mode
             </h3>
-            <p className="text-sm font-body text-slate-400 leading-relaxed font-medium mb-8">
+            <p className="text-xs font-body text-slate-400 leading-relaxed mb-6">
               This is a proctored face-to-face simulation. Leaving fullscreen or
               switching tabs triggers malpractice warnings.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex justify-center">
               <button
                 type="button"
                 onClick={() => void requestFullscreen()}
-                className="px-10 py-4 rounded-[24px] bg-brand-blue hover:bg-blue-600 text-white font-display font-black shadow-2xl active:scale-[0.98] transition-all"
+                className="btn-primary py-2.5 px-6 rounded-lg text-xs"
               >
                 Restore Fullscreen
               </button>
@@ -647,22 +612,31 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
       {/* Proctoring Shell Canvas */}
       <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
         {/* Left Column: Interview Focus */}
-        <div className="flex-1 flex flex-col gap-6">
+        <section
+          className="flex-1 flex flex-col gap-6"
+          aria-label="Active question workspace"
+        >
           {/* Active Question Card */}
-          <div className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden shadow-sm flex-shrink-0">
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+          <article className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden shadow-sm flex-shrink-0">
+            <div
+              className="absolute top-0 left-0 w-1 h-full bg-primary"
+              aria-hidden="true"
+            ></div>
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-1 text-primary font-bold text-xs uppercase tracking-wide">
-                <BrainCircuit size={14} />
+                <BrainCircuit size={14} strokeWidth={2} />
                 Question {currentIdx + 1} of {totalQuestionsLimit}
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
-                <Timer size={14} />
+              <div
+                className="flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl"
+                aria-label="Time remaining for this question"
+              >
+                <Timer size={14} strokeWidth={2} />
                 <span className="font-mono">{timeString}</span>
               </div>
             </div>
             <h3 className="font-heading text-lg font-bold text-foreground leading-snug mb-4">
-              "{q.question}"
+              &quot;{q.question}&quot;
             </h3>
             <div className="flex gap-2">
               <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-muted-foreground uppercase">
@@ -672,19 +646,21 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 {q.difficulty}
               </span>
             </div>
-          </div>
+          </article>
 
           {/* Transcript / Speech Output Area */}
-          <div className="bg-card border border-border rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm min-h-[280px]">
+          <article className="bg-card border border-border rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm min-h-[280px]">
             <div className="px-5 py-3 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2">
                 <Mic
                   size={16}
+                  strokeWidth={2}
                   className={
                     isListening
                       ? "text-red-500 animate-pulse"
                       : "text-muted-foreground"
                   }
+                  aria-hidden="true"
                 />
                 <span className="text-xs font-bold text-foreground">
                   Live Transcript
@@ -693,6 +669,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-2 h-2 rounded-full ${isListening ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"}`}
+                  aria-hidden="true"
                 />
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">
                   {isListening ? "Listening" : "Muted"}
@@ -702,7 +679,8 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             <div className="p-5 flex-1 flex flex-col justify-between gap-4">
               <textarea
                 id={`answer-${q.question_id}`}
-                className="w-full bg-slate-50/50 dark:bg-slate-900/30 border border-border rounded-xl p-4 text-sm leading-relaxed resize-none flex-1 focus:outline-none focus:border-indigo-500 font-body placeholder:text-muted-foreground"
+                className="w-full bg-slate-50/50 dark:bg-slate-900/30 border border-border rounded-xl p-4 text-sm leading-relaxed resize-none flex-1 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary font-body placeholder:text-muted-foreground"
+                aria-label="Your response draft area"
                 placeholder={
                   transcribing
                     ? "Refining transcription with high-accuracy AI..."
@@ -737,16 +715,16 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 }
               />
             </div>
-          </div>
+          </article>
 
           {/* Control Bar */}
-          <div className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl shadow-sm shrink-0">
+          <footer className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl shadow-sm shrink-0">
             <div>
               <button
                 type="button"
                 onClick={() => handleNext(true)}
                 disabled={submitting || transcribing}
-                className="px-4 py-2 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
               >
                 Skip Question
               </button>
@@ -756,7 +734,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 <button
                   type="button"
                   onClick={onExit}
-                  className="px-4 py-2 border border-rose-200 hover:border-rose-500 text-rose-500 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                  className="px-4 py-2 border border-rose-200 hover:border-rose-500 text-rose-500 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2"
                 >
                   End Interview
                 </button>
@@ -766,7 +744,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                   type="button"
                   onClick={() => handleNext(false)}
                   disabled={submitting || transcribing}
-                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
                 >
                   Submit Answer
                 </button>
@@ -775,19 +753,25 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                   type="button"
                   onClick={() => void handleFinish()}
                   disabled={submitting || transcribing}
-                  className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-emerald-700 transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2"
                 >
                   {submitting ? "Submitting..." : "Finish Interview"}
                 </button>
               )}
             </div>
-          </div>
-        </div>
+          </footer>
+        </section>
 
         {/* Right Column: Intel & Webcam */}
-        <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6">
+        <aside
+          className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6"
+          aria-label="Interviewer biometrics and guides"
+        >
           {/* Webcam / Proctoring Card */}
-          <div className="bg-slate-950 rounded-2xl overflow-hidden shadow-sm relative aspect-video lg:h-48 lg:aspect-auto shrink-0 flex items-center justify-center border border-slate-800">
+          <section
+            className="bg-slate-950 rounded-2xl overflow-hidden shadow-sm relative aspect-video lg:h-48 lg:aspect-auto shrink-0 flex items-center justify-center border border-slate-800"
+            aria-label="Video camera verification feed"
+          >
             {cameraOn && cameraStatus === "active" ? (
               <video
                 ref={videoRef}
@@ -808,7 +792,12 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/45 pointer-events-none flex flex-col justify-between p-3">
               <div className="flex justify-between items-start">
                 <span className="px-2 py-0.5 bg-black/40 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
-                  <Shield size={10} className="text-emerald-400" /> Proctored
+                  <Shield
+                    size={10}
+                    className="text-emerald-400"
+                    strokeWidth={2}
+                  />{" "}
+                  Proctored
                 </span>
                 <span className="px-2 py-0.5 bg-black/40 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold uppercase text-white tracking-wider flex items-center gap-1">
                   <span
@@ -837,12 +826,15 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 </div>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Interview Intel Panel */}
-          <div className="bg-card rounded-2xl border border-border shadow-sm flex-1 flex flex-col overflow-hidden min-h-[300px]">
+          <section
+            className="bg-card rounded-2xl border border-border shadow-sm flex-1 flex flex-col overflow-hidden min-h-[300px]"
+            aria-label="Interviewer Intel"
+          >
             <div className="px-4 py-3 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-2">
-              <Sparkles size={14} className="text-primary" />
+              <Sparkles size={14} className="text-primary" strokeWidth={2} />
               <span className="text-xs font-bold text-foreground">
                 Interview Intel
               </span>
@@ -871,7 +863,10 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                   STAR Method Guide
                 </h4>
-                <div className="space-y-4 relative pl-4 border-l border-border ml-2">
+                <ol
+                  className="space-y-4 relative pl-4 border-l border-border ml-2"
+                  aria-label="STAR answer structure completion"
+                >
                   {[
                     {
                       key: "situation",
@@ -910,7 +905,7 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                       words >= step.minWords && words < step.maxWords;
                     const isPassed = words >= step.maxWords;
                     return (
-                      <div key={step.key} className="relative">
+                      <li key={step.key} className="relative">
                         <span
                           className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-card transition-all ${
                             isPassed
@@ -919,24 +914,32 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                                 ? "bg-primary ring-4 ring-primary/20 scale-110"
                                 : "bg-slate-200 dark:bg-slate-800"
                           }`}
+                          aria-hidden="true"
                         />
                         <p
                           className={`text-xs font-bold transition-colors ${isCurrent ? "text-primary" : "text-foreground"}`}
+                          aria-current={isCurrent ? "step" : undefined}
                         >
                           {step.label}
+                          {isPassed && (
+                            <span className="sr-only"> (completed)</span>
+                          )}
+                          {isCurrent && (
+                            <span className="sr-only"> (current stage)</span>
+                          )}
                         </p>
                         <p className="text-[10px] text-muted-foreground leading-normal mt-0.5">
                           {step.desc}
                         </p>
-                      </div>
+                      </li>
                     );
                   })}
-                </div>
+                </ol>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
+        </aside>
       </div>
-    </div>
+    </main>
   );
 }

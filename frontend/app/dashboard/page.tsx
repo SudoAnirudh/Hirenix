@@ -178,31 +178,33 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      <div className="animate-fade-up w-full flex flex-col gap-8 pb-12 relative overflow-hidden">
+      <div className="animate-fade-up w-full flex flex-col gap-6 pb-12 relative overflow-hidden">
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border relative z-10 shrink-0">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-indigo-500 font-bold text-xs uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
               <Sparkles size={14} />
               Career Command Center
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight font-heading text-foreground">
+            <h1 className="text-3xl font-extrabold tracking-tight font-heading text-foreground">
               Hello, {fullName.split(" ")[0]}
             </h1>
-            <p className="text-muted-foreground text-sm max-w-xl leading-relaxed italic">
-              &quot;{quote || "Your career trajectory is guided by Hirenix AI."}
-              &quot;
+            <p className="text-muted-foreground text-sm max-w-xl leading-relaxed">
+              Target Role:{" "}
+              <strong className="text-foreground capitalize">
+                {targetRole}
+              </strong>
             </p>
           </div>
 
           {loading ? (
-            <div className="h-14 w-60 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse border border-border" />
+            <div className="h-12 w-60 rounded-lg bg-slate-100 dark:bg-slate-900 animate-pulse border border-border" />
           ) : (
             <Link
               href="/dashboard/settings"
-              className="p-1 px-1.5 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3 pr-4 hover:border-slate-300 dark:hover:border-slate-800 transition-all cursor-pointer"
+              className="p-1 px-1.5 rounded-lg bg-card border border-border shadow-xs flex items-center gap-3 pr-4 hover:border-slate-300 dark:hover:border-slate-800 transition-all cursor-pointer"
             >
-              <div className="h-10 w-10 rounded-xl bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-sm font-bold text-sm">
+              <div className="h-9 w-9 rounded-md bg-primary flex items-center justify-center text-white font-bold text-sm">
                 {fullName[0]}
               </div>
               <div className="flex flex-col">
@@ -218,41 +220,74 @@ export default function DashboardPage() {
         </div>
 
         {/* Readiness Overview Panel */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch relative z-10">
-          {/* Circular Readiness Index */}
-          <div className="md:col-span-5 glass-card rounded-[28px] p-6 flex flex-col items-center justify-center text-center">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
-              Career Readiness Index
-            </h3>
-            {loading ? (
-              <div className="w-[180px] h-[180px] rounded-full bg-slate-100 dark:bg-slate-900 animate-pulse" />
-            ) : (
-              <ActivityRings
-                metrics={performanceMetrics}
-                size={180}
-                strokeWidth={14}
-              />
-            )}
-            <div className="mt-4 flex flex-col items-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
-                Benchmarking target
-              </span>
-              <span className="text-sm font-bold text-foreground capitalize mt-0.5">
-                {targetRole}
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch relative z-10">
+          {/* Profile Readiness Column */}
+          <div className="lg:col-span-1 border border-border bg-card rounded-xl p-5 flex flex-col justify-between shadow-xs">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+                Career Readiness Index
+              </h3>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-extrabold font-heading text-foreground leading-none">
+                  {loading ? "—" : overallReadiness}
+                </span>
+                <span className="text-sm font-semibold text-muted-foreground">
+                  / 100
+                </span>
+                <span className="ml-auto text-xs font-bold px-2.5 py-0.5 rounded-md bg-primary/10 text-primary uppercase">
+                  {loading
+                    ? "—"
+                    : overallReadiness >= 85
+                      ? "Expert"
+                      : overallReadiness >= 75
+                        ? "Strong"
+                        : "Developing"}
+                </span>
+              </div>
+
+              <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-6">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-1000"
+                  style={{ width: `${loading ? 0 : overallReadiness}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3.5">
+              {performanceMetrics.map((m) => (
+                <div
+                  key={m.name}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <m.icon size={14} className="text-slate-400" />
+                    <span>{m.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-slate-400 dark:bg-slate-600 rounded-full"
+                        style={{ width: `${loading ? 0 : m.score || 50}%` }}
+                      />
+                    </div>
+                    <span className="font-bold text-foreground w-8 text-right">
+                      {loading ? "—" : m.score || 50}%
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Action and Recent Activity */}
-          <div className="md:col-span-7 flex flex-col justify-between gap-6">
-            {/* Contextual Action Card */}
-            <div className="p-6 rounded-[28px] border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/20 dark:bg-indigo-950/10 flex flex-col justify-between h-full gap-4">
-              <div className="space-y-2">
-                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Zap size={12} className="animate-pulse" /> RECOMMENDED NEXT
-                  ACTION
+          {/* Action Column */}
+          <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Recommended Next Action */}
+            <div className="p-5 rounded-xl border border-primary/20 bg-primary/5 flex flex-col justify-between h-full gap-4">
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap size={12} /> RECOMMENDED NEXT ACTION
                 </span>
-                <h3 className="font-bold text-xl text-foreground leading-tight">
+                <h3 className="font-bold text-lg text-foreground leading-tight">
                   {nextStep.label}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -260,45 +295,25 @@ export default function DashboardPage() {
                 </p>
               </div>
               <Link href={nextStep.href}>
-                <button className="btn-primary flex items-center gap-1.5 py-2.5 px-6 text-xs w-fit">
+                <button className="btn-primary flex items-center gap-1.5 py-2.5 px-5 text-xs w-fit">
                   Practice Now <ArrowRight size={14} />
                 </button>
               </Link>
             </div>
 
-            {/* Quick Metrics grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {performanceMetrics.map((m) => (
-                <div
-                  key={m.name}
-                  className="p-4 rounded-[20px] bg-slate-50 dark:bg-slate-900/50 border border-border flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-border"
-                      style={{
-                        backgroundColor: `${m.color}10`,
-                        color: m.color,
-                      }}
-                    >
-                      <m.icon size={16} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      {m.name}
-                    </span>
-                  </div>
-                  <span className="text-sm font-black text-foreground">
-                    {loading ? "—" : m.score}
-                  </span>
-                </div>
-              ))}
+            {/* Quick Summary / Status */}
+            <div className="p-4 rounded-xl border border-border bg-slate-50 dark:bg-slate-900/30 text-xs text-muted-foreground leading-relaxed">
+              Your profile is matched against requirements for a standard{" "}
+              <strong className="text-foreground">{targetRole}</strong> role.
+              High compatibility scores correlate with higher interview
+              conversion rates.
             </div>
           </div>
         </div>
 
         {/* Launchpad Shortcuts */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">
+        <div className="space-y-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
             System Shortcuts
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -308,59 +323,59 @@ export default function DashboardPage() {
                 href: "/dashboard/career/resume",
                 icon: FileText,
                 color:
-                  "text-indigo-500 border-indigo-100 bg-indigo-50/20 dark:bg-indigo-500/5",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
               {
                 name: "GitHub Intel",
                 href: "/dashboard/career/github",
                 icon: Github,
                 color:
-                  "text-slate-700 dark:text-slate-300 border-slate-200 bg-slate-50/20 dark:bg-slate-800/10",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
               {
                 name: "Job Matching",
                 href: "/dashboard/opportunities/discover",
                 icon: Briefcase,
                 color:
-                  "text-emerald-500 border-emerald-100 bg-emerald-50/20 dark:bg-emerald-500/5",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
               {
                 name: "AI Interviews",
                 href: "/dashboard/preparation/interviews",
                 icon: Mic,
                 color:
-                  "text-violet-500 border-violet-100 bg-violet-50/20 dark:bg-violet-500/5",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
               {
                 name: "LinkedIn Opt",
                 href: "/dashboard/career/linkedin",
                 icon: User,
                 color:
-                  "text-blue-500 border-blue-100 bg-blue-50/20 dark:bg-blue-500/5",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
               {
                 name: "Skill Roadmap",
                 href: "/dashboard/preparation/roadmap",
                 icon: MapIcon,
                 color:
-                  "text-rose-500 border-rose-100 bg-rose-50/20 dark:bg-rose-500/5",
+                  "text-slate-700 dark:text-slate-300 border-border bg-card",
               },
             ].map((tool) => (
               <Link
                 key={tool.name}
                 href={tool.href}
-                className="group flex flex-col justify-between p-5 rounded-[24px] bg-card border border-border hover:border-slate-300 dark:hover:border-slate-800 transition-all shadow-sm h-36"
+                className="group flex flex-col justify-between p-4 rounded-xl bg-card border border-border hover:border-slate-300 dark:hover:border-slate-800 transition-all shadow-xs h-32"
               >
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center border ${tool.color} shrink-0`}
+                  className={`w-8 h-8 rounded-md flex items-center justify-center border border-border ${tool.color} shrink-0`}
                 >
-                  <tool.icon size={20} strokeWidth={2} />
+                  <tool.icon size={16} strokeWidth={2} />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-foreground leading-tight block">
+                  <span className="text-xs font-bold text-foreground leading-tight block">
                     {tool.name}
                   </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-indigo-500 transition-colors flex items-center gap-0.5">
+                  <span className="text-[10px] font-semibold text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-0.5">
                     Launch <ArrowRight size={10} />
                   </span>
                 </div>

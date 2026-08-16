@@ -41,7 +41,7 @@ export default function VerticalRoadmap({
   return (
     <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8 relative">
       {/* Main Spine */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-24 bottom-24 w-1 bg-gradient-to-b from-indigo-500/20 via-purple-500/20 to-pink-500/20 hidden md:block" />
+      <div className="absolute left-1/2 -translate-x-1/2 top-24 bottom-24 w-px bg-border hidden md:block" />
 
       <div className="space-y-12 relative">
         {skills.map((skill, index) => (
@@ -103,15 +103,15 @@ function RoadmapNode({
 
       <motion.div
         layout
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`group relative flex items-start gap-5 p-5 rounded-3xl transition-all duration-300 border backdrop-blur-sm ${
+        className={`group relative flex items-start gap-4 p-5 rounded-xl transition-all duration-200 border ${
           skill.status === "completed"
-            ? "bg-emerald-50/40 dark:bg-emerald-900/10 border-emerald-200/50 dark:border-emerald-800/30 shadow-lg shadow-emerald-500/5"
-            : "bg-white/80 dark:bg-slate-900/80 border-slate-200/60 dark:border-slate-800/60 hover:border-indigo-300 dark:hover:border-indigo-700 shadow-md hover:shadow-xl hover:-translate-y-1"
+            ? "bg-emerald-50/20 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/40 shadow-xs"
+            : "bg-card border-border hover:border-primary/50 shadow-xs"
         } ${depth === 0 ? "md:max-w-[90%] mx-auto" : ""}`}
       >
-        {/* Status Indicator (Vibrant Circle) */}
+        {/* Status Indicator */}
         <div className="relative flex-shrink-0">
           <button
             onClick={(e) => {
@@ -119,23 +119,18 @@ function RoadmapNode({
               onToggleStatus(skill.name);
             }}
             aria-label={`Toggle status for ${skill.name}`}
-            className={`z-10 relative flex items-center justify-center w-10 h-10 rounded-full transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+            className={`z-10 relative flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               skill.status === "completed"
-                ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                ? "bg-emerald-500 text-white shadow-xs"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10"
             }`}
           >
             {skill.status === "completed" ? (
-              <CheckCircle2 size={22} />
+              <CheckCircle2 size={18} />
             ) : (
-              <Circle size={22} />
+              <Circle size={18} />
             )}
           </button>
-
-          {/* Pulsing indicator for active items */}
-          {skill.status !== "completed" && depth === 0 && (
-            <div className="absolute inset-0 animate-ping rounded-full bg-indigo-500/10" />
-          )}
         </div>
 
         {/* Node Content */}
@@ -155,16 +150,16 @@ function RoadmapNode({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3
-                  className={`font-black tracking-tight transition-colors ${
+                  className={`font-bold tracking-tight transition-colors ${
                     skill.status === "completed"
                       ? "text-emerald-800 dark:text-emerald-400"
                       : "text-slate-900 dark:text-white"
-                  } ${depth === 0 ? "text-xl" : "text-lg"}`}
+                  } ${depth === 0 ? "text-lg" : "text-base"}`}
                 >
                   {skill.name}
                 </h3>
                 {skill.is_optional && (
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full uppercase">
+                  <span className="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase">
                     Optional
                   </span>
                 )}
@@ -179,13 +174,13 @@ function RoadmapNode({
             <div className="flex flex-col items-end gap-2 shrink-0">
               <div className="flex items-center gap-2">
                 {skill.priority === "high" && (
-                  <span className="flex items-center gap-1 text-[10px] font-black text-white bg-gradient-to-r from-rose-500 to-orange-500 px-2.5 py-1 rounded-full shadow-sm">
-                    <Sparkles size={10} /> CRITICAL
+                  <span className="flex items-center gap-1 text-[9px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
+                    CRITICAL
                   </span>
                 )}
                 {skill.estimated_time && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
-                    <Clock size={12} className="text-slate-300" />
+                  <div className="flex items-center gap-1 text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded border border-border/50">
+                    <Clock size={11} className="text-slate-400" />
                     <span>{skill.estimated_time}</span>
                   </div>
                 )}
@@ -199,17 +194,17 @@ function RoadmapNode({
                   }}
                   aria-expanded={isExpanded}
                   aria-label={`${isExpanded ? "Collapse" : "Expand"} modules for ${skill.name}`}
-                  className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 ${
+                  className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
                     isExpanded
-                      ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30"
+                      ? "text-primary bg-primary/10"
                       : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
                 >
                   {skill.children?.length} Modules
                   {isExpanded ? (
-                    <ChevronDown size={14} />
+                    <ChevronDown size={12} />
                   ) : (
-                    <ChevronRight size={14} />
+                    <ChevronRight size={12} />
                   )}
                 </button>
               )}

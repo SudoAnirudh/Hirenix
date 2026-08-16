@@ -83,35 +83,35 @@ export default function SkillDrawer({
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 dark:hover:border-indigo-500 group transition-all"
+                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-border hover:border-primary group transition-all"
                   >
-                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 shadow-sm text-indigo-500 group-hover:scale-110 transition-transform">
+                    <div className="p-2 rounded-md bg-white dark:bg-slate-900 shadow-xs text-primary transition-transform">
                       {resource.type === "video" ? (
-                        <Video size={18} />
+                        <Video size={16} />
                       ) : resource.type === "course" ? (
-                        <GraduationCap size={18} />
+                        <GraduationCap size={16} />
                       ) : (
-                        <BookOpen size={18} />
+                        <BookOpen size={16} />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-primary truncate">
                         {resource.title}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-medium">
-                          {resource.type.toUpperCase()}
+                        <span className="text-[9px] px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider">
+                          {resource.type}
                         </span>
                         {resource.is_free && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-medium">
+                          <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
                             FREE
                           </span>
                         )}
                       </div>
                     </div>
                     <ExternalLink
-                      size={14}
-                      className="text-slate-400 group-hover:text-indigo-500"
+                      size={12}
+                      className="text-slate-400 group-hover:text-primary shrink-0"
                     />
                   </a>
                 ))}
@@ -124,13 +124,13 @@ export default function SkillDrawer({
                 onClick={() => {
                   onToggleStatus(skill.name);
                 }}
-                className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all ${
+                className={`w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
                   skill.status === "completed"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none"
+                    ? "bg-emerald-50/40 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                    : "btn-primary h-11"
                 }`}
               >
-                <CheckCircle2 size={20} />
+                <CheckCircle2 size={16} />
                 {skill.status === "completed"
                   ? "Completed"
                   : "Mark as Completed"}
