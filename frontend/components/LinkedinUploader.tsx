@@ -77,10 +77,10 @@ export default function LinkedinUploader({ onResult }: Props) {
   return (
     <div
       {...getRootProps()}
-      className={`glass-card p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed border-2 rounded-[40px] bg-white/50 border-white/60 shadow-premium backdrop-blur-xl group ${
+      className={`p-12 flex flex-col items-center justify-center gap-6 cursor-pointer transition-all border-dashed border-2 rounded-[40px] bg-slate-900/40 border-white/10 shadow-premium backdrop-blur-xl group hover:bg-slate-900/60 ${
         isDragActive
-          ? "bg-[#0A66C2]/5 border-[#0A66C2] scale-[0.99] shadow-inner"
-          : " #0A66C2]/40"
+          ? "bg-blue-600/5 border-blue-500 scale-[0.99] shadow-inner"
+          : "hover:border-blue-500/20"
       }`}
       style={{
         borderColor: isDragActive
@@ -97,23 +97,23 @@ export default function LinkedinUploader({ onResult }: Props) {
 
       {status === "idle" && (
         <>
-          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#0A66C2]/10 text-[#0A66C2] transition-transform shadow-sm border border-white/50">
+          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-blue-500/10 text-blue-400 transition-transform shadow-sm border border-white/5">
             <Linkedin size={40} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-4">
-            <p className="font-display font-bold text-3xl text-[#2D3748] tracking-tight">
+            <p className="font-display font-bold text-3xl text-white tracking-tight">
               {isDragActive ? "Drop your profile!" : "Analyze LinkedIn Profile"}
             </p>
-            <p className="max-w-md text-sm font-medium text-[#718096] leading-relaxed">
+            <p className="max-w-md text-sm font-medium text-slate-400 leading-relaxed">
               Export your LinkedIn profile to PDF and drop it here. We&apos;ll
               analyze your headline, about, and experience.
             </p>
             <div className="flex items-center justify-center gap-4 pt-2">
-              <span className="text-[#0A66C2] font-bold cursor-pointer text-sm">
+              <span className="text-blue-400 font-bold cursor-pointer text-sm hover:text-blue-300">
                 Browse PDF
               </span>
-              <span className="w-1 h-1 rounded-full bg-slate-300" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="w-1 h-1 rounded-full bg-slate-700" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
                 Max 10MB
               </span>
             </div>
@@ -123,19 +123,19 @@ export default function LinkedinUploader({ onResult }: Props) {
 
       {status === "uploading" && (
         <>
-          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#0A66C2]/10 text-[#0A66C2] animate-pulse">
+          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-blue-500/10 text-blue-400 animate-pulse">
             <FileText size={40} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-4">
-            <p className="font-display font-bold text-3xl text-[#2D3748] tracking-tight">
+            <p className="font-display font-bold text-3xl text-white tracking-tight">
               Analyzing Intelligence...
             </p>
             <div className="flex flex-col items-center gap-6">
-              <p className="text-sm font-medium text-[#718096]">
+              <p className="text-sm font-medium text-slate-400">
                 Scanning sections · Applying industry benchmarks
               </p>
-              <div className="w-72 h-2.5 bg-white/50 rounded-full overflow-hidden border border-white/40 shadow-inner">
-                <div className="h-full bg-linear-to-r from-[#0A66C2] to-[#00A0DC] animate-[loading_2s_ease-in-out_infinite]" />
+              <div className="w-72 h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/5 shadow-inner">
+                <div className="h-full bg-linear-to-r from-blue-600 to-cyan-500 animate-[loading_2s_ease-in-out_infinite]" />
               </div>
             </div>
           </div>
@@ -144,14 +144,14 @@ export default function LinkedinUploader({ onResult }: Props) {
 
       {status === "success" && (
         <>
-          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#10B981]/10 text-[#10B981] shadow-sm border border-white/50">
+          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-emerald-500/10 text-emerald-400 shadow-sm border border-white/5">
             <CheckCircle size={44} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-4">
-            <p className="font-display font-bold text-3xl text-[#10B981] tracking-tight">
+            <p className="font-display font-bold text-3xl text-emerald-400 tracking-tight">
               Optimization Complete!
             </p>
-            <p className="text-sm font-medium text-[#718096] bg-emerald-50 px-4 py-2 rounded-full inline-block">
+            <p className="text-sm font-bold text-slate-400 bg-slate-900 border border-white/5 px-4 py-2 rounded-full inline-block">
               {fileName} · Scored & Analyzed
             </p>
           </div>
@@ -160,14 +160,14 @@ export default function LinkedinUploader({ onResult }: Props) {
 
       {status === "error" && (
         <>
-          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-[#EF4444]/10 text-[#EF4444] shadow-sm border border-white/50">
+          <div className="w-24 h-24 flex items-center justify-center rounded-[32px] bg-red-500/10 text-red-400 shadow-sm border border-white/5">
             <AlertCircle size={44} strokeWidth={1.5} />
           </div>
           <div className="text-center space-y-4">
-            <p className="font-display font-bold text-3xl text-[#EF4444] tracking-tight">
+            <p className="font-display font-bold text-3xl text-red-500 tracking-tight">
               Analysis Failed
             </p>
-            <p className="text-sm font-medium text-[#718096] bg-red-50 px-4 py-2 rounded-full inline-block">
+            <p className="text-sm font-bold text-slate-400 bg-slate-900 border border-white/5 px-4 py-2 rounded-full inline-block">
               {errorMsg}
             </p>
           </div>

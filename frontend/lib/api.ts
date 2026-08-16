@@ -267,6 +267,31 @@ export async function analyzeGithub(
 }
 
 // ─── LinkedIn ─────────────────────────────────────────────────────────────────
+export interface LinkedInKeywordDensityItem {
+  keyword: string;
+  current_count: number;
+  recommended_count: number;
+  priority: "High" | "Medium" | "Low";
+}
+
+export interface LinkedInHeadlineVariations {
+  seo_specialist: string;
+  impact_leader: string;
+  tech_evangelist: string;
+}
+
+export interface LinkedInXYZBulletAudit {
+  weak_bullet: string;
+  xyz_rewritten: string;
+  impact_metric_tip: string;
+}
+
+export interface LinkedInChecklistItem {
+  label: string;
+  completed: boolean;
+  tip: string;
+}
+
 export interface LinkedInAnalysis {
   overall_score: number;
   headline: {
@@ -276,6 +301,7 @@ export interface LinkedInAnalysis {
     tips: string[];
     missing_keywords: string[];
   };
+  headline_variations?: LinkedInHeadlineVariations;
   about: {
     score: number;
     current: string;
@@ -298,6 +324,9 @@ export interface LinkedInAnalysis {
   completeness_score: number;
   general_tips: string[];
   suggested_roles: string[];
+  keyword_density?: LinkedInKeywordDensityItem[];
+  xyz_bullet_audits?: LinkedInXYZBulletAudit[];
+  recruiter_checklist?: LinkedInChecklistItem[];
 }
 
 export async function analyzeLinkedin(file: File): Promise<LinkedInAnalysis> {

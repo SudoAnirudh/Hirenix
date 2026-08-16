@@ -23,6 +23,11 @@ Return the result STRICTLY as a JSON object matching this structure:
         "tips": ["Add more specific tech stack keywords", "Highlight your leadership role"],
         "missing_keywords": ["Scalability", "System Design"]
     }},
+    "headline_variations": {{
+        "seo_specialist": "Senior Full-Stack Architect | Next.js, Python, Django, AWS, React, Docker",
+        "impact_leader": "Senior Full-Stack Architect | Scaling API Performance by 40% | 100M+ Req/Day",
+        "tech_evangelist": "Senior Full-Stack Architect | Building high-throughput SaaS and modern interfaces"
+    }},
     "about": {{
         "score": 75,
         "current": "Experienced developer with a passion for coding.",
@@ -44,20 +49,55 @@ Return the result STRICTLY as a JSON object matching this structure:
     }},
     "completeness_score": 90,
     "general_tips": ["Complete your certification section", "Add a professional profile picture"],
-    "suggested_roles": ["Senior Software Engineer", "Tech Lead"]
+    "suggested_roles": ["Senior Software Engineer", "Tech Lead"],
+    "keyword_density": [
+        {{
+            "keyword": "System Design",
+            "current_count": 0,
+            "recommended_count": 3,
+            "priority": "High"
+        }},
+        {{
+            "keyword": "Scalability",
+            "current_count": 1,
+            "recommended_count": 3,
+            "priority": "Medium"
+        }}
+    ],
+    "xyz_bullet_audits": [
+        {{
+            "weak_bullet": "Responsible for fixing bugs and keeping systems running.",
+            "xyz_rewritten": "Resolved 50+ critical system bottlenecks, improving platform uptime by 12% through targeted refactoring and database query optimization.",
+            "impact_metric_tip": "Include concrete performance percentages or volume counts to demonstrate scale."
+        }}
+    ],
+    "recruiter_checklist": [
+        {{
+            "label": "Experience Timeline Integrity",
+            "completed": true,
+            "tip": "Timeline is fully contiguous with no major gaps."
+        }},
+        {{
+            "label": "Certifications Section",
+            "completed": false,
+            "tip": "Add AWS or Scrum Master certifications to stand out to recruiters."
+        }}
+    ]
 }}
 
 Focus on:
-1. Headline: Should be high-impact, keyword-rich, and clearly state current role/value proposition.
+1. Headline: Should be high-impact, keyword-rich, and clearly state current role/value proposition. Provide three distinct styles: SEO Specialist (rich in core tools), Impact Leader (metric-driven), and Tech Evangelist (story-driven/visionary).
 2. About: Should tell a compelling professional story, include achievements, and have a clear call to action.
-3. Experience: Should focus on measurable outcomes (numbers, percentages) rather than just duties.
-4. Keywords: Identify missing industry-standard terms.
+3. Experience: Should focus on measurable outcomes (numbers, percentages) rather than just duties. Scan for weak bullet points and provide Google XYZ formula rewrites.
+4. Keywords: Scan target roles and identify critical keywords. Analyze their density in the profile (frequency counts) compared to standard recruiter targets.
+5. Checklist: Audit for presence of contact details, projects, education, and credentials in the PDF text.
 
 Profile Text:
 ---
 {profile_text}
 ---
 """
+
 
 async def analyze_linkedin_profile(content: bytes) -> Optional[LinkedInAnalysisResponse]:
     """
