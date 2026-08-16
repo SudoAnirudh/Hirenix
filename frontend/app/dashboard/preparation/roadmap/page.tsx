@@ -175,7 +175,7 @@ export default function RoadmapPage() {
           <p className="text-red-600 font-semibold text-lg">{error}</p>
           {error.includes("No resume found") ? (
             <a
-              href="/dashboard/resume-analysis"
+              href="/dashboard/career/resume"
               className="bg-red-500 text-card-foreground px-6 py-3 rounded-2xl font-bold transition-colors shadow-lg shadow-red-200"
             >
               Upload Resume Now

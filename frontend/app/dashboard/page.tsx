@@ -12,13 +12,9 @@ import {
   Map as MapIcon,
   Zap,
   TrendingUp,
-  TrendingDown,
-  Minus,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getProgress } from "@/lib/api";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import ActivityRings from "@/components/dashboard/ActivityRings";
 import OnboardingWizard from "@/components/dashboard/OnboardingWizard";
@@ -31,8 +27,6 @@ const QUOTES = [
   "Expertise is not a destination, it's a journey of continuous improvement.",
   "The future belongs to those who learn more skills and combine them in creative ways.",
   "Don't wait for opportunity. Create it.",
-  "Code is like humor. When you have to explain it, it’s bad.",
-  "Infrastructure as Code, Career as an Algorithm.",
   "Your next big break is just one optimization away.",
 ];
 
@@ -58,9 +52,9 @@ export default function DashboardPage() {
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<ProgressData | null>(null);
-  const [progressLoading, setProgressLoading] = useState(true);
   const [quote, setQuote] = useState<string>("");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [targetRole, setTargetRole] = useState("AI Engineer");
 
   useEffect(() => {
     async function fetchData() {
@@ -72,11 +66,13 @@ export default function DashboardPage() {
         setSession(sess);
         setProgress(prog as ProgressData);
 
-        // Set random quote
         setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
 
         // Onboarding Check
         if (typeof window !== "undefined") {
+          const role = localStorage.getItem("hirenix_target_role");
+          if (role) setTargetRole(role);
+
           const isOnboarded = localStorage.getItem("hirenix_onboarded_v1");
           if (!isOnboarded) {
             setShowOnboarding(true);
@@ -86,87 +82,77 @@ export default function DashboardPage() {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
         setLoading(false);
-        setProgressLoading(false);
       }
     }
     fetchData();
   }, []);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "Good Morning";
-    if (hour >= 12 && hour < 17) return "Good Afternoon";
-    if (hour >= 17 && hour < 21) return "Good Evening";
-    return "Good Night";
-  };
-
   const fullName = session?.user?.user_metadata?.full_name || "Guest User";
   const email = session?.user?.email || "Not signed in";
   const plan = session?.user?.user_metadata?.plan || "free";
 
-  const getScoreTrend = (current: number, baseline: number) => {
-    const diff = current - baseline;
-    if (diff > 0)
-      return { icon: TrendingUp, color: "text-emerald-500", text: `+${diff}` };
-    if (diff < 0)
-      return { icon: TrendingDown, color: "text-pink-500", text: `${diff}` };
-    return { icon: Minus, color: "text-slate-400", text: "0" };
-  };
+  const resumeScore = progress?.ats_trend?.at(-1)?.score || 0;
+  const githubScore = progress?.github_trend?.at(-1)?.gpi || 0;
+  const linkedinScore = progress?.linkedin_trend?.at(-1)?.score || 0;
+  const interviewScore = progress?.interview_trend?.at(-1)?.score || 0;
+
+  // Composite Readiness Score
+  const overallReadiness = Math.round(
+    ((resumeScore || 50) +
+      (githubScore || 50) +
+      (linkedinScore || 50) +
+      (interviewScore || 50)) /
+      4,
+  );
 
   const performanceMetrics = [
-    {
-      name: "Resume",
-      score:
-        typeof progress?.ats_trend?.at(-1)?.score === "number"
-          ? progress.ats_trend.at(-1)!.score
-          : 0,
-      base:
-        typeof progress?.ats_trend?.at(0)?.score === "number"
-          ? progress.ats_trend.at(0)!.score
-          : 0,
-      color: "#6366f1",
-      icon: FileText,
-    },
+    { name: "Resume", score: resumeScore, color: "#6366f1", icon: FileText },
     {
       name: "LinkedIn",
-      score:
-        typeof progress?.linkedin_trend?.at(-1)?.score === "number"
-          ? progress.linkedin_trend.at(-1)!.score
-          : 50,
-      base:
-        typeof progress?.linkedin_trend?.at(0)?.score === "number"
-          ? progress.linkedin_trend.at(0)!.score
-          : 50,
+      score: linkedinScore || 50,
       color: "#0A66C2",
       icon: User,
     },
-    {
-      name: "Interview",
-      score:
-        typeof progress?.interview_trend?.at(-1)?.score === "number"
-          ? progress.interview_trend.at(-1)!.score
-          : 0,
-      base:
-        typeof progress?.interview_trend?.at(0)?.score === "number"
-          ? progress.interview_trend.at(0)!.score
-          : 0,
-      color: "#8b5cf6",
-      icon: Mic,
-    },
+    { name: "Interview", score: interviewScore, color: "#8b5cf6", icon: Mic },
     {
       name: "GitHub",
-      score:
-        typeof progress?.github_trend?.at(-1)?.gpi === "number"
-          ? progress.github_trend.at(-1)!.gpi
-          : 50,
-      base:
-        typeof progress?.github_trend?.at(0)?.gpi === "number"
-          ? progress.github_trend.at(0)!.gpi
-          : 50,
+      score: githubScore || 50,
       color: "#64748B",
       icon: Github,
     },
   ];
+
+  // Best next step decision matrix matching career overview
+  let nextStep = {
+    label: "Analyze your resume",
+    desc: "Your resume is currently unscored. Upload it to run ATS diagnostic checks.",
+    href: "/dashboard/career/resume",
+  };
+  if (resumeScore > 0 && resumeScore < 75) {
+    nextStep = {
+      label: "Improve Resume Keywords",
+      desc: "ATS analysis shows missing technical skills for: " + targetRole,
+      href: "/dashboard/career/resume",
+    };
+  } else if (resumeScore >= 75 && (!interviewScore || interviewScore < 75)) {
+    nextStep = {
+      label: "Practice Mock Interview",
+      desc: "Prepare system design or behavioral answers for: " + targetRole,
+      href: "/dashboard/preparation/interviews",
+    };
+  } else if (resumeScore >= 75 && githubScore < 75) {
+    nextStep = {
+      label: "Audit GitHub Repositories",
+      desc: "Enhance git hygiene levels and extract portfolio metrics.",
+      href: "/dashboard/career/github",
+    };
+  } else if (overallReadiness >= 75) {
+    nextStep = {
+      label: "Apply for matched jobs",
+      desc: "Ready to launch! Explore scraped openings that fit your profile score.",
+      href: "/dashboard/opportunities/discover",
+    };
+  }
 
   return (
     <>
@@ -183,6 +169,7 @@ export default function DashboardPage() {
                 localStorage.setItem("hirenix_onboarded_v1", "true");
                 if (data.role) {
                   localStorage.setItem("hirenix_target_role", data.role);
+                  setTargetRole(data.role);
                 }
                 setShowOnboarding(false);
               }}
@@ -191,274 +178,193 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      <div className="animate-fade-up w-full h-[calc(100vh-4rem)] md:h-[calc(100vh-6rem)] flex flex-col mx-auto pb-6 relative overflow-hidden">
-        {/* Decorative background orbs */}
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full blur-[120px] bg-brand-blue/10 pointer-events-none -z-10"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1,
-          }}
-          className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full blur-[150px] bg-brand-purple/10 pointer-events-none -z-10"
-        />
-        <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.3, 0.1] }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2,
-          }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full blur-[180px] bg-brand-green/5 pointer-events-none -z-10"
-        />
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-(--border) relative z-10 shrink-0">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-indigo-500 font-bold text-xs uppercase tracking-[0.2em]">
+      <div className="animate-fade-up w-full flex flex-col gap-8 pb-12 relative overflow-hidden">
+        {/* Header Block */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border relative z-10 shrink-0">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-indigo-500 font-bold text-xs uppercase tracking-widest">
               <Sparkles size={14} />
               Career Command Center
             </div>
-            <h1 className="text-5xl font-extrabold tracking-tight font-heading">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500 dark:from-slate-100 dark:to-slate-400">
-                {getGreeting()},
-              </span>{" "}
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-500">
-                {fullName.split(" ")[0]}
-              </span>
+            <h1 className="text-4xl font-extrabold tracking-tight font-heading text-foreground">
+              Hello, {fullName.split(" ")[0]}
             </h1>
-            <p className="text-slate-500 text-lg max-w-xl leading-relaxed italic animate-in fade-in slide-in-from-bottom-2 duration-1000">
-              &quot;
-              {quote || "Your career path is being optimized by Hirenix AI."}
+            <p className="text-muted-foreground text-sm max-w-xl leading-relaxed italic">
+              &quot;{quote || "Your career trajectory is guided by Hirenix AI."}
               &quot;
             </p>
           </div>
 
           {loading ? (
-            <div className="h-16 w-64 rounded-[40px] bg-slate-100/50 dark:bg-slate-800/50 animate-pulse border border-slate-200/50 dark:border-slate-700/50" />
+            <div className="h-14 w-60 rounded-2xl bg-slate-100 dark:bg-slate-900 animate-pulse border border-border" />
           ) : (
             <Link
-              href="/dashboard/account"
-              className="p-1 px-1.5 rounded-[40px] bg-white/50 dark:bg-slate-900/40 border border-white/80 dark:border-slate-800 shadow-premium backdrop-blur-xl flex items-center gap-4 pr-6 group dark: active:scale-[0.98] transition-all duration-500 cursor-pointer"
+              href="/dashboard/settings"
+              className="p-1 px-1.5 rounded-2xl bg-card border border-border shadow-sm flex items-center gap-3 pr-4 hover:border-slate-300 dark:hover:border-slate-800 transition-all cursor-pointer"
             >
-              <div className="h-14 w-14 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg overflow-hidden border-2 border-white">
-                <User size={24} />
+              <div className="h-10 w-10 rounded-xl bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-sm font-bold text-sm">
+                {fullName[0]}
               </div>
               <div className="flex flex-col">
-                <div className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <div className="text-xs font-bold text-foreground">
                   {fullName}
                 </div>
-                <div className="text-xs text-slate-500 opacity-70">{email}</div>
+                <div className="text-[10px] text-muted-foreground leading-none">
+                  {email}
+                </div>
               </div>
             </Link>
           )}
         </div>
 
-        {/* Performance Pulse Hub */}
-        <div className="relative z-10 flex flex-col shrink-0">
-          <div className="flex items-center justify-between px-2 mb-4">
-            <h2 className="text-xl font-bold font-heading flex items-center gap-2">
-              <Zap className="w-5 h-5 text-indigo-500" />
-              Skill Equilibrium
-            </h2>
-            <Link
-              href="/dashboard/progress-tracker"
-              className="text-xs font-bold text-indigo-500 transition-colors"
-            >
-              Detailed Analytics →
-            </Link>
+        {/* Readiness Overview Panel */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch relative z-10">
+          {/* Circular Readiness Index */}
+          <div className="md:col-span-5 glass-card rounded-[28px] p-6 flex flex-col items-center justify-center text-center">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
+              Career Readiness Index
+            </h3>
+            {loading ? (
+              <div className="w-[180px] h-[180px] rounded-full bg-slate-100 dark:bg-slate-900 animate-pulse" />
+            ) : (
+              <ActivityRings
+                metrics={performanceMetrics}
+                size={180}
+                strokeWidth={14}
+              />
+            )}
+            <div className="mt-4 flex flex-col items-center">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
+                Benchmarking target
+              </span>
+              <span className="text-sm font-bold text-foreground capitalize mt-0.5">
+                {targetRole}
+              </span>
+            </div>
           </div>
 
-          <div className="glass-card rounded-[32px] p-4 lg:p-6 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-12 w-full">
-            {/* Left: SVG Activity Rings */}
-            <div className="flex-shrink-0 relative">
-              <div className="text-center mb-6 w-full flex flex-col items-center">
-                <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
-                  Career Readiness
+          {/* Action and Recent Activity */}
+          <div className="md:col-span-7 flex flex-col justify-between gap-6">
+            {/* Contextual Action Card */}
+            <div className="p-6 rounded-[28px] border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/20 dark:bg-indigo-950/10 flex flex-col justify-between h-full gap-4">
+              <div className="space-y-2">
+                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap size={12} className="animate-pulse" /> RECOMMENDED NEXT
+                  ACTION
+                </span>
+                <h3 className="font-bold text-xl text-foreground leading-tight">
+                  {nextStep.label}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1 lg:hidden block">
-                  Balance across core domains
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {nextStep.desc}
                 </p>
               </div>
-
-              {progressLoading ? (
-                <div className="w-[200px] h-[200px] rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse mx-auto" />
-              ) : (
-                <ActivityRings
-                  metrics={performanceMetrics}
-                  size={220}
-                  strokeWidth={16}
-                />
-              )}
-
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-14">
-                <div className="w-16 h-16 rounded-full bg-indigo-500/5 blur-xl" />
-              </div>
+              <Link href={nextStep.href}>
+                <button className="btn-primary flex items-center gap-1.5 py-2.5 px-6 text-xs w-fit">
+                  Practice Now <ArrowRight size={14} />
+                </button>
+              </Link>
             </div>
 
-            {/* Right: Compact Dense Metric Pills */}
-            <div className="flex-1 w-full grid grid-cols-2 gap-3">
-              {performanceMetrics.map((m, i) => {
-                const trend = getScoreTrend(m.score, m.base);
-                const TrendIcon = trend.icon;
-                return (
-                  <motion.div
-                    key={m.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-white/80 dark:border-slate-800 dark: shadow-sm transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex shrink-0 items-center justify-center border border-white dark:border-slate-800 shadow-sm transition-transform"
-                        style={{
-                          backgroundColor: `${m.color}15`,
-                          color: m.color,
-                        }}
-                      >
-                        <m.icon size={18} strokeWidth={2} />
-                      </div>
-                      <div>
-                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500 block mb-0.5">
-                          {m.name}
-                        </span>
-                        <div className="flex items-end gap-2">
-                          {progressLoading ? (
-                            <div className="w-8 h-6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                          ) : (
-                            <span className="text-xl sm:text-2xl leading-none font-black font-heading text-slate-800 dark:text-slate-100">
-                              {m.score}
-                            </span>
-                          )}
-                        </div>
-                      </div>
+            {/* Quick Metrics grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {performanceMetrics.map((m) => (
+                <div
+                  key={m.name}
+                  className="p-4 rounded-[20px] bg-slate-50 dark:bg-slate-900/50 border border-border flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-border"
+                      style={{
+                        backgroundColor: `${m.color}10`,
+                        color: m.color,
+                      }}
+                    >
+                      <m.icon size={16} />
                     </div>
-
-                    {/* Trend Pill Right Attached */}
-                    {!progressLoading && (
-                      <div
-                        className={`flex flex-col sm:items-end mt-2 sm:mt-0 shrink-0 ${trend.color}`}
-                      >
-                        <div className="flex items-center gap-1 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md px-2 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-800">
-                          <TrendIcon size={12} strokeWidth={3} />
-                          <span className="text-[10px] sm:text-xs font-bold">
-                            {trend.text}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      {m.name}
+                    </span>
+                  </div>
+                  <span className="text-sm font-black text-foreground">
+                    {loading ? "—" : m.score}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col justify-end mt-4 lg:mt-8 min-h-0">
-          <h2 className="text-lg md:text-xl font-bold font-heading px-2 mb-3 lg:mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            Launchpad
+        {/* Launchpad Shortcuts */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">
+            System Shortcuts
           </h2>
-
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 lg:gap-4 overflow-y-auto pr-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
               {
-                name: "Resume Studio",
-                href: "/dashboard/resume-analysis",
+                name: "Resume Workspace",
+                href: "/dashboard/career/resume",
                 icon: FileText,
-                color: "text-indigo-500",
-                bg: "bg-indigo-50",
-                darkBg: "dark:bg-indigo-500/10",
-                border: "border-indigo-100 dark:border-indigo-500/20",
-                desc: "ATS Optimizer",
+                color:
+                  "text-indigo-500 border-indigo-100 bg-indigo-50/20 dark:bg-indigo-500/5",
               },
               {
                 name: "GitHub Intel",
-                href: "/dashboard/github-analysis",
+                href: "/dashboard/career/github",
                 icon: Github,
-                color: "text-slate-700 dark:text-slate-300",
-                bg: "bg-slate-100",
-                darkBg: "dark:bg-slate-800",
-                border: "border-slate-200 dark:border-slate-700",
-                desc: "Code Analyzer",
+                color:
+                  "text-slate-700 dark:text-slate-300 border-slate-200 bg-slate-50/20 dark:bg-slate-800/10",
               },
               {
-                name: "Job Match",
-                href: "/dashboard/job-match",
+                name: "Job Matching",
+                href: "/dashboard/opportunities/discover",
                 icon: Briefcase,
-                color: "text-emerald-500",
-                bg: "bg-emerald-50",
-                darkBg: "dark:bg-emerald-500/10",
-                border: "border-emerald-100 dark:border-emerald-500/20",
-                desc: "Role Target",
+                color:
+                  "text-emerald-500 border-emerald-100 bg-emerald-50/20 dark:bg-emerald-500/5",
               },
               {
-                name: "AI Interview",
-                href: "/dashboard/mock-interview",
+                name: "AI Interviews",
+                href: "/dashboard/preparation/interviews",
                 icon: Mic,
-                color: "text-violet-500",
-                bg: "bg-violet-50",
-                darkBg: "dark:bg-violet-500/10",
-                border: "border-violet-100 dark:border-violet-500/20",
-                desc: "Live Practice",
+                color:
+                  "text-violet-500 border-violet-100 bg-violet-50/20 dark:bg-violet-500/5",
               },
               {
                 name: "LinkedIn Opt",
-                href: "/dashboard/linkedin-analysis",
+                href: "/dashboard/career/linkedin",
                 icon: User,
-                color: "text-blue-500",
-                bg: "bg-blue-50",
-                darkBg: "dark:bg-blue-500/10",
-                border: "border-blue-100 dark:border-blue-500/20",
-                desc: "Profile Boost",
+                color:
+                  "text-blue-500 border-blue-100 bg-blue-50/20 dark:bg-blue-500/5",
               },
               {
                 name: "Skill Roadmap",
-                href: "/dashboard/roadmap",
+                href: "/dashboard/preparation/roadmap",
                 icon: MapIcon,
-                color: "text-rose-500",
-                bg: "bg-rose-50",
-                darkBg: "dark:bg-rose-500/10",
-                border: "border-rose-100 dark:border-rose-500/20",
-                desc: "Career Path",
+                color:
+                  "text-rose-500 border-rose-100 bg-rose-50/20 dark:bg-rose-500/5",
               },
-            ].map((tool, i) => (
-              <motion.div
+            ].map((tool) => (
+              <Link
                 key={tool.name}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 + 0.2 }}
+                href={tool.href}
+                className="group flex flex-col justify-between p-5 rounded-[24px] bg-card border border-border hover:border-slate-300 dark:hover:border-slate-800 transition-all shadow-sm h-36"
               >
-                <Link
-                  href={tool.href}
-                  className={`group flex items-center lg:flex-col lg:justify-center gap-3 p-3 lg:p-4 rounded-[24px] bg-white/70 dark:bg-slate-900/70 border border-white/80 dark:border-slate-800 dark: shadow-sm transition-all duration-300 h-full`}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center border ${tool.color} shrink-0`}
                 >
-                  <div
-                    className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 border ${tool.border} ${tool.bg} ${tool.darkBg} ${tool.color} transition-transform`}
-                  >
-                    <tool.icon
-                      size={20}
-                      strokeWidth={2}
-                      className="lg:w-6 lg:h-6"
-                    />
-                  </div>
-                  <div className="flex flex-col lg:text-center">
-                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 leading-tight block">
-                      {tool.name}
-                    </span>
-                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                      {tool.desc}
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
+                  <tool.icon size={20} strokeWidth={2} />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-black text-foreground leading-tight block">
+                    {tool.name}
+                  </span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground group-hover:text-indigo-500 transition-colors flex items-center gap-0.5">
+                    Launch <ArrowRight size={10} />
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -16,6 +16,8 @@ import {
   PhoneOff,
   BrainCircuit,
   CameraOff,
+  Shield,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -642,314 +644,298 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
         </div>
       )}
 
-      {/* Header Info */}
-      <div className="w-full flex justify-between items-center px-4">
-        <div>
-          <h2 className="font-display font-bold text-2xl tracking-tight text-slate-800">
-            F2F Mock Interview Studio
-          </h2>
-          <p className="text-xs text-slate-500 font-medium mt-1">
-            Question {currentIdx + 1} of {totalQuestionsLimit} ·{" "}
-            {q.category.toUpperCase().replace("_", " ")}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {[...Array(totalQuestionsLimit)].map((_, i) => (
-            <div
-              key={i}
-              className={`h-2.5 rounded-full transition-all duration-500 ${
-                i < currentIdx
-                  ? "bg-brand-blue/35 w-6"
-                  : i === currentIdx
-                    ? "bg-brand-blue w-12 shadow-md shadow-brand-blue/30"
-                    : "bg-slate-200 w-6"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Video Call Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        {/* 1. AI Interviewer Card */}
-        <div
-          className="relative aspect-video rounded-[32px] bg-slate-900 overflow-hidden shadow-xl border flex flex-col items-center justify-center p-6 select-none transition-all duration-500"
-          style={{ borderColor: `${categoryColor}30` }}
-        >
-          {/* Speaking Pulsar Aura */}
-          {aiState === "speaking" && (
-            <motion.div
-              className="absolute w-36 h-36 rounded-full blur-md"
-              style={{ backgroundColor: `${categoryColor}20` }}
-              animate={{ scale: [1, 1.25, 1], opacity: [0.6, 0.2, 0.6] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            />
-          )}
-
-          {/* AI Avatar */}
-          <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center text-white relative z-10 shadow-lg">
-            <BrainCircuit
-              size={44}
-              style={{ color: categoryColor }}
-              className={aiState === "speaking" ? "animate-pulse" : ""}
-            />
-          </div>
-
-          {/* Audio Visualizer Wave (only when speaking) */}
-          {aiState === "speaking" && (
-            <div className="absolute bottom-5 right-5 flex items-end gap-1.5 h-6">
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="w-1 rounded-full"
-                  style={{ backgroundColor: categoryColor }}
-                  animate={{ height: [6, Math.random() * 20 + 8, 6] }}
-                  transition={{ repeat: Infinity, duration: 0.4 + i * 0.1 }}
-                />
-              ))}
-            </div>
-          )}
-
-          {/* Question Overlay Banner */}
-          <div className="absolute top-5 inset-x-6 text-center bg-black/30 backdrop-blur-md py-3 px-6 rounded-2xl border border-white/10 select-none">
-            <p className="text-sm font-semibold text-slate-200 leading-snug">
-              {q.question}
-            </p>
-          </div>
-
-          {/* AI Identity Label */}
-          <div className="absolute bottom-5 left-5 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 text-white font-bold text-xs tracking-wider">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                aiState === "speaking"
-                  ? "bg-emerald-500 animate-pulse"
-                  : aiState === "listening"
-                    ? "bg-sky-400 animate-ping"
-                    : "bg-amber-500 animate-pulse"
-              }`}
-            />
-            <span>Sarah (AI Recruiter) · {aiState.toUpperCase()}</span>
-          </div>
-        </div>
-
-        {/* 2. Candidate Webcam Card */}
-        <div className="relative aspect-video rounded-[32px] bg-slate-950 overflow-hidden shadow-xl border border-slate-800 flex items-center justify-center">
-          {cameraOn && cameraStatus === "active" ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover scale-x-[-1]"
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 gap-3">
-              <div className="p-4 rounded-full bg-slate-800 border border-slate-700 text-slate-400">
-                <CameraOff size={28} />
+      {/* Proctoring Shell Canvas */}
+      <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
+        {/* Left Column: Interview Focus */}
+        <div className="flex-1 flex flex-col gap-6">
+          {/* Active Question Card */}
+          <div className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden shadow-sm flex-shrink-0">
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-1 text-primary font-bold text-xs uppercase tracking-wide">
+                <BrainCircuit size={14} />
+                Question {currentIdx + 1} of {totalQuestionsLimit}
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                {cameraStatus === "denied"
-                  ? "Camera Permissions Blocked"
-                  : "Video Feed Muted"}
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl">
+                <Timer size={14} />
+                <span className="font-mono">{timeString}</span>
+              </div>
+            </div>
+            <h3 className="font-heading text-lg font-bold text-foreground leading-snug mb-4">
+              "{q.question}"
+            </h3>
+            <div className="flex gap-2">
+              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-muted-foreground uppercase">
+                {q.category.replace("_", " ")}
+              </span>
+              <span className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-muted-foreground uppercase">
+                {q.difficulty}
               </span>
             </div>
-          )}
+          </div>
 
-          {/* Recording & Mute Indicators */}
-          <div className="absolute top-5 left-5 flex items-center gap-2">
-            {isListening && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600/30 border border-red-500/30 backdrop-blur-md text-white font-black text-[9px] tracking-widest uppercase">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span>RECORDING VOICE</span>
+          {/* Transcript / Speech Output Area */}
+          <div className="bg-card border border-border rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm min-h-[280px]">
+            <div className="px-5 py-3 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
+                <Mic
+                  size={16}
+                  className={
+                    isListening
+                      ? "text-red-500 animate-pulse"
+                      : "text-muted-foreground"
+                  }
+                />
+                <span className="text-xs font-bold text-foreground">
+                  Live Transcript
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${isListening ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground"}`}
+                />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                  {isListening ? "Listening" : "Muted"}
+                </span>
+              </div>
+            </div>
+            <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+              <textarea
+                id={`answer-${q.question_id}`}
+                className="w-full bg-slate-50/50 dark:bg-slate-900/30 border border-border rounded-xl p-4 text-sm leading-relaxed resize-none flex-1 focus:outline-none focus:border-indigo-500 font-body placeholder:text-muted-foreground"
+                placeholder={
+                  transcribing
+                    ? "Refining transcription with high-accuracy AI..."
+                    : session.answer_mode === "text"
+                      ? "Formulate your response here. Type your complete answer structure..."
+                      : speechSupported
+                        ? "Talk naturally into your microphone. Sarah will listen and generate transcripts here. Correct any spelling details if needed before hitting next."
+                        : "Voice transcription is unavailable in this browser. Please type your response directly."
+                }
+                value={
+                  transcribing
+                    ? "Refining transcription with high-accuracy AI..."
+                    : answer
+                }
+                onChange={(e) => {
+                  if (
+                    typeof window !== "undefined" &&
+                    window.speechSynthesis &&
+                    window.speechSynthesis.speaking
+                  ) {
+                    window.speechSynthesis.cancel();
+                  }
+                  const next = e.target.value;
+                  setAnswer(next);
+                  setAnswersByQuestionId((prev) => ({
+                    ...prev,
+                    [q.question_id]: next,
+                  }));
+                }}
+                disabled={
+                  submitting || transcribing || needsFullscreen || terminated
+                }
+              />
+            </div>
+          </div>
+
+          {/* Control Bar */}
+          <div className="flex items-center justify-between p-4 bg-card border border-border rounded-2xl shadow-sm shrink-0">
+            <div>
+              <button
+                type="button"
+                onClick={() => handleNext(true)}
+                disabled={submitting || transcribing}
+                className="px-4 py-2 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5"
+              >
+                Skip Question
+              </button>
+            </div>
+            <div className="flex gap-3">
+              {onExit && (
+                <button
+                  type="button"
+                  onClick={onExit}
+                  className="px-4 py-2 border border-rose-200 hover:border-rose-500 text-rose-500 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors"
+                >
+                  End Interview
+                </button>
+              )}
+              {!isLast ? (
+                <button
+                  type="button"
+                  onClick={() => handleNext(false)}
+                  disabled={submitting || transcribing}
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center gap-1.5"
+                >
+                  Submit Answer
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void handleFinish()}
+                  disabled={submitting || transcribing}
+                  className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-emerald-700 transition-colors flex items-center gap-1.5"
+                >
+                  {submitting ? "Submitting..." : "Finish Interview"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Intel & Webcam */}
+        <div className="w-full lg:w-[320px] shrink-0 flex flex-col gap-6">
+          {/* Webcam / Proctoring Card */}
+          <div className="bg-slate-950 rounded-2xl overflow-hidden shadow-sm relative aspect-video lg:h-48 lg:aspect-auto shrink-0 flex items-center justify-center border border-slate-800">
+            {cameraOn && cameraStatus === "active" ? (
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover scale-x-[-1]"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                  Biometrics Feed Offline
+                </span>
               </div>
             )}
-            <span className="px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md text-[9px] font-black text-white uppercase tracking-wider">
-              YOU (CANDIDATE)
-            </span>
-          </div>
 
-          {/* Proctor Biometric indicator */}
-          <div className="absolute top-5 right-5 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md text-[9px] font-black uppercase text-white tracking-wider">
-            <div
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ backgroundColor: faceBadge.color }}
-            />
-            <span>{faceBadge.label}</span>
-          </div>
-
-          {/* Sound wave simulation in recorder */}
-          {isListening && (
-            <div className="absolute bottom-5 right-5 flex items-center gap-1">
-              {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-1 bg-red-500 rounded-full animate-pulse"
-                  style={{
-                    height: `${8 + i * 3}px`,
-                    animationDelay: `${i * 0.15}s`,
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Zoom/Meet Floating-style Toolbar */}
-      <div className="flex items-center justify-between p-5 rounded-[28px] bg-slate-900 border border-slate-800 text-slate-200 shadow-xl max-w-4xl mx-auto w-full transition-all mt-4 select-none">
-        <div className="flex items-center gap-3">
-          {/* Toggle Mic */}
-          <button
-            type="button"
-            onClick={toggleListening}
-            disabled={!speechSupported || submitting || transcribing}
-            className={`p-3.5 rounded-full transition-all active:scale-90 ${
-              isListening
-                ? "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
-                : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-            } disabled:opacity-50`}
-            title={isListening ? "Mute Microphone" : "Unmute Microphone"}
-          >
-            {isListening ? <Mic size={18} /> : <MicOff size={18} />}
-          </button>
-
-          {/* Toggle Camera */}
-          <button
-            type="button"
-            onClick={() => setCameraOn(!cameraOn)}
-            disabled={submitting || transcribing}
-            className={`p-3.5 rounded-full transition-all active:scale-90 ${
-              cameraOn
-                ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-                : "bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
-            }`}
-            title={cameraOn ? "Stop Video" : "Start Video"}
-          >
-            {cameraOn ? <Video size={18} /> : <VideoOff size={18} />}
-          </button>
-        </div>
-
-        {/* Timer / Counter */}
-        <div className="flex items-center gap-5">
-          <div
-            className={`flex items-center gap-2 px-4.5 py-2.5 rounded-2xl border text-xs font-black uppercase tracking-wider ${
-              isUrgent
-                ? "bg-red-500/10 text-red-500 border-red-500/25 animate-pulse"
-                : "bg-slate-800/80 border-slate-700 text-slate-300"
-            }`}
-          >
-            <Timer size={14} />
-            <span className="tabular-nums tracking-widest">{timeString}</span>
-          </div>
-
-          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Violations:{" "}
-            <span className="text-amber-500">{malpracticeWarnings}</span>/3
-          </div>
-        </div>
-
-        {/* Session Action Toggles */}
-        <div className="flex items-center gap-3">
-          {onExit && (
-            <button
-              type="button"
-              onClick={onExit}
-              className="p-3.5 rounded-full bg-slate-800 hover:bg-slate-700 text-red-400 border border-slate-700 transition-all active:scale-90"
-              title="Hang Up / Exit Interview"
-            >
-              <PhoneOff size={18} />
-            </button>
-          )}
-
-          {!isLast ? (
-            <button
-              type="button"
-              onClick={() => handleNext(false)}
-              disabled={submitting || transcribing}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-blue hover:bg-blue-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
-            >
-              <span>Next</span>
-              <ChevronRight size={14} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void handleFinish()}
-              disabled={submitting || transcribing}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all"
-            >
-              <span>{submitting ? "Submitting..." : "Submit Call"}</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Transcript & Response Area */}
-      <div className="glass-card p-6.5 rounded-[32px] border border-slate-200 bg-white/40 shadow-glass w-full max-w-4xl mx-auto transition-all duration-500">
-        <div className="flex justify-between items-center mb-3 px-2">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-px bg-slate-300" />
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-              Live Call Transcription
-            </h4>
-          </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-            Editable Script
-          </span>
-        </div>
-
-        <textarea
-          id={`answer-${q.question_id}`}
-          className="w-full bg-white/60 border border-slate-200 rounded-2xl p-5 text-slate-800 text-base leading-relaxed resize-none min-h-[140px] focus:outline-none focus:border-brand-blue/50 font-body placeholder:text-slate-400"
-          placeholder={
-            transcribing
-              ? "Refining transcription with high-accuracy AI..."
-              : session.answer_mode === "text"
-                ? "Formulate your response here. Type your complete answer structure..."
-                : speechSupported
-                  ? "Talk naturally into your microphone. Sarah will listen and generate transcripts here. Correct any spelling details if needed before hitting next."
-                  : "Voice transcription is unavailable in this browser. Please type your response directly."
-          }
-          value={
-            transcribing
-              ? "Refining transcription with high-accuracy AI..."
-              : answer
-          }
-          onChange={(e) => {
-            if (
-              typeof window !== "undefined" &&
-              window.speechSynthesis &&
-              window.speechSynthesis.speaking
-            ) {
-              window.speechSynthesis.cancel();
-            }
-            const next = e.target.value;
-            setAnswer(next);
-            setAnswersByQuestionId((prev) => ({
-              ...prev,
-              [q.question_id]: next,
-            }));
-          }}
-          disabled={submitting || transcribing || needsFullscreen || terminated}
-        />
-
-        {q.expected_topics.length > 0 && (
-          <div className="mt-4 px-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-2">
-              Expected Technical Topics to Cover
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {q.expected_topics.map((topic) => (
-                <span
-                  key={topic}
-                  className="px-3.5 py-1.5 rounded-full bg-white/80 text-[10px] font-bold text-slate-600 border border-slate-200 shadow-sm uppercase tracking-wider"
-                >
-                  {topic}
+            {/* Proctoring Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/45 pointer-events-none flex flex-col justify-between p-3">
+              <div className="flex justify-between items-start">
+                <span className="px-2 py-0.5 bg-black/40 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                  <Shield size={10} className="text-emerald-400" /> Proctored
                 </span>
-              ))}
+                <span className="px-2 py-0.5 bg-black/40 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold uppercase text-white tracking-wider flex items-center gap-1">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: faceBadge.color }}
+                  />
+                  {faceBadge.label}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-[9px] font-black text-white/80 uppercase">
+                  <span>Focus State</span>
+                  <span
+                    className={
+                      faceStatus === "single_face"
+                        ? "text-emerald-400"
+                        : "text-rose-400"
+                    }
+                  >
+                    {faceStatus === "single_face" ? "High" : "Low"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[9px] font-black text-white/80 uppercase">
+                  <span>Trust Score</span>
+                  <span>{100 - malpracticeWarnings * 20}%</span>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+
+          {/* Interview Intel Panel */}
+          <div className="bg-card rounded-2xl border border-border shadow-sm flex-1 flex flex-col overflow-hidden min-h-[300px]">
+            <div className="px-4 py-3 border-b border-border bg-slate-50/50 dark:bg-slate-900/30 flex items-center gap-2">
+              <Sparkles size={14} className="text-primary" />
+              <span className="text-xs font-bold text-foreground">
+                Interview Intel
+              </span>
+            </div>
+            <div className="p-4 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+              <div className="space-y-2">
+                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  Evaluating Skills
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {q.expected_topics.map((topic) => (
+                    <span
+                      key={topic}
+                      className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/10 tracking-wide"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-border w-full"></div>
+
+              {/* STAR Method Helper */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  STAR Method Guide
+                </h4>
+                <div className="space-y-4 relative pl-4 border-l border-border ml-2">
+                  {[
+                    {
+                      key: "situation",
+                      label: "Situation",
+                      desc: "Setting up the context.",
+                      minWords: 0,
+                      maxWords: 15,
+                    },
+                    {
+                      key: "task",
+                      label: "Task",
+                      desc: "Defining the problem/goals.",
+                      minWords: 15,
+                      maxWords: 40,
+                    },
+                    {
+                      key: "action",
+                      label: "Action",
+                      desc: "Steps taken & technology used.",
+                      minWords: 40,
+                      maxWords: 120,
+                    },
+                    {
+                      key: "result",
+                      label: "Result",
+                      desc: "Outcomes, metrics, and latency benefits.",
+                      minWords: 120,
+                      maxWords: Infinity,
+                    },
+                  ].map((step) => {
+                    const words = answer
+                      .trim()
+                      .split(/\s+/)
+                      .filter(Boolean).length;
+                    const isCurrent =
+                      words >= step.minWords && words < step.maxWords;
+                    const isPassed = words >= step.maxWords;
+                    return (
+                      <div key={step.key} className="relative">
+                        <span
+                          className={`absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-card transition-all ${
+                            isPassed
+                              ? "bg-emerald-500 ring-2 ring-emerald-500/20"
+                              : isCurrent
+                                ? "bg-primary ring-4 ring-primary/20 scale-110"
+                                : "bg-slate-200 dark:bg-slate-800"
+                          }`}
+                        />
+                        <p
+                          className={`text-xs font-bold transition-colors ${isCurrent ? "text-primary" : "text-foreground"}`}
+                        >
+                          {step.label}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground leading-normal mt-0.5">
+                          {step.desc}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

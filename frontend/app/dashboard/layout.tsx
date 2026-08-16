@@ -14,61 +14,17 @@ import {
   Linkedin,
   Menu,
   X,
+  User,
+  Sparkles,
+  Settings,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingScreen from "@/components/ui/LoadingScreen";
-
-const nav = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
-  { href: "/dashboard/assistant", icon: Brain, label: "AI Career Agent" },
-  {
-    href: "/dashboard/resume-templates",
-    icon: FileText,
-    label: "Resume Templates",
-  },
-  {
-    href: "/dashboard/resume-analysis",
-    icon: FileText,
-    label: "Resume Analysis",
-  },
-  {
-    href: "/dashboard/github-analysis",
-    icon: Github,
-    label: "GitHub Intelligence",
-  },
-  {
-    href: "/dashboard/linkedin-analysis",
-    icon: Linkedin,
-    label: "LinkedIn Optimization",
-  },
-  { href: "/dashboard/job-match", icon: Briefcase, label: "Job Matching" },
-  { href: "/dashboard/mock-interview", icon: Mic, label: "Mock Interview" },
-  {
-    href: "/dashboard/progress-tracker",
-    icon: TrendingUp,
-    label: "Progress Tracker",
-  },
-  { href: "/dashboard/roadmap", icon: MapIcon, label: "Career Roadmap" },
-];
-
-const coreTabs = [
-  nav[0], // Overview
-  nav[1], // AI Career Agent
-  nav[3], // Resume Analysis
-  nav[6], // Job Match
-  nav[7], // Mock Interview
-];
-
-const moreTabs = [
-  nav[2], // Resume Templates
-  nav[4], // GitHub Intelligence
-  nav[5], // LinkedIn Optimization
-  nav[8], // Progress Tracker
-  nav[9], // Career Roadmap
-];
 
 export default function DashboardLayout({
   children,
@@ -81,6 +37,18 @@ export default function DashboardLayout({
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Accordion group states
+  const [careerOpen, setCareerOpen] = useState(false);
+  const [oppsOpen, setOppsOpen] = useState(false);
+  const [prepOpen, setPrepOpen] = useState(false);
+
+  // Auto-expand active group
+  useEffect(() => {
+    if (pathname.startsWith("/dashboard/career")) setCareerOpen(true);
+    if (pathname.startsWith("/dashboard/opportunities")) setOppsOpen(true);
+    if (pathname.startsWith("/dashboard/preparation")) setPrepOpen(true);
+  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -136,18 +104,124 @@ export default function DashboardLayout({
     );
   }
 
+  const menuItems = [
+    { type: "link", href: "/dashboard", icon: LayoutDashboard, label: "Home" },
+    {
+      type: "group",
+      label: "Career",
+      icon: User,
+      open: careerOpen,
+      setOpen: setCareerOpen,
+      children: [
+        { href: "/dashboard/career", label: "Overview" },
+        { href: "/dashboard/career/resume", label: "Resume Workspace" },
+        { href: "/dashboard/career/linkedin", label: "LinkedIn" },
+        { href: "/dashboard/career/github", label: "GitHub" },
+      ],
+    },
+    {
+      type: "group",
+      label: "Opportunities",
+      icon: Briefcase,
+      open: oppsOpen,
+      setOpen: setOppsOpen,
+      children: [
+        { href: "/dashboard/opportunities/discover", label: "Discover" },
+        { href: "/dashboard/opportunities/saved", label: "Saved" },
+        {
+          href: "/dashboard/opportunities/applications",
+          label: "Applications",
+        },
+      ],
+    },
+    {
+      type: "group",
+      label: "Preparation",
+      icon: Brain,
+      open: prepOpen,
+      setOpen: setPrepOpen,
+      children: [
+        { href: "/dashboard/preparation/interviews", label: "Interviews" },
+        { href: "/dashboard/preparation/roadmap", label: "Roadmap" },
+      ],
+    },
+    {
+      type: "link",
+      href: "/dashboard/progress",
+      icon: TrendingUp,
+      label: "Progress",
+    },
+    {
+      type: "link",
+      href: "/dashboard/ai-copilot",
+      icon: Sparkles,
+      label: "AI Copilot",
+    },
+    {
+      type: "link",
+      href: "/dashboard/settings",
+      icon: Settings,
+      label: "Settings",
+    },
+  ];
+
+  // Mobile navigation tabs
+  const mobileCoreTabs = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
+    {
+      href: "/dashboard/opportunities/discover",
+      icon: Briefcase,
+      label: "Jobs",
+    },
+    {
+      href: "/dashboard/opportunities/applications",
+      icon: TrendingUp,
+      label: "CRM",
+    },
+    { href: "/dashboard/ai-copilot", icon: Sparkles, label: "AI" },
+    { href: "/dashboard/career", icon: User, label: "Profile" },
+  ];
+
+  const mobileDrawerTabs = [
+    {
+      href: "/dashboard/career/resume",
+      icon: FileText,
+      label: "Resume Workspace",
+    },
+    {
+      href: "/dashboard/career/linkedin",
+      icon: Linkedin,
+      label: "LinkedIn Optimization",
+    },
+    {
+      href: "/dashboard/career/github",
+      icon: Github,
+      label: "GitHub Intelligence",
+    },
+    {
+      href: "/dashboard/opportunities/saved",
+      icon: Briefcase,
+      label: "Saved Jobs",
+    },
+    { href: "/dashboard/preparation/roadmap", icon: MapIcon, label: "Roadmap" },
+    {
+      href: "/dashboard/progress",
+      icon: TrendingUp,
+      label: "Progress Tracker",
+    },
+    { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+  ];
+
   return (
     <div
       className="flex h-screen overflow-hidden p-4 md:p-6"
-      style={{ background: "var(--bg-base)" }}
+      style={{ background: "var(--background)" }}
     >
       <aside
-        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl shadow-glass border border-(--border) overflow-hidden z-20 relative p-2"
+        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl border border-border overflow-hidden z-20 relative p-2"
         style={{
-          background: "var(--glass-bg)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          boxShadow: "var(--glass-shadow)",
+          background: "var(--card)",
+          boxShadow: "var(--shadow-glass)",
         }}
       >
         <div className="h-20 flex items-center px-6 gap-3 relative z-10 mb-6">
@@ -166,44 +240,103 @@ export default function DashboardLayout({
             </span>
           </div>
           <AnimatePresence>
-            {nav.map(({ href, icon: Icon, label }, index) => (
-              <motion.div
-                key={href}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2, delay: index * 0.03 }}
-              >
-                <Link
-                  href={href}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
-                    pathname === href
-                      ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
-                      : "text-muted-foreground dark:"
-                  }`}
-                >
-                  <Icon
-                    size={18}
-                    strokeWidth={pathname === href ? 2.5 : 2}
-                    className="relative z-10 transition-transform duration-300"
-                  />
-                  <span className="text-sm font-bold tracking-tight relative z-10 transition-all duration-300">
-                    {label}
-                  </span>
-                  {pathname === href && (
-                    <motion.div
-                      layoutId="sidebar-active"
-                      className="absolute inset-0 bg-indigo-500 rounded-2xl -z-0"
-                      transition={{
-                        type: "spring",
-                        bounce: 0.2,
-                        duration: 0.6,
-                      }}
-                    />
-                  )}
-                </Link>
-              </motion.div>
-            ))}
+            {menuItems.map((item, index) => {
+              if (item.type === "link") {
+                const Icon = item.icon!;
+                const isActive = pathname === item.href;
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                  >
+                    <Link
+                      href={item.href!}
+                      className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
+                        isActive
+                          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
+                          : "text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-foreground"
+                      }`}
+                    >
+                      <Icon
+                        size={18}
+                        strokeWidth={isActive ? 2.5 : 2}
+                        className="relative z-10"
+                      />
+                      <span className="text-sm font-bold tracking-tight relative z-10">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </motion.div>
+                );
+              } else {
+                const Icon = item.icon!;
+                const isGroupActive = pathname.startsWith(
+                  item.children![0].href.split("/").slice(0, 3).join("/"),
+                );
+                return (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className="flex flex-col"
+                  >
+                    <button
+                      onClick={() => item.setOpen!(!item.open)}
+                      className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-all text-left font-heading text-sm font-bold ${
+                        isGroupActive
+                          ? "text-indigo-500 dark:text-indigo-400"
+                          : "text-muted-foreground hover:text-foreground"
+                      } hover:bg-slate-50 dark:hover:bg-slate-900/50`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} strokeWidth={2} />
+                        <span className="text-sm font-bold tracking-tight">
+                          {item.label}
+                        </span>
+                      </div>
+                      {item.open ? (
+                        <ChevronUp size={14} className="opacity-60" />
+                      ) : (
+                        <ChevronDown size={14} className="opacity-60" />
+                      )}
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {item.open && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden flex flex-col pl-9 mt-1 mb-2 gap-1 border-l border-slate-100 dark:border-slate-800 ml-6"
+                        >
+                          {item.children!.map((child) => {
+                            const isChildActive = pathname === child.href;
+                            return (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className={`py-2 px-3 text-xs font-bold rounded-xl transition-all ${
+                                  isChildActive
+                                    ? "text-indigo-500 dark:text-indigo-400"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {child.label}
+                              </Link>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              }
+            })}
           </AnimatePresence>
         </nav>
 
@@ -211,12 +344,10 @@ export default function DashboardLayout({
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all group font-heading text-sm font-bold text-muted-foreground border border-transparent"
+            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all group font-heading text-sm font-bold text-muted-foreground border border-transparent hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-foreground"
           >
-            <LogOut size={18} className=" group- transition-all duration-300" />
-            <span className=" transition-all duration-300">
-              {loggingOut ? "Signing out..." : "Sign Out"}
-            </span>
+            <LogOut size={18} />
+            <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
           </button>
         </div>
       </aside>
@@ -236,8 +367,8 @@ export default function DashboardLayout({
 
       {/* Mobile Bottom Tab Bar */}
       <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50">
-        <div className="flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] rounded-[32px] p-2">
-          {coreTabs.map(({ href, icon: Icon, label }) => {
+        <div className="flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-premium rounded-[32px] p-2">
+          {mobileCoreTabs.map(({ href, icon: Icon, label }) => {
             const isActive = pathname === href;
             return (
               <Link
@@ -261,7 +392,7 @@ export default function DashboardLayout({
                   className="relative z-10"
                 />
                 <span className="text-[9px] font-bold mt-1 tracking-tight truncate w-full text-center">
-                  {label.split(" ")[0]}
+                  {label}
                 </span>
               </Link>
             );
@@ -303,12 +434,12 @@ export default function DashboardLayout({
               All Tools
             </h2>
             <div className="flex-1 overflow-y-auto w-full grid grid-cols-2 gap-3 auto-rows-max custom-scrollbar pb-8 px-1">
-              {moreTabs.map(({ href, icon: Icon, label }) => (
+              {mobileDrawerTabs.map(({ href, icon: Icon, label }) => (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex flex-col items-start gap-4 p-5 rounded-[28px] bg-slate-50 dark:bg-slate-800/40 dark: border border-transparent dark: transition-all duration-300"
+                  className="flex flex-col items-start gap-4 p-5 rounded-[28px] bg-slate-50 dark:bg-slate-800/40 border border-transparent hover:border-slate-100 transition-all duration-300"
                 >
                   <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm text-indigo-500 dark:text-indigo-400">
                     <Icon size={20} strokeWidth={2} />
@@ -327,7 +458,7 @@ export default function DashboardLayout({
                   handleLogout();
                 }}
                 disabled={loggingOut}
-                className="flex items-center justify-center gap-3 w-full p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 font-bold dark: transition-all active:scale-[0.98]"
+                className="flex items-center justify-center gap-3 w-full p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 font-bold transition-all active:scale-[0.98]"
               >
                 <LogOut size={20} />
                 <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>

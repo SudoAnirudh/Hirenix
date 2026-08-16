@@ -15,9 +15,9 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
       <div
-        className="max-w-7xl mx-auto h-20 px-8 rounded-[24px] border border-(--border) flex items-center justify-between shadow-glass transition-all duration-500"
+        className="max-w-7xl mx-auto h-20 px-8 rounded-[24px] border border-border flex items-center justify-between shadow-glass transition-all duration-500"
         style={{
-          background: "var(--bg-glass)",
+          background: "color-mix(in srgb, var(--card) 70%, transparent)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
         }}

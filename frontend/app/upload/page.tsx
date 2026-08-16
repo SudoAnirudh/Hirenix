@@ -9,7 +9,7 @@ export default function UploadPage() {
   function handleResult(result: unknown) {
     // Redirect to resume analysis dashboard with result
     localStorage.setItem("latest_resume", JSON.stringify(result));
-    router.push("/dashboard/resume-analysis");
+    router.push("/dashboard/career/resume");
   }
 
   return (
