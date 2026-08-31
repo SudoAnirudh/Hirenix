@@ -217,6 +217,8 @@ export default function OutreachModal({
                       variant="ghost"
                       size="sm"
                       className="rounded-xl"
+                      aria-label="Copy to clipboard"
+                      title="Copy to clipboard"
                       onClick={() =>
                         copyToClipboard(
                           activeTab === "linkedin"
