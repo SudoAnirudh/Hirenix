@@ -116,10 +116,12 @@ export default function CoverLetterModal({
                   <button
                     key={t}
                     onClick={() => setTone(t)}
-                    className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
+                    aria-label={`Select ${t} tone`}
+                    aria-pressed={tone === t}
+                    className={`w-full px-4 py-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50 ${
                       tone === t
                         ? "bg-white border-[#7C9ADD] text-[#7C9ADD] shadow-sm scale-[1.02]"
-                        : "bg-transparent border-slate-200 text-slate-500"
+                        : "bg-transparent border-slate-200 text-slate-500 hover:bg-slate-50"
                     }`}
                   >
                     {t}
@@ -172,8 +174,9 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
+                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/10 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50"
                       title="Copy to Clipboard"
+                      aria-label="Copy to Clipboard"
                     >
                       {copied ? (
                         <Check size={18} className="text-emerald-500" />
@@ -211,7 +214,7 @@ export default function CoverLetterModal({
               <Button
                 variant="outline"
                 onClick={() => handleDownload("docx")}
-                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest #7C9ADD] #7C9ADD] transition-all h-11 px-6"
+                className="rounded-xl border border-slate-200 bg-white text-slate-600 text-[10px] font-black uppercase tracking-widest hover:border-[#7C9ADD] hover:text-[#7C9ADD] transition-all h-11 px-6"
               >
                 <Download size={14} className="mr-2" />
                 Word (.docx)
