@@ -14,3 +14,7 @@
 **Vulnerability:** Raw exception strings (`str(e)`) were being returned directly to the user in HTTP 500 error responses from FastAPI endpoints (`backend/routers/interview.py`, `backend/routers/jobs_board.py`).
 **Learning:** Returning unhandled exception details directly in HTTP responses can inadvertently leak sensitive internal system details, stack traces, database schema information, or third-party API configurations to potential attackers, breaking the "fail securely" principle.
 **Prevention:** Always log the full exception detail internally using the application logger (e.g., `logger.error(f"Error: {e}")`) and return a sanitized, generic error message (e.g., "An error occurred.") to the client via `HTTPException`.
+## YYYY-MM-DD - [Fix Synchronous Event Loop Blocking in FastAPI]
+**Vulnerability:** DoS Risk (Synchronous Supabase queries blocking the async event loop).
+**Learning:** Calling synchronous database operations in async endpoints halts concurrent request processing.
+**Prevention:** Wrap synchronous I/O operations (like `supabase.table().execute()`) inside `asyncio.to_thread(lambda: ...)`.
