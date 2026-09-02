@@ -724,7 +724,8 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                 type="button"
                 onClick={() => handleNext(true)}
                 disabled={submitting || transcribing}
-                className="px-4 py-2 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+                title={submitting || transcribing ? "Please wait for current action to complete" : "Skip this question"}
+                className="px-4 py-2 border border-border rounded-xl text-xs font-semibold text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Skip Question
               </button>
@@ -744,18 +745,20 @@ export default function InterviewPanel({ session, onComplete, onExit }: Props) {
                   type="button"
                   onClick={() => handleNext(false)}
                   disabled={submitting || transcribing}
-                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2"
+                  title={submitting || transcribing ? "Processing..." : "Submit Answer"}
+                  className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:opacity-90 transition-opacity flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit Answer
+                  {submitting ? "Submitting..." : transcribing ? "Transcribing..." : "Submit Answer"}
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => void handleFinish()}
                   disabled={submitting || transcribing}
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2"
+                  title={submitting || transcribing ? "Processing..." : "Finish Interview"}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {submitting ? "Submitting..." : "Finish Interview"}
+                  {submitting ? "Submitting..." : transcribing ? "Transcribing..." : "Finish Interview"}
                 </button>
               )}
             </div>
