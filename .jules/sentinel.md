@@ -18,3 +18,7 @@
 **Vulnerability:** DoS Risk (Synchronous Supabase queries blocking the async event loop).
 **Learning:** Calling synchronous database operations in async endpoints halts concurrent request processing.
 **Prevention:** Wrap synchronous I/O operations (like `supabase.table().execute()`) inside `asyncio.to_thread(lambda: ...)`.
+## 2025-02-27 - Fix Information Disclosure in Error Handling
+**Vulnerability:** The application was exposing raw exception details (`str(e)`) directly to the API consumer in `HTTPException` responses within the agent chat routes.
+**Learning:** This occurred because the default exception handlers were directly passing the caught exception string to the client, which is a common but dangerous pattern that can leak internal architecture details.
+**Prevention:** Always return a generic, sanitized error message to the client (e.g., "An error occurred. Please try again later.") and log the full exception internally using `logger.error()`.
