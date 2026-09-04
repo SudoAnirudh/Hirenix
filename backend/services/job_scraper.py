@@ -216,7 +216,10 @@ async def scrape_jobs(
         if location:
             local_query = local_query.ilike("location", f"%{location}%")
             
-        local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
+        # ⚡ Bolt Optimization: Offload synchronous Supabase execute() to background thread
+        # 🎯 Why: Supabase execute() is blocking. Running it in the main thread blocks the async event loop.
+        # 📊 Impact: Prevents event loop blocking during DB I/O, reducing p99 latency and improving throughput for concurrent users.
+        local_res = await asyncio.to_thread(lambda: local_query.order("posted_at", desc=True).limit(limit).execute())
         for j in (local_res.data or []):
             loc_lower = j["location"].lower()
             is_remote = "remote" in loc_lower
