@@ -1,6 +1,8 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Brain,
   LayoutDashboard,
@@ -19,12 +21,26 @@ import {
   Settings,
   ChevronDown,
   ChevronUp,
+  Search,
+  ChevronRight,
+  Bell,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
 } from "lucide-react";
 import { getSession, onAuthStateChange, signOut } from "@/lib/auth";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import LoadingScreen from "@/components/ui/LoadingScreen";
+import CommandPalette from "@/components/ui/CommandPalette";
+
+interface UserSession {
+  user?: {
+    email?: string;
+    user_metadata?: {
+      full_name?: string;
+      plan?: string;
+    };
+  };
+}
 
 export default function DashboardLayout({
   children,
@@ -36,14 +52,16 @@ export default function DashboardLayout({
   const [checkingSession, setCheckingSession] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [error, setError] = useState("");
+  const [session, setSession] = useState<UserSession | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  // Accordion group states
-  const [careerOpen, setCareerOpen] = useState(false);
-  const [oppsOpen, setOppsOpen] = useState(false);
-  const [prepOpen, setPrepOpen] = useState(false);
+  // Sub-navigation group states
+  const [careerOpen, setCareerOpen] = useState(true);
+  const [oppsOpen, setOppsOpen] = useState(true);
+  const [prepOpen, setPrepOpen] = useState(true);
 
-  // Auto-expand active group
   useEffect(() => {
     if (pathname.startsWith("/dashboard/career")) setCareerOpen(true);
     if (pathname.startsWith("/dashboard/opportunities")) setOppsOpen(true);
@@ -51,25 +69,39 @@ export default function DashboardLayout({
   }, [pathname]);
 
   useEffect(() => {
+    const handleOpenCommandPalette = () => setIsCommandPaletteOpen(true);
+    window.addEventListener(
+      "hirenix:open-command-palette",
+      handleOpenCommandPalette,
+    );
+    return () =>
+      window.removeEventListener(
+        "hirenix:open-command-palette",
+        handleOpenCommandPalette,
+      );
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
 
     async function verifySession() {
-      const session = await getSession();
+      const sess = await getSession();
       if (!mounted) return;
 
-      if (!session) {
-        router.replace("/");
+      if (!sess) {
+        router.replace("/auth/login");
         return;
       }
 
+      setSession(sess);
       setCheckingSession(false);
     }
 
     verifySession();
 
-    const subscription = onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.replace("/");
+    const subscription = onAuthStateChange((event, currentSession) => {
+      if (event === "SIGNED_OUT" || !currentSession) {
+        router.replace("/auth/login");
         router.refresh();
       }
     });
@@ -98,375 +130,467 @@ export default function DashboardLayout({
   if (checkingSession) {
     return (
       <LoadingScreen
-        message="Initialising Dashboard"
-        submessage="Verifying Secure Connection"
+        message="Initialising Hirenix Workstation"
+        submessage="Verifying Credentials & Workspace Environment"
       />
     );
   }
 
-  const menuItems = [
-    { type: "link", href: "/dashboard", icon: LayoutDashboard, label: "Home" },
-    {
-      type: "group",
-      label: "Career",
-      icon: User,
-      open: careerOpen,
-      setOpen: setCareerOpen,
-      children: [
-        { href: "/dashboard/career", label: "Overview" },
-        { href: "/dashboard/career/resume", label: "Resume Workspace" },
-        { href: "/dashboard/career/linkedin", label: "LinkedIn" },
-        { href: "/dashboard/career/github", label: "GitHub" },
-      ],
-    },
-    {
-      type: "group",
-      label: "Opportunities",
-      icon: Briefcase,
-      open: oppsOpen,
-      setOpen: setOppsOpen,
-      children: [
-        { href: "/dashboard/opportunities/discover", label: "Discover" },
-        { href: "/dashboard/opportunities/saved", label: "Saved" },
-        {
+  const fullName = session?.user?.user_metadata?.full_name || "Candidate";
+  const email = session?.user?.email || "";
+  const plan = (session?.user?.user_metadata?.plan || "free").toUpperCase();
+
+  // Helper for path breadcrumb titles
+  const getBreadcrumbs = () => {
+    const parts = pathname.split("/").filter(Boolean);
+    if (parts.length <= 1) return [{ label: "Dashboard", href: "/dashboard" }];
+
+    const breadcrumbs = [{ label: "Dashboard", href: "/dashboard" }];
+    if (parts[1] === "career") {
+      breadcrumbs.push({
+        label: "Career Intelligence",
+        href: "/dashboard/career",
+      });
+      if (parts[2] === "resume")
+        breadcrumbs.push({
+          label: "Resume Workspace",
+          href: "/dashboard/career/resume",
+        });
+      if (parts[2] === "github")
+        breadcrumbs.push({
+          label: "GitHub Intelligence",
+          href: "/dashboard/career/github",
+        });
+      if (parts[2] === "linkedin")
+        breadcrumbs.push({
+          label: "LinkedIn Optimization",
+          href: "/dashboard/career/linkedin",
+        });
+    } else if (parts[1] === "opportunities") {
+      breadcrumbs.push({
+        label: "Opportunities",
+        href: "/dashboard/opportunities/discover",
+      });
+      if (parts[2] === "discover")
+        breadcrumbs.push({
+          label: "Job Discovery",
+          href: "/dashboard/opportunities/discover",
+        });
+      if (parts[2] === "saved")
+        breadcrumbs.push({
+          label: "Saved Openings",
+          href: "/dashboard/opportunities/saved",
+        });
+      if (parts[2] === "applications")
+        breadcrumbs.push({
+          label: "Application CRM",
           href: "/dashboard/opportunities/applications",
-          label: "Applications",
-        },
-      ],
-    },
-    {
-      type: "group",
-      label: "Preparation",
-      icon: Brain,
-      open: prepOpen,
-      setOpen: setPrepOpen,
-      children: [
-        { href: "/dashboard/preparation/interviews", label: "Interviews" },
-        { href: "/dashboard/preparation/roadmap", label: "Roadmap" },
-      ],
-    },
-    {
-      type: "link",
-      href: "/dashboard/progress",
-      icon: TrendingUp,
-      label: "Progress",
-    },
-    {
-      type: "link",
-      href: "/dashboard/ai-copilot",
-      icon: Sparkles,
-      label: "AI Copilot",
-    },
-    {
-      type: "link",
-      href: "/dashboard/settings",
-      icon: Settings,
-      label: "Settings",
-    },
-  ];
+        });
+    } else if (parts[1] === "preparation") {
+      breadcrumbs.push({
+        label: "Preparation",
+        href: "/dashboard/preparation/interviews",
+      });
+      if (parts[2] === "interviews")
+        breadcrumbs.push({
+          label: "Interview Simulator",
+          href: "/dashboard/preparation/interviews",
+        });
+      if (parts[2] === "roadmap")
+        breadcrumbs.push({
+          label: "Skill Roadmap",
+          href: "/dashboard/preparation/roadmap",
+        });
+    } else if (parts[1] === "progress") {
+      breadcrumbs.push({
+        label: "Progress Tracker",
+        href: "/dashboard/progress",
+      });
+    } else if (parts[1] === "ai-copilot") {
+      breadcrumbs.push({
+        label: "AI Career Copilot",
+        href: "/dashboard/ai-copilot",
+      });
+    } else if (parts[1] === "settings") {
+      breadcrumbs.push({ label: "Settings", href: "/dashboard/settings" });
+    }
 
-  // Mobile navigation tabs
-  const mobileCoreTabs = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Home" },
-    {
-      href: "/dashboard/opportunities/discover",
-      icon: Briefcase,
-      label: "Jobs",
-    },
-    {
-      href: "/dashboard/opportunities/applications",
-      icon: TrendingUp,
-      label: "CRM",
-    },
-    { href: "/dashboard/ai-copilot", icon: Sparkles, label: "AI" },
-    { href: "/dashboard/career", icon: User, label: "Profile" },
-  ];
-
-  const mobileDrawerTabs = [
-    {
-      href: "/dashboard/career/resume",
-      icon: FileText,
-      label: "Resume Workspace",
-    },
-    {
-      href: "/dashboard/career/linkedin",
-      icon: Linkedin,
-      label: "LinkedIn Optimization",
-    },
-    {
-      href: "/dashboard/career/github",
-      icon: Github,
-      label: "GitHub Intelligence",
-    },
-    {
-      href: "/dashboard/opportunities/saved",
-      icon: Briefcase,
-      label: "Saved Jobs",
-    },
-    { href: "/dashboard/preparation/roadmap", icon: MapIcon, label: "Roadmap" },
-    {
-      href: "/dashboard/progress",
-      icon: TrendingUp,
-      label: "Progress Tracker",
-    },
-    { href: "/dashboard/settings", icon: Settings, label: "Settings" },
-  ];
+    return breadcrumbs;
+  };
 
   return (
-    <div
-      className="flex h-screen overflow-hidden p-4 md:p-6"
-      style={{ background: "var(--background)" }}
-    >
-      <aside
-        className="hidden md:flex w-64 shrink-0 flex-col rounded-3xl border border-border overflow-hidden z-20 relative p-2"
-        style={{
-          background: "var(--card)",
-          boxShadow: "var(--shadow-glass)",
-        }}
-      >
-        <div className="h-20 flex items-center px-6 gap-3 relative z-10 mb-6">
-          <div className="p-2.5 rounded-2xl bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <Brain size={20} className="text-white" />
-          </div>
-          <span className="font-heading font-extrabold text-2xl tracking-tighter text-foreground dark:text-white">
-            Hirenix
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-card">
+        {/* Workspace Brand */}
+        <div className="h-16 flex items-center px-5 border-b border-border justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-extrabold text-sm shadow-xs">
+              <Brain size={18} />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-heading font-bold text-base tracking-tight text-foreground group-hover:text-primary transition-colors">
+                Hirenix
+              </span>
+              <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest leading-none">
+                Career Engine
+              </span>
+            </div>
+          </Link>
+
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-border bg-muted text-foreground">
+            {plan}
           </span>
         </div>
 
-        <nav className="flex-1 px-2 py-2 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
-          <div className="px-4 mb-4 mt-2">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-muted-foreground uppercase px-1 opacity-60">
+        {/* Navigation Sections */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+          {/* Main Navigation */}
+          <div>
+            <div className="px-3 mb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
               Command Center
-            </span>
+            </div>
+            <Link
+              href="/dashboard"
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                pathname === "/dashboard"
+                  ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <LayoutDashboard size={16} />
+              <span>Overview Workstation</span>
+            </Link>
           </div>
-          <AnimatePresence>
-            {menuItems.map((item, index) => {
-              if (item.type === "link") {
-                const Icon = item.icon!;
-                const isActive = pathname === item.href;
-                return (
-                  <motion.div
-                    key={item.href}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.2, delay: index * 0.03 }}
-                  >
-                    <Link
-                      href={item.href!}
-                      className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group ${
-                        isActive
-                          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
-                          : "text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-foreground"
-                      }`}
-                    >
-                      <Icon
-                        size={18}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className="relative z-10"
-                      />
-                      <span className="text-sm font-bold tracking-tight relative z-10">
-                        {item.label}
-                      </span>
-                    </Link>
-                  </motion.div>
-                );
-              } else {
-                const Icon = item.icon!;
-                const isGroupActive = pathname.startsWith(
-                  item.children![0].href.split("/").slice(0, 3).join("/"),
-                );
-                return (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: index * 0.03 }}
-                    className="flex flex-col"
-                  >
-                    <button
-                      onClick={() => item.setOpen!(!item.open)}
-                      className={`flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-all text-left font-heading text-sm font-bold ${
-                        isGroupActive
-                          ? "text-indigo-500 dark:text-indigo-400"
-                          : "text-muted-foreground hover:text-foreground"
-                      } hover:bg-slate-50 dark:hover:bg-slate-900/50`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon size={18} strokeWidth={2} />
-                        <span className="text-sm font-bold tracking-tight">
-                          {item.label}
-                        </span>
-                      </div>
-                      {item.open ? (
-                        <ChevronUp size={14} className="opacity-60" />
-                      ) : (
-                        <ChevronDown size={14} className="opacity-60" />
-                      )}
-                    </button>
 
-                    <AnimatePresence initial={false}>
-                      {item.open && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden flex flex-col pl-9 mt-1 mb-2 gap-1 border-l border-slate-100 dark:border-slate-800 ml-6"
-                        >
-                          {item.children!.map((child) => {
-                            const isChildActive = pathname === child.href;
-                            return (
-                              <Link
-                                key={child.href}
-                                href={child.href}
-                                className={`py-2 px-3 text-xs font-bold rounded-xl transition-all ${
-                                  isChildActive
-                                    ? "text-indigo-500 dark:text-indigo-400"
-                                    : "text-muted-foreground hover:text-foreground"
-                                }`}
-                              >
-                                {child.label}
-                              </Link>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                );
-              }
-            })}
-          </AnimatePresence>
+          {/* Career Intelligence */}
+          <div>
+            <button
+              onClick={() => setCareerOpen(!careerOpen)}
+              className="w-full flex items-center justify-between px-3 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>Career Intelligence</span>
+              {careerOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {careerOpen && (
+              <div className="space-y-0.5">
+                <Link
+                  href="/dashboard/career"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/career"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <User size={15} />
+                  <span>Profile Overview</span>
+                </Link>
+                <Link
+                  href="/dashboard/career/resume"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/career/resume"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <FileText size={15} />
+                  <span>Resume Workspace</span>
+                </Link>
+                <Link
+                  href="/dashboard/career/github"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/career/github"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <Github size={15} />
+                  <span>GitHub Production Index</span>
+                </Link>
+                <Link
+                  href="/dashboard/career/linkedin"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/career/linkedin"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <Linkedin size={15} />
+                  <span>LinkedIn Audit</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Opportunities */}
+          <div>
+            <button
+              onClick={() => setOppsOpen(!oppsOpen)}
+              className="w-full flex items-center justify-between px-3 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>Opportunities</span>
+              {oppsOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {oppsOpen && (
+              <div className="space-y-0.5">
+                <Link
+                  href="/dashboard/opportunities/discover"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/opportunities/discover"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <Briefcase size={15} />
+                  <span>Job Discovery</span>
+                </Link>
+                <Link
+                  href="/dashboard/opportunities/saved"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/opportunities/saved"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <CheckCircle2 size={15} />
+                  <span>Saved Positions</span>
+                </Link>
+                <Link
+                  href="/dashboard/opportunities/applications"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/opportunities/applications"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <TrendingUp size={15} />
+                  <span>Application CRM</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Preparation */}
+          <div>
+            <button
+              onClick={() => setPrepOpen(!prepOpen)}
+              className="w-full flex items-center justify-between px-3 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>Preparation</span>
+              {prepOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+            {prepOpen && (
+              <div className="space-y-0.5">
+                <Link
+                  href="/dashboard/preparation/interviews"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/preparation/interviews"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <Mic size={15} />
+                  <span>Interview Simulator</span>
+                </Link>
+                <Link
+                  href="/dashboard/preparation/roadmap"
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    pathname === "/dashboard/preparation/roadmap"
+                      ? "bg-muted text-foreground font-bold border border-border"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
+                >
+                  <MapIcon size={15} />
+                  <span>Career Roadmap</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* AI Tools */}
+          <div>
+            <div className="px-3 mb-2 text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+              Autonomous Systems
+            </div>
+            <Link
+              href="/dashboard/ai-copilot"
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                pathname === "/dashboard/ai-copilot"
+                  ? "bg-muted text-foreground font-bold border border-border"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              }`}
+            >
+              <Sparkles size={15} className="text-primary" />
+              <span>AI Career Copilot</span>
+            </Link>
+            <Link
+              href="/dashboard/progress"
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                pathname === "/dashboard/progress"
+                  ? "bg-muted text-foreground font-bold border border-border"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              }`}
+            >
+              <TrendingUp size={15} />
+              <span>Progress Analytics</span>
+            </Link>
+          </div>
         </nav>
 
-        <div className="p-2 mt-auto">
-          <button
-            onClick={handleLogout}
-            disabled={loggingOut}
-            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl transition-all group font-heading text-sm font-bold text-muted-foreground border border-transparent hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:text-foreground"
+        {/* User Account Bar */}
+        <div className="p-3 border-t border-border bg-slate-50/50 dark:bg-slate-900/50">
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors group"
           >
-            <LogOut size={18} />
-            <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
-          </button>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="h-8 w-8 rounded-md bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center shrink-0">
+                {fullName[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                  {fullName}
+                </div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {email}
+                </div>
+              </div>
+            </div>
+            <Settings
+              size={14}
+              className="text-muted-foreground group-hover:text-foreground shrink-0"
+            />
+          </Link>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto scroll-smooth pb-28 md:pb-0">
-        <div className="min-h-full w-full px-6 py-6 md:px-12 md:py-10">
-          <div className="max-w-[1600px] mx-auto">
+      {/* Main Content Workspace */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Global Header */}
+        <header className="h-16 shrink-0 border-b border-border bg-card px-4 lg:px-8 flex items-center justify-between gap-4 z-10">
+          {/* Breadcrumbs Navigation */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-1.5 rounded-md hover:bg-muted text-foreground mr-1"
+            >
+              <Menu size={18} />
+            </button>
+
+            {getBreadcrumbs().map((b, idx, arr) => (
+              <React.Fragment key={b.href}>
+                {idx > 0 && (
+                  <ChevronRight
+                    size={12}
+                    className="text-muted-foreground/60 shrink-0"
+                  />
+                )}
+                <Link
+                  href={b.href}
+                  className={`truncate hover:text-foreground transition-colors ${
+                    idx === arr.length - 1
+                      ? "font-semibold text-foreground"
+                      : ""
+                  }`}
+                >
+                  {b.label}
+                </Link>
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Header Action Bar */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Search Trigger */}
+            <button
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="flex items-center gap-3 px-3 py-1.5 rounded-lg border border-border bg-muted/60 text-xs text-muted-foreground hover:border-slate-300 dark:hover:border-slate-700 transition-colors cursor-pointer"
+            >
+              <Search size={14} />
+              <span className="hidden sm:inline">Search workstations...</span>
+              <kbd className="hidden sm:inline font-mono text-[10px] px-1.5 py-0.5 rounded border border-border bg-card text-foreground">
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Notifications Indicator */}
+            <button
+              onClick={() => router.push("/dashboard/ai-copilot")}
+              className="p-2 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:border-slate-300 dark:hover:border-slate-700 transition-colors relative cursor-pointer"
+              title="Notifications & Agent Signals"
+            >
+              <Bell size={16} />
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary" />
+            </button>
+
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center gap-2 p-1 rounded-lg hover:bg-muted border border-transparent hover:border-border transition-colors cursor-pointer"
+              >
+                <div className="h-7 w-7 rounded-md bg-primary text-primary-foreground font-bold text-xs flex items-center justify-center">
+                  {fullName[0]?.toUpperCase()}
+                </div>
+                <ChevronDown size={14} className="text-muted-foreground" />
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-xl py-1 z-50 text-xs">
+                  <div className="px-3 py-2 border-b border-border space-y-0.5">
+                    <div className="font-semibold text-foreground">
+                      {fullName}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {email}
+                    </div>
+                    <div className="mt-1 flex items-center gap-1 text-[10px] font-mono text-primary uppercase">
+                      <ShieldCheck size={12} /> {plan} Plan Active
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/dashboard/settings"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-muted text-foreground transition-colors"
+                  >
+                    <Settings size={14} /> Account Settings
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      handleLogout();
+                    }}
+                    disabled={loggingOut}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 text-left transition-colors cursor-pointer"
+                  >
+                    <LogOut size={14} />
+                    <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content Viewport */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background">
+          <div className="max-w-7xl mx-auto space-y-6">
             {error && (
-              <div className="mb-6 w-full rounded-2xl border border-red-100 bg-red-50/50 p-4 text-sm text-red-700 animate-fade-up">
+              <div className="p-4 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/50 text-xs text-red-700 dark:text-red-300">
                 {error}
               </div>
             )}
-            <div className="w-full flex flex-col">{children}</div>
+            {children}
           </div>
-        </div>
-      </main>
-
-      {/* Mobile Bottom Tab Bar */}
-      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm z-50">
-        <div className="flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-premium rounded-[32px] p-2">
-          {mobileCoreTabs.map(({ href, icon: Icon, label }) => {
-            const isActive = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
-                  isActive ? "text-indigo-500" : "text-muted-foreground"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="mobile-active-tab"
-                    className="absolute inset-0 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-2xl -z-10"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                <Icon
-                  size={22}
-                  strokeWidth={isActive ? 2.5 : 2}
-                  className="relative z-10"
-                />
-                <span className="text-[9px] font-bold mt-1 tracking-tight truncate w-full text-center">
-                  {label}
-                </span>
-              </Link>
-            );
-          })}
-
-          {/* Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`relative flex-1 flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl transition-all duration-300 ${
-              isMobileMenuOpen
-                ? "text-indigo-500 bg-indigo-500/10"
-                : "text-muted-foreground"
-            }`}
-          >
-            {isMobileMenuOpen ? (
-              <X size={22} strokeWidth={2.5} />
-            ) : (
-              <Menu size={22} strokeWidth={2} />
-            )}
-            <span className="text-[9px] font-bold mt-1 tracking-tight truncate w-full text-center">
-              Menu
-            </span>
-          </button>
-        </div>
+        </main>
       </div>
-
-      {/* Mobile Slide-up Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: "100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "100%" }}
-            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="md:hidden fixed inset-x-0 bottom-0 top-[10%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl z-40 rounded-t-[40px] shadow-[0_-20px_40px_rgba(0,0,0,0.1)] border-t border-white/20 dark:border-white/5 overflow-hidden flex flex-col pt-8 pb-32 px-6"
-          >
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full" />
-            <h2 className="text-2xl font-black font-heading mb-6 tracking-tight text-foreground dark:text-white mt-4 px-2">
-              All Tools
-            </h2>
-            <div className="flex-1 overflow-y-auto w-full grid grid-cols-2 gap-3 auto-rows-max custom-scrollbar pb-8 px-1">
-              {mobileDrawerTabs.map(({ href, icon: Icon, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex flex-col items-start gap-4 p-5 rounded-[28px] bg-slate-50 dark:bg-slate-800/40 border border-transparent hover:border-slate-100 transition-all duration-300"
-                >
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 shadow-sm text-indigo-500 dark:text-indigo-400">
-                    <Icon size={20} strokeWidth={2} />
-                  </div>
-                  <span className="text-[13px] leading-tight font-bold text-foreground dark:text-slate-200">
-                    {label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-
-            <div className="pt-4 mt-auto">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleLogout();
-                }}
-                disabled={loggingOut}
-                className="flex items-center justify-center gap-3 w-full p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-red-500 dark:text-red-400 font-bold transition-all active:scale-[0.98]"
-              >
-                <LogOut size={20} />
-                <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

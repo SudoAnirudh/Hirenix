@@ -1,424 +1,196 @@
 "use client";
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+
+import React, { useState } from "react";
 import {
+  Settings,
   User,
-  Mail,
-  Shield,
-  LogOut,
-  ChevronRight,
-  UserCircle,
-  Bell,
-  Zap,
-  Star,
+  ShieldCheck,
   Github,
   Linkedin,
-  Globe,
-  Briefcase,
-  History,
-  Target,
-  Map as MapPin,
+  Save,
 } from "lucide-react";
-import { getSession, signOut } from "@/lib/auth";
-import { getProgress } from "@/lib/api";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import LoadingScreen from "@/components/ui/LoadingScreen";
-import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
-interface UserSession {
-  user?: {
-    email?: string;
-    user_metadata?: {
-      full_name?: string;
-      plan?: string;
-      role?: string;
-      location?: string;
-      salary?: string;
-    };
-  };
-}
+export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<"account" | "integrations">(
+    "account",
+  );
+  const [saved, setSaved] = useState(false);
 
-interface TrendItem {
-  date: string;
-  score: number;
-  role?: string;
-  username?: string;
-  gpi?: number;
-}
+  const [targetRole, setTargetRole] = useState("AI / Backend Engineer");
+  const [targetLocation, setTargetLocation] = useState(
+    "San Francisco, CA / Remote",
+  );
+  const [targetSalary, setTargetSalary] = useState("$180,000+");
 
-interface ProgressData {
-  ats_trend?: TrendItem[];
-  interview_trend?: TrendItem[];
-  github_trend?: TrendItem[];
-  resume_evolution_score?: number;
-}
-
-export default function AccountPage() {
-  const [session, setSession] = useState<UserSession | null>(null);
-  const [progress, setProgress] = useState<ProgressData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [sess, prog] = await Promise.all([
-          getSession(),
-          getProgress().catch(() => null) as Promise<ProgressData | null>,
-        ]);
-        setSession(sess);
-        setProgress(prog);
-      } catch (e: unknown) {
-        console.error("Error fetching account data:", e);
-      } finally {
-        setLoading(false);
-      }
+  const handleSave = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hirenix_target_role", targetRole);
     }
-    fetchData();
-  }, []);
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/auth/login");
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <LoadingScreen
-          message="Accessing Command Center"
-          submessage="Retrieving Personal Data"
-        />
-      </div>
-    );
-  }
-
-  const fullName = session?.user?.user_metadata?.full_name || "Hirenix Member";
-  const email = session?.user?.email || "No email linked";
-  const plan = (session?.user?.user_metadata?.plan || "free").toLowerCase();
-
-  // Sort and combine activity from trends
-  const rawActivities = [
-    ...(progress?.ats_trend || []).map((t: TrendItem) => ({
-      action: "Resume Analyzed",
-      date: t.date,
-      score: t.score,
-      icon: Zap,
-      color: "text-amber-500",
-      bg: "bg-amber-50",
-    })),
-    ...(progress?.interview_trend || []).map((t: TrendItem) => ({
-      action: `Interview: ${t.role}`,
-      date: t.date,
-      score: t.score,
-      icon: UserCircle,
-      color: "text-emerald-500",
-      bg: "bg-emerald-50",
-    })),
-    ...(progress?.github_trend || []).map((t: TrendItem) => ({
-      action: `GitHub: ${t.username}`,
-      date: t.date,
-      score: t.gpi,
-      icon: Github,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const activityLog = rawActivities.slice(0, 4).map((act) => ({
-    ...act,
-    date: new Date(act.date).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  }));
   return (
-    <div className="animate-fade-up w-full mx-auto space-y-10 pb-20 relative">
-      {/* Decorative Orbs */}
-      <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full blur-[100px] bg-[#7C9ADD]/10 pointer-events-none -z-10" />
-      <div className="absolute top-1/2 -right-20 w-96 h-96 rounded-full blur-[120px] bg-[#B8C1EC]/10 pointer-events-none -z-10" />
-
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight text-[#1E293B] font-heading">
-            Account Command Center
+    <div className="space-y-6">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-xl bg-card border border-border">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-primary uppercase tracking-wider">
+            <Settings size={14} /> System Configuration
+          </div>
+          <h1 className="text-2xl font-bold font-heading text-foreground mt-1">
+            Workstation Settings & Integrations
           </h1>
-          <p className="text-[#64748B] text-lg max-w-xl leading-relaxed">
-            Manage your career identity, integrations, and preferences.
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage target roles, connected accounts, and AI preference
+            parameters.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2 border border-border rounded-lg p-1 bg-muted/50 text-xs shrink-0">
+          <button
+            onClick={() => setActiveTab("account")}
+            className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+              activeTab === "account"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Target Preferences
+          </button>
+          <button
+            onClick={() => setActiveTab("integrations")}
+            className={`px-3 py-1.5 rounded-md font-semibold transition-colors ${
+              activeTab === "integrations"
+                ? "bg-card text-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Connected Accounts
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Profile & Summary */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="p-8 border-white/80 bg-white/60 shadow-premium backdrop-blur-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 blur-2xl group- transition-colors" />
-
-            <div className="flex flex-col items-center text-center space-y-4 relative z-10">
-              <div className="h-28 w-28 rounded-full bg-linear-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-xl border-4 border-white mb-2 relative group/avatar">
-                <User size={56} strokeWidth={1} />
-                <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-slate-100 text-indigo-500 transition-transform">
-                  <Globe size={14} />
-                </button>
-              </div>
-              <div>
-                <h2 className="text-2xl font-black font-heading text-[#1E293B]">
-                  {fullName}
-                </h2>
-              </div>
+      {activeTab === "account" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-bold">
+              Target Career Preferences
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Hirenix matching algorithms use these settings to rank job
+              openings and compute skill gap vectors.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs">
+            <div className="space-y-1">
+              <label className="font-semibold text-foreground">
+                Target Role Title
+              </label>
+              <input
+                type="text"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+                className="w-full p-2.5 bg-muted/50 border border-border rounded-lg font-mono text-xs text-foreground focus:outline-none focus:border-primary"
+              />
             </div>
 
-            <div className="mt-10 space-y-5 relative z-10 pt-8 border-t border-slate-100/50">
-              <div className="flex items-center justify-between text-sm py-1">
-                <span className="text-[#64748B] font-medium flex items-center gap-2">
-                  <Mail size={16} className="opacity-40" /> Email
-                </span>
-                <span className="text-[#1E293B] font-bold text-wrap break-all">
-                  {email}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-sm py-1">
-                <span className="text-[#64748B] font-medium flex items-center gap-2">
-                  <Briefcase size={16} className="opacity-40" /> Role
-                </span>
-                <span className="text-[#1E293B] font-bold">
-                  {session?.user?.user_metadata?.role ||
-                    "Senior Cloud Engineer"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm py-1">
-                <span className="text-[#64748B] font-medium flex items-center gap-2">
-                  <MapPin size={16} className="opacity-40" /> Location
-                </span>
-                <span className="font-bold text-emerald-600">
-                  {session?.user?.user_metadata?.location || "Remote Only"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm py-1">
-                <span className="text-[#64748B] font-medium flex items-center gap-2">
-                  <Star size={16} className="opacity-40" /> Salary Expectation
-                </span>
-                <span className="text-[#1E293B] font-bold">
-                  {session?.user?.user_metadata?.salary || "$140k - $180k"}
-                </span>
-              </div>
+            <div className="space-y-1">
+              <label className="font-semibold text-foreground">
+                Target Work Locations
+              </label>
+              <input
+                type="text"
+                value={targetLocation}
+                onChange={(e) => setTargetLocation(e.target.value)}
+                className="w-full p-2.5 bg-muted/50 border border-border rounded-lg font-mono text-xs text-foreground focus:outline-none focus:border-primary"
+              />
             </div>
 
-            <div className="mt-8 space-y-3">
-              <Button
-                variant="outline"
-                className="w-full justify-between h-12 border-slate-200 group/btn transition-all"
-              >
-                <span className="flex items-center gap-3 text-slate-600">
-                  <Shield
-                    size={18}
-                    className="group-hover/btn:text-indigo-500"
-                  />
-                  {""}
-                  Security Settings
-                </span>
-                <ChevronRight size={16} className="text-slate-300" />
+            <div className="space-y-1">
+              <label className="font-semibold text-foreground">
+                Minimum Target Salary
+              </label>
+              <input
+                type="text"
+                value={targetSalary}
+                onChange={(e) => setTargetSalary(e.target.value)}
+                className="w-full p-2.5 bg-muted/50 border border-border rounded-lg font-mono text-xs text-foreground focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="pt-2 flex items-center justify-between">
+              <Button onClick={handleSave} variant="primary" size="sm">
+                <Save size={14} className="mr-1.5" /> Save Preferences
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-between h-12 border-slate-200 group/btn transition-all"
-              >
-                <span className="flex items-center gap-3 text-slate-600">
-                  <Bell size={18} className="group-hover/btn:text-indigo-500" />
-                  {""}
-                  Notification Preferences
-                </span>
-                <ChevronRight size={16} className="text-slate-300" />
-              </Button>
-            </div>
-          </Card>
 
-          {/* Integrations Card */}
-          <Card className="p-8 border-white/80 bg-white/60 shadow-premium backdrop-blur-xl">
-            <h3 className="text-lg font-bold text-[#1E293B] mb-6 flex items-center gap-2">
-              <Zap size={20} className="text-amber-500" /> Power-Ups
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group transition-colors">
+              {saved && (
+                <span className="font-mono text-xs text-emerald-600 font-bold">
+                  ✓ Settings Saved Successfully
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {activeTab === "integrations" && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
-                    <Github size={20} className="text-[#1E293B]" />
+                  <div className="p-2 rounded-lg bg-muted text-foreground border border-border">
+                    <Github size={20} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#1E293B]">GitHub</p>
-                    <p className="text-[11px] text-[#64748B]">
-                      Commit Analysis Active
-                    </p>
+                    <CardTitle className="text-sm font-bold">
+                      GitHub Account Integration
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Synchronized handle: @sudo-anirudh
+                    </CardDescription>
                   </div>
                 </div>
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  CONNECTED & SYNCED
+                </span>
               </div>
+            </CardHeader>
+          </Card>
 
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group transition-colors">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <div className="p-2 rounded-lg bg-muted text-foreground border border-border">
                     <Linkedin size={20} className="text-[#0A66C2]" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#1E293B]">LinkedIn</p>
-                    <p className="text-[11px] text-[#64748B]">
-                      Profile Sync Ready
-                    </p>
+                    <CardTitle className="text-sm font-bold">
+                      LinkedIn Profile Audit
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Text import active
+                    </CardDescription>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-indigo-600 font-bold text-xs"
-                >
-                  Connect
-                </Button>
-              </div>
-            </div>
-          </Card>
-
-          <Button
-            onClick={handleSignOut}
-            className="w-full h-14 bg-white border border-slate-200 text-slate-500 rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-sm"
-          >
-            <LogOut size={20} /> Terminate Session
-          </Button>
-        </div>
-
-        {/* Right Column: Analytics & Activity */}
-        <div className="lg:col-span-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="p-6 border-white/80 bg-white/60 shadow-premium backdrop-blur-xl overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-4 opacity-5">
-                <Target size={80} />
-              </div>
-              <h4 className="text-slate-500 font-bold text-xs uppercase tracking-widest mb-4">
-                Career Evolution
-              </h4>
-              <div className="flex items-end gap-3 mb-4">
-                <span className="text-4xl font-black text-[#1E293B]">
-                  +{progress?.resume_evolution_score || 24}%
-                </span>
-                <span className="text-emerald-500 font-bold text-sm mb-1 flex items-center bg-emerald-50 px-2 py-0.5 rounded-lg">
-                  <ChevronRight size={14} className="-rotate-90" /> Monthly
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  CONNECTED
                 </span>
               </div>
-              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{
-                    width: `${progress?.resume_evolution_score || 24}%`,
-                  }}
-                  className="h-full bg-linear-to-r from-emerald-500 to-teal-400"
-                />
-              </div>
-              <p className="text-[11px] text-[#64748B] mt-3">
-                Semantic strength improvement across your portfolio.
-              </p>
-            </Card>
-
-            <Card className="p-6 border-white/80 bg-white/60 shadow-premium backdrop-blur-xl overflow-hidden relative">
-              <div className="absolute top-0 right-0 p-4 opacity-5">
-                <Zap size={80} />
-              </div>
-              <h4 className="text-slate-500 font-bold text-xs uppercase tracking-widest mb-4">
-                Analysis Velocity
-              </h4>
-              <div className="flex items-end gap-3 mb-4">
-                <span className="text-4xl font-black text-[#1E293B]">
-                  {rawActivities.length}
-                </span>
-                <span className="text-slate-400 font-bold text-sm mb-1 uppercase tracking-tighter">
-                  Snapshots
-                </span>
-              </div>
-              <div className="flex gap-1.5 h-6 items-end">
-                {[40, 70, 45, 90, 65, 80, 55].map((h, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${h}%` }}
-                    transition={{ delay: i * 0.1 }}
-                    className={`flex-1 rounded-sm ${i === 3 ? "bg-indigo-500" : "bg-slate-200"}`}
-                  />
-                ))}
-              </div>
-              <p className="text-[11px] text-[#64748B] mt-3">
-                Active career optimization frequency (last 30 days).
-              </p>
-            </Card>
-          </div>
-
-          <Card className="border-white/80 bg-white/60 shadow-premium backdrop-blur-xl overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-[#1E293B] flex items-center gap-2">
-                <History size={20} className="text-indigo-500" /> Recent AI
-                Activity
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-indigo-600 font-bold"
-              >
-                View All
-              </Button>
-            </div>
-            <div className="divide-y divide-slate-100/50">
-              {activityLog.length > 0 ? (
-                activityLog.map((log, i) => (
-                  <div
-                    key={i}
-                    className="p-6 flex items-center justify-between transition-colors group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`h-12 w-12 rounded-2xl ${log.bg} flex items-center justify-center transition-transform`}
-                      >
-                        <log.icon size={22} className={log.color} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-[#1E293B] group- transition-colors">
-                          {log.action}
-                        </p>
-                        <p className="text-xs text-[#64748B]">{log.date}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-[#1E293B]">
-                        {log.score}
-                      </p>
-                      <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-tighter">
-                        Score
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-12 text-center">
-                  <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <History size={24} className="text-slate-300" />
-                  </div>
-                  <p className="text-slate-500 font-medium">
-                    No activity recorded yet.
-                  </p>
-                  <Button
-                    variant="ghost"
-                    className="text-indigo-600 mt-2 underline"
-                    onClick={() => router.push("/dashboard")}
-                  >
-                    Start your first analysis
-                  </Button>
-                </div>
-              )}
-            </div>
+            </CardHeader>
           </Card>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -8,8 +9,7 @@ import {
   signInAnonymously,
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Brain, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Eye, EyeOff, Brain, Loader2, Lock, Mail, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 
@@ -131,79 +131,78 @@ export default function LoginPage() {
   if (checkingSession) {
     return (
       <LoadingScreen
-        message="Checking Session"
-        submessage="Secure Authentication"
+        message="Verifying Auth Session"
+        submessage="Connecting to Hirenix Gateway"
       />
     );
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 bg-background text-foreground overflow-hidden">
-      {/* Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-brand-blue/10 blur-[120px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-brand-green/10 blur-[150px] rounded-full animate-pulse-slow" />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-brand-purple/5 blur-[100px] rounded-full" />
-      </div>
-
-      <div className="w-full max-w-md animate-fade-up relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background text-foreground">
+      <div className="w-full max-w-md space-y-6">
         <Link
           href="/"
-          className="flex items-center gap-3 mb-10 group justify-center"
+          className="flex items-center gap-2.5 justify-center group"
         >
-          <div className="w-10 h-10 rounded-2xl bg-brand-blue flex items-center justify-center shadow-lg shadow-brand-blue/20 transition-transform">
-            <Brain className="text-white" size={24} />
+          <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-extrabold shadow-xs">
+            <Brain size={20} />
           </div>
-          <span className="font-display font-black text-2xl text-foreground tracking-tighter uppercase italic">
-            HIRENIX
+          <span className="font-heading font-bold text-xl tracking-tight text-foreground group-hover:text-primary transition-colors">
+            Hirenix Workstation
           </span>
         </Link>
 
-        <div className="glass-card p-10 md:p-12 rounded-[48px] border-border shadow-premium bg-card/40 backdrop-blur-3xl">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-display font-bold tracking-tight mb-3 text-foreground">
-              Welcome back
+        <div className="p-8 rounded-xl border border-border bg-card shadow-xs space-y-6">
+          <div className="text-center space-y-1">
+            <h1 className="text-xl font-bold font-heading text-foreground">
+              Sign In to your Account
             </h1>
-            <p className="text-muted-foreground font-medium">
-              Access your career analytics dashboard
+            <p className="text-xs text-muted-foreground">
+              Enter your credentials to access career intelligence tools
             </p>
           </div>
 
           {error && (
-            <div className="mb-8 p-4 rounded-2xl text-sm border border-destructive/20 bg-destructive/10 text-destructive font-medium animate-in fade-in slide-in-from-top-2">
+            <div className="p-3 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/40 text-xs text-red-700 dark:text-red-300">
               {error}
             </div>
           )}
           {resetMessage && (
-            <div className="mb-8 p-4 rounded-2xl text-sm border border-brand-green/20 bg-brand-green/10 text-brand-green font-medium animate-in fade-in slide-in-from-top-2">
+            <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/40 text-xs text-emerald-700 dark:text-emerald-300">
               {resetMessage}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <div className="space-y-1">
               <label
                 htmlFor="login-email"
-                className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1"
+                className="font-semibold text-foreground"
               >
                 Email Address
               </label>
-              <input
-                id="login-email"
-                type="email"
-                className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Mail
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <input
+                  id="login-email"
+                  type="email"
+                  className="w-full pl-9 pr-3 py-2.5 bg-muted/40 border border-border rounded-lg text-xs font-mono text-foreground focus:outline-none focus:border-primary"
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
                 <label
                   htmlFor="login-password"
-                  className="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                  className="font-semibold text-foreground"
                 >
                   Password
                 </label>
@@ -211,16 +210,20 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleForgotPassword}
                   disabled={resetLoading}
-                  className="text-xs font-bold text-brand-blue transition-colors disabled:opacity-60"
+                  className="text-[11px] font-semibold text-primary hover:underline"
                 >
                   {resetLoading ? "Sending..." : "Forgot password?"}
                 </button>
               </div>
               <div className="relative">
+                <Lock
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
                 <input
                   id="login-password"
                   type={showPass ? "text" : "password"}
-                  className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium pr-14"
+                  className="w-full pl-9 pr-10 py-2.5 bg-muted/40 border border-border rounded-lg text-xs font-mono text-foreground focus:outline-none focus:border-primary"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -229,9 +232,9 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
             </div>
@@ -240,11 +243,12 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full h-16 rounded-2xl bg-brand-blue text-white text-lg font-bold shadow-xl shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-70 mt-4 border-none"
+              variant="primary"
+              className="w-full py-2.5 text-xs font-bold"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Authenticating...
                 </>
               ) : (
@@ -253,10 +257,10 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="relative flex py-6 items-center">
+          <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-border"></div>
-            <span className="flex-shrink mx-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
-              Or
+            <span className="flex-shrink mx-3 text-[10px] font-mono font-bold text-muted-foreground uppercase">
+              OR
             </span>
             <div className="flex-grow border-t border-border"></div>
           </div>
@@ -268,50 +272,52 @@ export default function LoginPage() {
               variant="outline"
               onClick={() => setShowGuestNameInput(true)}
               disabled={loading || guestLoading}
-              className="w-full h-16 rounded-2xl border-border text-slate-800 dark:text-slate-200 bg-transparent text-lg font-bold transition-all active:scale-[0.97] mt-2"
+              className="w-full py-2.5 text-xs font-semibold"
             >
-              Continue as Guest
+              Continue as Guest Demo
             </Button>
           ) : (
-            <div className="space-y-3 animate-fade-in">
+            <div className="space-y-2">
               <input
                 type="text"
-                placeholder="Your Name (Optional)"
+                placeholder="Guest Name (Optional)"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                className="w-full h-14 px-6 rounded-2xl bg-background/50 border border-border focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/10 transition-all outline-none font-medium"
+                className="w-full px-3 py-2 bg-muted/40 border border-border rounded-lg text-xs font-mono focus:outline-none focus:border-primary"
                 autoFocus
               />
               <div className="flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={() => setShowGuestNameInput(false)}
-                  className="w-1/3 h-14 rounded-2xl border-border text-slate-800 dark:text-slate-200 bg-transparent font-bold transition-all active:scale-[0.97]"
+                  className="w-1/3"
                 >
                   Cancel
                 </Button>
                 <Button
                   id="login-guest-confirm"
                   type="button"
+                  size="sm"
                   onClick={() => handleGuestSignIn(guestName)}
                   isLoading={guestLoading}
                   disabled={guestLoading}
-                  className="flex-1 h-14 rounded-2xl bg-brand-blue text-white font-bold transition-all active:scale-[0.97] border-none"
+                  className="flex-1"
                 >
-                  Confirm
+                  Confirm Guest Login
                 </Button>
               </div>
             </div>
           )}
 
-          <p className="text-center mt-10 text-muted-foreground font-medium">
-            New to Hirenix?{""}
+          <p className="text-center text-xs text-muted-foreground pt-2">
+            Don&apos;t have an account?{" "}
             <Link
               href="/auth/register"
-              className="text-brand-blue font-bold underline-offset-4"
+              className="text-primary font-bold hover:underline"
             >
-              Create an account
+              Create account
             </Link>
           </p>
         </div>

@@ -5,13 +5,14 @@ import { uploadResume } from "@/lib/api";
 import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
 
 interface Props {
-  onResult: (result: unknown) => void;
+  onResult?: (result: unknown) => void;
+  onUploadComplete?: (result: unknown) => void;
 }
 
 type Status = "idle" | "uploading" | "success" | "error";
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
-export default function ResumeUploader({ onResult }: Props) {
+export default function ResumeUploader({ onResult, onUploadComplete }: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [fileName, setFileName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -38,13 +39,14 @@ export default function ResumeUploader({ onResult }: Props) {
       try {
         const result = await uploadResume(file);
         setStatus("success");
-        onResult(result);
+        onResult?.(result);
+        onUploadComplete?.(result);
       } catch (e: unknown) {
         setErrorMsg((e as Error).message ?? "Upload failed");
         setStatus("error");
       }
     },
-    [onResult],
+    [onResult, onUploadComplete],
   );
 
   const onDropRejected = useCallback((rejections: FileRejection[]) => {

@@ -198,11 +198,18 @@ const MenuBar = ({
 };
 
 interface ResumeEditorProps {
-  content: string;
-  onChange: (content: string) => void;
+  content?: string;
+  onChange?: (content: string) => void;
+  initialData?: unknown;
+  onSave?: (data: unknown) => void;
 }
 
-export function ResumeEditor({ content, onChange }: ResumeEditorProps) {
+export function ResumeEditor({
+  content = "",
+  onChange,
+  initialData,
+  onSave,
+}: ResumeEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -219,9 +226,15 @@ export function ResumeEditor({ content, onChange }: ResumeEditorProps) {
         },
       }),
     ],
-    content: content,
+    content:
+      content ||
+      (typeof initialData === "string"
+        ? initialData
+        : "<p>Resume content...</p>"),
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      onChange?.(html);
+      onSave?.(html);
     },
     editorProps: {
       attributes: {
