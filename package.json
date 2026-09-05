@@ -342,7 +342,7 @@
     "ms": "^2.1.3",
     "mute-stream": "^0.0.8",
     "nano-spawn": "^2.0.0",
-    "nanoid": "^3.3.11",
+    "nanoid": "^3.3.18",
     "napi-postinstall": "^0.3.4",
     "natural-compare": "^1.4.0",
     "next": "^16.1.6",
