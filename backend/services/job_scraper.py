@@ -214,7 +214,8 @@ async def scrape_jobs(
             
         # Filter by location if specified
         if location:
-            local_query = local_query.ilike("location", f"%{location}%")
+            safe_loc = sanitize_postgrest_filter(location)
+            local_query = local_query.ilike("location", f"%{safe_loc}%")
             
         local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
         for j in (local_res.data or []):
