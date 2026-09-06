@@ -6,6 +6,7 @@ import logging
 from typing import List
 
 from models.analysis import JobListing
+# Added for ilike filter sanitization
 from utils.sanitizer import sanitize_postgrest_filter
 
 logger = logging.getLogger("hirenix.job_scraper")
@@ -214,7 +215,8 @@ async def scrape_jobs(
             
         # Filter by location if specified
         if location:
-            local_query = local_query.ilike("location", f"%{location}%")
+            safe_location = sanitize_postgrest_filter(location)
+            local_query = local_query.ilike("location", f"%{safe_location}%")
             
         local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
         for j in (local_res.data or []):
