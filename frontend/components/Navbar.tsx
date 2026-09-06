@@ -47,7 +47,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="hidden sm:block">
-            <button className="text-sm font-bold text-[#4A5568] #7C9ADD] transition-colors px-4">
+            <button className="text-sm font-bold text-[#4A5568] hover:text-[#7C9ADD] transition-colors px-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50 rounded-lg py-1">
               Dashboard
             </button>
           </Link>

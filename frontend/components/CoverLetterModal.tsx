@@ -172,8 +172,9 @@ export default function CoverLetterModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopy}
-                      className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
+                      className="p-2 text-slate-400 hover:text-[#7C9ADD] hover:bg-[#7C9ADD]/5 rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C9ADD]/50"
                       title="Copy to Clipboard"
+                      aria-label="Copy to Clipboard"
                     >
                       {copied ? (
                         <Check size={18} className="text-emerald-500" />
