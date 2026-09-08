@@ -1,5 +1,6 @@
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any, Optional, Literal
 from pydantic import BaseModel
 
@@ -56,13 +57,17 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
                 as_node="supervisor"
             )
             
+        # ⚡ Bolt: Offload synchronous Supabase query to background thread
+        # What: Wrap db.table().execute() in asyncio.to_thread
+        # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+        # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
         # 3. Persist user's message to the conversation log database
-        db.table("agent_conversations").insert({
+        await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
             "user_id": user_id,
             "thread_id": full_thread_id,
             "sender": "user",
             "content": req.message
-        }).execute()
+        }).execute())
         
         # 4. Invoke graph execution with the new message
         state_update = await graph.ainvoke(
@@ -78,15 +83,19 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
             approval_type = state_update.get("approval_type")
             approval_draft = state_update.get("approval_draft")
             
+            # ⚡ Bolt: Offload synchronous Supabase query to background thread
+            # What: Wrap db.table().execute() in asyncio.to_thread
+            # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+            # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
             # Save the approval request to supabase
-            db.table("agent_approvals").insert({
+            await asyncio.to_thread(lambda: db.table("agent_approvals").insert({
                 "id": pending_approval_id,
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "approval_type": approval_type,
                 "draft_content": approval_draft,
                 "status": "pending"
-            }).execute()
+            }).execute())
             
             logger.info(f"Chat execution paused: Awaiting approval for {approval_type}")
             
@@ -97,12 +106,16 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
             sender = getattr(last_msg, "name", "assistant") or "assistant"
             content = last_msg.content
             
-            db.table("agent_conversations").insert({
+            # ⚡ Bolt: Offload synchronous Supabase query to background thread
+            # What: Wrap db.table().execute() in asyncio.to_thread
+            # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+            # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
+            await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "sender": sender,
                 "content": content
-            }).execute()
+            }).execute())
             
             return {
                 "message": content,
@@ -136,13 +149,17 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
     user_id = user["user_id"]
     db = get_supabase_admin()
     
+    # ⚡ Bolt: Offload synchronous Supabase query to background thread
+    # What: Wrap db.table().execute() in asyncio.to_thread
+    # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+    # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
     # 1. Verify ownership of the approval task
-    query = db.table("agent_approvals") \
+    query = await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .select("*") \
         .eq("id", req.approval_id) \
         .eq("user_id", user_id) \
         .single() \
-        .execute()
+        .execute())
         
     if not query.data:
         raise HTTPException(
@@ -154,15 +171,19 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
     full_thread_id = approval_record["thread_id"]
     draft_content = req.modified_draft if req.modified_draft else approval_record["draft_content"]
     
+    # ⚡ Bolt: Offload synchronous Supabase query to background thread
+    # What: Wrap db.table().execute() in asyncio.to_thread
+    # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+    # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
     # 2. Update status in database
-    db.table("agent_approvals") \
+    await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .update({
             "status": req.action,
             "draft_content": draft_content,
             "updated_at": "now()"
         }) \
         .eq("id", req.approval_id) \
-        .execute()
+        .execute())
         
     # 3. Update LangGraph state & resume execution
     graph = get_compiled_graph()
@@ -185,13 +206,17 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
             sender = getattr(last_msg, "name", "assistant") or "assistant"
             content = last_msg.content
             
+            # ⚡ Bolt: Offload synchronous Supabase query to background thread
+            # What: Wrap db.table().execute() in asyncio.to_thread
+            # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+            # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
             # Save the resumed response to conversation logs
-            db.table("agent_conversations").insert({
+            await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "sender": sender,
                 "content": content
-            }).execute()
+            }).execute())
             
             return {
                 "message": content,
@@ -217,12 +242,16 @@ async def get_chat_history(thread_id: str, user: Dict[str, Any] = Depends(get_cu
     full_thread_id = f"{user_id}:{thread_id}"
     db = get_supabase_admin()
     
-    res = db.table("agent_conversations") \
+    # ⚡ Bolt: Offload synchronous Supabase query to background thread
+    # What: Wrap db.table().execute() in asyncio.to_thread
+    # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+    # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
+    res = await asyncio.to_thread(lambda: db.table("agent_conversations") \
         .select("*") \
         .eq("user_id", user_id) \
         .eq("thread_id", full_thread_id) \
         .order("created_at", desc=False) \
-        .execute()
+        .execute())
         
     return res.data
 
@@ -233,11 +262,15 @@ async def get_pending_approvals(user: Dict[str, Any] = Depends(get_current_user)
     user_id = user["user_id"]
     db = get_supabase_admin()
     
-    res = db.table("agent_approvals") \
+    # ⚡ Bolt: Offload synchronous Supabase query to background thread
+    # What: Wrap db.table().execute() in asyncio.to_thread
+    # Why: The Supabase python client is synchronous; calling .execute() blocks the event loop.
+    # Impact: Reduces main thread blocking, significantly improving FastAPI concurrency and responsiveness.
+    res = await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .select("*") \
         .eq("user_id", user_id) \
         .eq("status", "pending") \
         .order("created_at", desc=True) \
-        .execute()
+        .execute())
         
     return res.data
