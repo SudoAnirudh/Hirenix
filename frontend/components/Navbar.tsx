@@ -47,7 +47,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           <Link href="/dashboard" className="hidden sm:block">
-            <button className="text-sm font-bold text-[#4A5568] #7C9ADD] transition-colors px-4">
+            <button aria-label="Go to Dashboard" className="text-sm font-bold text-[#4A5568] #7C9ADD] transition-colors px-4">
               Dashboard
             </button>
           </Link>

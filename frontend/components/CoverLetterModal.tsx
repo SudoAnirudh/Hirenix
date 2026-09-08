@@ -174,6 +174,7 @@ export default function CoverLetterModal({
                       onClick={handleCopy}
                       className="p-2 text-slate-400 #7C9ADD] #7C9ADD]/5 rounded-lg transition-all"
                       title="Copy to Clipboard"
+                      aria-label="Copy to Clipboard"
                     >
                       {copied ? (
                         <Check size={18} className="text-emerald-500" />
