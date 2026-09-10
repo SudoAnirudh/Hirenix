@@ -46,7 +46,8 @@ async def get_jobs_board(
             safe_search = sanitize_postgrest_filter(search)
             query = query.or_(f"title.ilike.%{safe_search}%,company.ilike.%{safe_search}%,description.ilike.%{safe_search}%")
         if location:
-            query = query.ilike("location", f"%{location}%")
+            safe_location = sanitize_postgrest_filter(location)
+            query = query.ilike("location", f"%{safe_location}%")
         query = query.order("posted_at", desc=True)
         start = (page - 1) * limit
         end = start + limit - 1
