@@ -197,65 +197,74 @@ async def scrape_jobs(
     # Refined search query construction
     queries = [f.strip() for f in fields if f and f.strip()]
     
-    # 1. Search local job_posts table (Indian & custom opportunities)
-    local_jobs: List[JobListing] = []
-    try:
-        from dependencies import get_supabase_admin
-        db = get_supabase_admin()
-        local_query = db.table("job_posts").select("*")
-        
-        # Build search condition for fields if provided
-        or_conditions = []
-        for f in queries:
-            safe_f = sanitize_postgrest_filter(f)
-            or_conditions.append(f"title.ilike.%{safe_f}%,description.ilike.%{safe_f}%")
-        if or_conditions:
-            local_query = local_query.or_(",".join(or_conditions))
-            
-        # Filter by location if specified
-        if location:
-            local_query = local_query.ilike("location", f"%{location}%")
-            
-        local_res = local_query.order("posted_at", desc=True).limit(limit).execute()
-        for j in (local_res.data or []):
-            loc_lower = j["location"].lower()
-            is_remote = "remote" in loc_lower
-            if remote_only and not is_remote:
-                continue
-            local_jobs.append(
-                JobListing(
-                    id=j["id"],
-                    title=j["title"],
-                    company=j["company"],
-                    location=j["location"],
-                    remote=is_remote,
-                    job_type="Full-time",  # Default / Fallback type
-                    tags=j.get("requirements") or [],
-                    apply_url=j.get("apply_url") or "",
-                    source="Hirenix Board",
-                    posted_at=j["posted_at"],
-                    description_snippet=j.get("description")[:450] if j.get("description") else "",
-                )
-            )
-    except Exception as e:
-        logger.error(f"Error fetching from local job_posts: {e}")
-
-    # 2. We'll run searches for each field separately to maximize breadth on external boards
+    # 1. We'll run searches for each field separately to maximize breadth on external boards
     source_limit = max(8, limit // 2)
     
     all_tasks = []
-    for q in queries:
-        all_tasks.append(_fetch_remotive(q, source_limit))
-        all_tasks.append(_fetch_arbeitnow(q, source_limit, remote_only))
-        all_tasks.append(_fetch_wwr([q], source_limit))
-        all_tasks.append(_fetch_jobspresso([q], source_limit))
 
-    if not all_tasks and location: # Just location search
-        all_tasks = [
+    # Local job board task to run concurrently
+    async def fetch_local_jobs() -> List[JobListing]:
+        local_jobs_list: List[JobListing] = []
+        try:
+            from dependencies import get_supabase_admin
+            db = get_supabase_admin()
+            local_query = db.table("job_posts").select("*")
+
+            # Build search condition for fields if provided
+            or_conditions = []
+            for f in queries:
+                safe_f = sanitize_postgrest_filter(f)
+                or_conditions.append(f"title.ilike.%{safe_f}%,description.ilike.%{safe_f}%")
+            if or_conditions:
+                local_query = local_query.or_(",".join(or_conditions))
+
+            # Filter by location if specified
+            if location:
+                local_query = local_query.ilike("location", f"%{location}%")
+
+            local_res = await asyncio.to_thread(lambda: local_query.order("posted_at", desc=True).limit(limit).execute())
+            for j in (local_res.data or []):
+                loc_lower = j["location"].lower()
+                is_remote = "remote" in loc_lower
+                if remote_only and not is_remote:
+                    continue
+                local_jobs_list.append(
+                    JobListing(
+                        id=j["id"],
+                        title=j["title"],
+                        company=j["company"],
+                        location=j["location"],
+                        remote=is_remote,
+                        job_type="Full-time",  # Default / Fallback type
+                        tags=j.get("requirements") or [],
+                        apply_url=j.get("apply_url") or "",
+                        source="Hirenix Board",
+                        posted_at=j["posted_at"],
+                        description_snippet=j.get("description")[:450] if j.get("description") else "",
+                    )
+                )
+        except Exception as e:
+            logger.error(f"Error fetching from local job_posts: {e}")
+        return local_jobs_list
+
+    all_tasks.append(fetch_local_jobs())
+
+    if queries:
+        for q in queries:
+            all_tasks.append(_fetch_remotive(q, source_limit))
+            all_tasks.append(_fetch_arbeitnow(q, source_limit, remote_only))
+            all_tasks.append(_fetch_wwr([q], source_limit))
+            all_tasks.append(_fetch_jobspresso([q], source_limit))
+    elif location: # Just location search
+        all_tasks.extend([
             _fetch_remotive(location, source_limit),
             _fetch_arbeitnow(location, source_limit, remote_only)
-        ]
+        ])
 
+    # ⚡ Bolt: Parallelize local database fetch with external network API calls
+    # What: Run fetch_local_jobs concurrently with remote job board APIs
+    # Why: The local database query is blocking I/O, waiting for it sequentially delays other parallel calls
+    # Impact: Reduces overall latency of job search by running slow DB query alongside slow APIs
     results = await asyncio.gather(*all_tasks, return_exceptions=True)
     
     all_jobs: List[JobListing] = []
@@ -264,9 +273,6 @@ async def scrape_jobs(
             all_jobs.extend(res)
         elif isinstance(res, Exception):
             logger.error(f"Global Scraper error: {res}")
-
-    # Combine local and external jobs
-    all_jobs = local_jobs + all_jobs
 
     # Robust location filtering if provided
     if location:

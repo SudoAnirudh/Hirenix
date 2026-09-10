@@ -158,9 +158,13 @@ async def scrape_jobs_for_fields(
     if not fields:
         raise HTTPException(status_code=400, detail="At least one field is required.")
 
-    # 1. Scrape jobs
     limit = max(1, min(payload.limit, 50))
-    jobs = await scrape_jobs(
+
+    # ⚡ Bolt: Parallelize external job scraping with local database query
+    # What: Run scrape_jobs and the resume fetch concurrently using asyncio.gather.
+    # Why: Scraping jobs takes time. Fetching the resume from Supabase also takes time.
+    # Impact: Running them together significantly reduces the total request latency.
+    scrape_task = scrape_jobs(
         fields,
         payload.location,
         payload.remote_only,
@@ -169,16 +173,17 @@ async def scrape_jobs_for_fields(
         payload.job_type or "any"
     )
     
-    # 2. Fetch user's latest resume for auto-matching
-    r = (
+    resume_task = asyncio.to_thread(lambda: (
         db.table("resumes")
         .select("raw_text")
         .eq("user_id", user["user_id"])
         .order("created_at", desc=True)
         .limit(1)
         .execute()
-    )
+    ))
     
+    jobs, r = await asyncio.gather(scrape_task, resume_task)
+
     if r.data:
         resume_text = r.data[0]["raw_text"]
         
