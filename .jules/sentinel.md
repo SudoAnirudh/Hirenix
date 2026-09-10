@@ -18,3 +18,7 @@
 **Vulnerability:** DoS Risk (Synchronous Supabase queries blocking the async event loop).
 **Learning:** Calling synchronous database operations in async endpoints halts concurrent request processing.
 **Prevention:** Wrap synchronous I/O operations (like `supabase.table().execute()`) inside `asyncio.to_thread(lambda: ...)`.
+## 2024-05-24 - PostgREST Filter Injection Vulnerability
+**Vulnerability:** PostgREST filter injection in Supabase queries via unsanitized query parameters (e.g., `location` parameter).
+**Learning:** Even when using an ORM-like builder (Supabase python client), directly passing user input containing special characters like quotes or parentheses to text-matching filters (`.ilike()`, `.or_()`) can break the underlying PostgREST syntax or alter filter logic.
+**Prevention:** Always use `sanitize_postgrest_filter` (or equivalent stripping/escaping functions) on user inputs before passing them into PostgREST text matching functions, especially when allowing free-form search parameters.
