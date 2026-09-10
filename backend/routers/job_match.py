@@ -32,8 +32,8 @@ async def match_job(
     # Fetch resume text
     actual_resume_id = payload.resume_id
     if payload.resume_id == "default":
-        r = (
-            db.table("resumes")
+        r = await asyncio.to_thread(
+            lambda: db.table("resumes")
             .select("id, raw_text")
             .eq("user_id", user["user_id"])
             .order("created_at", desc=True)
@@ -45,8 +45,8 @@ async def match_job(
         resume_text = r.data[0]["raw_text"]
         actual_resume_id = r.data[0]["id"]
     else:
-        r = (
-            db.table("resumes")
+        r = await asyncio.to_thread(
+            lambda: db.table("resumes")
             .select("raw_text")
             .eq("id", payload.resume_id)
             .eq("user_id", user["user_id"])
@@ -62,26 +62,28 @@ async def match_job(
     )
 
     match_id = str(uuid.uuid4())
-    db.table("job_matches").insert(
-        {
-            "id": match_id,
-            "resume_id": actual_resume_id,
-            "user_id": user["user_id"],
-            "target_role": payload.target_role or "Role",
-            "jd_text": payload.jd_text[:3000],
-            "match_score": result.match_score,
-            "semantic_similarity": result.semantic_similarity,
-            "skill_gap": result.skill_gap.model_dump(),
-            "recommendations": result.recommendations,
-            "metadata": {
-                "technical_score": result.technical_score,
-                "experience_score": result.experience_score,
-                "soft_skills_score": result.soft_skills_score,
-                "keyword_heatmap": result.keyword_heatmap,
-                "bridge_advice": result.bridge_advice
+    await asyncio.to_thread(
+        lambda: db.table("job_matches").insert(
+            {
+                "id": match_id,
+                "resume_id": actual_resume_id,
+                "user_id": user["user_id"],
+                "target_role": payload.target_role or "Role",
+                "jd_text": payload.jd_text[:3000],
+                "match_score": result.match_score,
+                "semantic_similarity": result.semantic_similarity,
+                "skill_gap": result.skill_gap.model_dump(),
+                "recommendations": result.recommendations,
+                "metadata": {
+                    "technical_score": result.technical_score,
+                    "experience_score": result.experience_score,
+                    "soft_skills_score": result.soft_skills_score,
+                    "keyword_heatmap": result.keyword_heatmap,
+                    "bridge_advice": result.bridge_advice
+                }
             }
-        }
-    ).execute()
+        ).execute()
+    )
 
     # Note: Returning JobMatchResponse directly
     return result.model_copy(update={"match_id": match_id, "resume_id": payload.resume_id})
@@ -124,26 +126,28 @@ async def match_job_upload(
 
     match_id = str(uuid.uuid4())
     # Save the match (optional link to resume_id="upload")
-    db.table("job_matches").insert(
-        {
-            "id": match_id,
-            "resume_id": None, # Nullable UUID to support direct upload
-            "user_id": user["user_id"],
-            "target_role": target_role or "Role",
-            "jd_text": final_jd_text[:3000],
-            "match_score": result.match_score,
-            "semantic_similarity": result.semantic_similarity,
-            "skill_gap": result.skill_gap.model_dump(),
-            "recommendations": result.recommendations,
-            "metadata": {
-                "technical_score": result.technical_score,
-                "experience_score": result.experience_score,
-                "soft_skills_score": result.soft_skills_score,
-                "keyword_heatmap": result.keyword_heatmap,
-                "bridge_advice": result.bridge_advice
+    await asyncio.to_thread(
+        lambda: db.table("job_matches").insert(
+            {
+                "id": match_id,
+                "resume_id": None, # Nullable UUID to support direct upload
+                "user_id": user["user_id"],
+                "target_role": target_role or "Role",
+                "jd_text": final_jd_text[:3000],
+                "match_score": result.match_score,
+                "semantic_similarity": result.semantic_similarity,
+                "skill_gap": result.skill_gap.model_dump(),
+                "recommendations": result.recommendations,
+                "metadata": {
+                    "technical_score": result.technical_score,
+                    "experience_score": result.experience_score,
+                    "soft_skills_score": result.soft_skills_score,
+                    "keyword_heatmap": result.keyword_heatmap,
+                    "bridge_advice": result.bridge_advice
+                }
             }
-        }
-    ).execute()
+        ).execute()
+    )
 
     return result.model_copy(update={"match_id": match_id, "resume_id": "upload"})
 
@@ -170,8 +174,8 @@ async def scrape_jobs_for_fields(
     )
     
     # 2. Fetch user's latest resume for auto-matching
-    r = (
-        db.table("resumes")
+    r = await asyncio.to_thread(
+        lambda: db.table("resumes")
         .select("raw_text")
         .eq("user_id", user["user_id"])
         .order("created_at", desc=True)
