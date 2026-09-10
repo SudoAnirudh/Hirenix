@@ -70,7 +70,7 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "bail": "^2.0.2",
     "balanced-match": "^4.0.4",
-    "baseline-browser-mapping": "^2.10.0",
+    "baseline-browser-mapping": "^2.11.21",
     "bidi-js": "^1.0.3",
     "brace-expansion": "^5.0.5",
     "braces": "^3.0.3",
