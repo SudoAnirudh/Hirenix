@@ -384,6 +384,7 @@ const ProductDocsModal = ({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close modal"
           className="absolute top-6 right-6 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer z-50 pointer-events-auto"
           title="Close Modal"
         >

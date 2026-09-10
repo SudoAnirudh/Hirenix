@@ -188,6 +188,7 @@ export default function CommandPalette({
                 </span>
                 <button
                   onClick={onClose}
+                  aria-label="Close command palette"
                   className="p-1 rounded-md text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <X size={16} />
