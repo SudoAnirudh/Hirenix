@@ -85,7 +85,7 @@ export default function AddApplicationModal({
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="absolute top-6 right-6 p-2 rounded-full dark: text-slate-400 transition-colors"
+                  className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                 >
                   <X size={20} />
                 </button>
@@ -107,7 +107,10 @@ export default function AddApplicationModal({
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1">
+                      <label
+                        htmlFor="company"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1 cursor-pointer"
+                      >
                         Company
                       </label>
                       <div className="relative">
@@ -116,6 +119,7 @@ export default function AddApplicationModal({
                           className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                         />
                         <input
+                          id="company"
                           type="text"
                           required
                           className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm"
@@ -132,7 +136,10 @@ export default function AddApplicationModal({
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1">
+                      <label
+                        htmlFor="role"
+                        className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1 cursor-pointer"
+                      >
                         Role
                       </label>
                       <div className="relative">
@@ -141,6 +148,7 @@ export default function AddApplicationModal({
                           className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                         />
                         <input
+                          id="role"
                           type="text"
                           required
                           className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm"
@@ -155,7 +163,10 @@ export default function AddApplicationModal({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1">
+                    <label
+                      htmlFor="location"
+                      className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1 cursor-pointer"
+                    >
                       Location
                     </label>
                     <div className="relative">
@@ -164,6 +175,7 @@ export default function AddApplicationModal({
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
                       <input
+                        id="location"
                         type="text"
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm"
                         placeholder="e.g. Remote, TX"
@@ -176,7 +188,10 @@ export default function AddApplicationModal({
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1">
+                    <label
+                      htmlFor="apply_url"
+                      className="text-[10px] font-black uppercase tracking-widest text-[#64748B] ml-1 cursor-pointer"
+                    >
                       Job Link
                     </label>
                     <div className="relative">
@@ -185,6 +200,7 @@ export default function AddApplicationModal({
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       />
                       <input
+                        id="apply_url"
                         type="url"
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all text-sm"
                         placeholder="https://..."
@@ -203,7 +219,7 @@ export default function AddApplicationModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-sm dark: transition-all"
+                      className="flex-1 px-6 py-3 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50"
                     >
                       Cancel
                     </button>
