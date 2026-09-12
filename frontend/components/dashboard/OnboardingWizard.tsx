@@ -198,10 +198,11 @@ export default function OnboardingWizard({
 
             <div className="space-y-6 bg-white/5 border border-white/10 p-8 rounded-[32px] backdrop-blur-xl">
               <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">
+              <label htmlFor="target-role" className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">
                   Target Role
                 </label>
                 <input
+                id="target-role"
                   value={role}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setRole(e.target.value)
@@ -211,10 +212,11 @@ export default function OnboardingWizard({
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">
+              <label htmlFor="dream-company" className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">
                   Dream Company (Optional)
                 </label>
                 <input
+                id="dream-company"
                   value={company}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setCompany(e.target.value)
@@ -228,7 +230,7 @@ export default function OnboardingWizard({
             <div className="mt-10 flex justify-between items-center">
               <button
                 onClick={() => setStep(2)}
-                className="text-slate-400 font-medium transition-colors"
+              className="text-slate-400 font-medium hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg px-2 py-1 transition-colors"
               >
                 Back
               </button>
