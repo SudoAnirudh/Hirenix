@@ -1,5 +1,6 @@
 import logging
 import uuid
+import asyncio
 from typing import Dict, Any, Optional, Literal
 from pydantic import BaseModel
 
@@ -57,12 +58,12 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
             )
             
         # 3. Persist user's message to the conversation log database
-        db.table("agent_conversations").insert({
+        await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
             "user_id": user_id,
             "thread_id": full_thread_id,
             "sender": "user",
             "content": req.message
-        }).execute()
+        }).execute())
         
         # 4. Invoke graph execution with the new message
         state_update = await graph.ainvoke(
@@ -79,14 +80,14 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
             approval_draft = state_update.get("approval_draft")
             
             # Save the approval request to supabase
-            db.table("agent_approvals").insert({
+            await asyncio.to_thread(lambda: db.table("agent_approvals").insert({
                 "id": pending_approval_id,
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "approval_type": approval_type,
                 "draft_content": approval_draft,
                 "status": "pending"
-            }).execute()
+            }).execute())
             
             logger.info(f"Chat execution paused: Awaiting approval for {approval_type}")
             
@@ -97,12 +98,12 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
             sender = getattr(last_msg, "name", "assistant") or "assistant"
             content = last_msg.content
             
-            db.table("agent_conversations").insert({
+            await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "sender": sender,
                 "content": content
-            }).execute()
+            }).execute())
             
             return {
                 "message": content,
@@ -123,7 +124,7 @@ async def chat_with_agent(req: ChatRequest, user: Dict[str, Any] = Depends(get_c
         logger.error(f"Error in agentic chat route: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Agent execution failed: {str(e)}"
+            detail="An error occurred during agent execution."
         )
 
 
@@ -137,12 +138,12 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
     db = get_supabase_admin()
     
     # 1. Verify ownership of the approval task
-    query = db.table("agent_approvals") \
+    query = await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .select("*") \
         .eq("id", req.approval_id) \
         .eq("user_id", user_id) \
         .single() \
-        .execute()
+        .execute())
         
     if not query.data:
         raise HTTPException(
@@ -155,14 +156,14 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
     draft_content = req.modified_draft if req.modified_draft else approval_record["draft_content"]
     
     # 2. Update status in database
-    db.table("agent_approvals") \
+    await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .update({
             "status": req.action,
             "draft_content": draft_content,
             "updated_at": "now()"
         }) \
         .eq("id", req.approval_id) \
-        .execute()
+        .execute())
         
     # 3. Update LangGraph state & resume execution
     graph = get_compiled_graph()
@@ -186,12 +187,12 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
             content = last_msg.content
             
             # Save the resumed response to conversation logs
-            db.table("agent_conversations").insert({
+            await asyncio.to_thread(lambda: db.table("agent_conversations").insert({
                 "user_id": user_id,
                 "thread_id": full_thread_id,
                 "sender": sender,
                 "content": content
-            }).execute()
+            }).execute())
             
             return {
                 "message": content,
@@ -206,7 +207,7 @@ async def resolve_approval(req: ApproveRequest, user: Dict[str, Any] = Depends(g
         logger.error(f"Error resuming graph execution: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Resuming agent execution failed: {str(e)}"
+            detail="An error occurred while resuming agent execution."
         )
 
 
@@ -217,12 +218,12 @@ async def get_chat_history(thread_id: str, user: Dict[str, Any] = Depends(get_cu
     full_thread_id = f"{user_id}:{thread_id}"
     db = get_supabase_admin()
     
-    res = db.table("agent_conversations") \
+    res = await asyncio.to_thread(lambda: db.table("agent_conversations") \
         .select("*") \
         .eq("user_id", user_id) \
         .eq("thread_id", full_thread_id) \
         .order("created_at", desc=False) \
-        .execute()
+        .execute())
         
     return res.data
 
@@ -233,11 +234,11 @@ async def get_pending_approvals(user: Dict[str, Any] = Depends(get_current_user)
     user_id = user["user_id"]
     db = get_supabase_admin()
     
-    res = db.table("agent_approvals") \
+    res = await asyncio.to_thread(lambda: db.table("agent_approvals") \
         .select("*") \
         .eq("user_id", user_id) \
         .eq("status", "pending") \
         .order("created_at", desc=True) \
-        .execute()
+        .execute())
         
     return res.data

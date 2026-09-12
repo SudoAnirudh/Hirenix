@@ -66,5 +66,5 @@ async def analyze_linkedin(
         return analysis
 
     except Exception as e:
-        logger.error(f"Router error in LinkedIn analysis: {str(e)}")
+        logger.error(f"Router error in LinkedIn analysis: {e}")
         raise HTTPException(status_code=500, detail="An error occurred during LinkedIn analysis.")
