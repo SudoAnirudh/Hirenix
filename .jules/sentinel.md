@@ -18,3 +18,7 @@
 **Vulnerability:** DoS Risk (Synchronous Supabase queries blocking the async event loop).
 **Learning:** Calling synchronous database operations in async endpoints halts concurrent request processing.
 **Prevention:** Wrap synchronous I/O operations (like `supabase.table().execute()`) inside `asyncio.to_thread(lambda: ...)`.
+## 2025-01-08 - [Error Message Information Leakage in Agent Router]
+**Vulnerability:** Raw exception strings (`str(e)`) were being returned directly to the user in HTTP 500 error responses from FastAPI endpoints (`backend/routers/agent.py`).
+**Learning:** Returning unhandled exception details directly in HTTP responses can inadvertently leak sensitive internal system details, stack traces, database schema information, or third-party API configurations to potential attackers, breaking the "fail securely" principle.
+**Prevention:** Always log the full exception detail internally using the application logger and return a sanitized, generic error message (e.g., "Agent execution failed.") to the client via `HTTPException`.
